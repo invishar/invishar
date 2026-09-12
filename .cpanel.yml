@@ -14,6 +14,12 @@ deployment:
     # menyalin berkas tersembunyi seperti .htaccess, sedangkan * melewatkannya.
     - /bin/cp -R site/. ~/public_html/
 
+    # Catatan teknis untuk pengembang, tidak perlu bisa diakses pengunjung.
+    - /bin/rm -f ~/public_html/README.md
+
     # Catat waktu deploy terakhir, berguna untuk memastikan deploy benar jalan.
     # Cek kapan saja di: https://invishar.com/deploy-terakhir.txt
-    - /bin/date "+Deploy terakhir: %Y-%m-%d %H:%M:%S %Z" > ~/public_html/deploy-terakhir.txt
+    #
+    # Tanda kutip tunggal di bawah WAJIB ada: tanpa itu, tanda ":" dan "%"
+    # di dalam format tanggal membuat berkas YAML ini gagal dibaca.
+    - '/bin/date "+Deploy terakhir: %Y-%m-%d %H:%M:%S %Z" > ~/public_html/deploy-terakhir.txt'
