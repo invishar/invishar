@@ -1,0 +1,19 @@
+---
+# Resep deploy untuk Git Deploy Manager di cPanel Domainesia.
+# Dijalankan otomatis setiap kali ada push ke remote cPanel (mode CI/CD).
+#
+# Inti aturannya: HANYA isi folder site/ yang boleh masuk ke public_html.
+# Folder design-source/, DEPLOY.md, dan berkas repo lain tetap di Git saja.
+deployment:
+  tasks:
+    # Pastikan folder tujuannya ada.
+    - /bin/mkdir -p ~/public_html
+
+    # Salin ISI site/ ke public_html.
+    # Perhatikan "site/." (pakai titik), bukan "site/*" — titik ikut
+    # menyalin berkas tersembunyi seperti .htaccess, sedangkan * melewatkannya.
+    - /bin/cp -R site/. ~/public_html/
+
+    # Catat waktu deploy terakhir, berguna untuk memastikan deploy benar jalan.
+    # Cek kapan saja di: https://invishar.com/deploy-terakhir.txt
+    - /bin/date "+Deploy terakhir: %Y-%m-%d %H:%M:%S %Z" > ~/public_html/deploy-terakhir.txt
