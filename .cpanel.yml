@@ -20,6 +20,10 @@ deployment:
     # Halaman "Ready to Launch" bawaan Domainesia. Deploy tidak menghapus
     # berkas yang tidak dilacak Git, jadi harus dibuang eksplisit — kalau
     # dibiarkan ia bisa merebut posisi halaman depan.
+    #
+    # Nama berkas aslinya "default-welcome.html"; server Domainesia juga
+    # menyajikannya di URL /default.html, jadi dua-duanya disapu.
+    - /bin/rm -f ~/public_html/default-welcome.html
     - /bin/rm -f ~/public_html/default.html
 
     # Catat waktu deploy terakhir, berguna untuk memastikan deploy benar jalan.
