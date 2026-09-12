@@ -65,27 +65,27 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEHj1/DB8VvF5vuwgnKceDBhsuTy78F+J1qFqOCs5aM8
 Statusnya harus berubah jadi **authorized**. Kalau masih *not authorized*,
 push nanti akan ditolak.
 
-### 1.3 Beri tahu komputermu key mana yang dipakai
+### 1.3 Beri tahu komputermu key mana yang dipakai — SUDAH BERES
 
-Jalankan sekali di terminal (Git Bash):
+Komputermu punya lebih dari satu kunci SSH (`amanafinance_deploy` dan
+`invishar_deploy`). Tanpa petunjuk, `ssh` akan mencoba menebak dan bisa salah
+pakai. Jadi repo ini dikunci ke key yang benar lewat satu baris:
 
 ```bash
-mkdir -p ~/.ssh
-cat >> ~/.ssh/config <<'EOF'
-
-Host domainesia
-  HostName SERVER_KAMU
-  User USERNAME_CPANEL
-  IdentityFile ~/.ssh/invishar_deploy
-  IdentitiesOnly yes
-EOF
+git config core.sshCommand "ssh -i ~/.ssh/invishar_deploy -o IdentitiesOnly=yes"
 ```
 
-Ganti dua nilai ini dengan milikmu — keduanya terlihat di sidebar kanan cPanel
-bagian **General Information**:
+**Perintah ini sudah dijalankan** — tidak perlu kamu ketik ulang.
 
-- `SERVER_KAMU` → contoh `srv123.domainesia.com` (baris *Server Name*)
-- `USERNAME_CPANEL` → contoh `invisha1` (baris *Current User*)
+Artinya sederhana: *"khusus di repo ini, kalau menyambung lewat SSH, pakai
+kunci `invishar_deploy` dan jangan coba kunci lain."* Pengaturannya tersimpan
+di `.git/config` milik repo ini saja, tidak mengganggu proyek amanafinance.
+
+Untuk memastikan sudah tersimpan:
+
+```bash
+git config --get core.sshCommand
+```
 
 ---
 
@@ -206,8 +206,8 @@ git push
 
 | Gejala | Penyebab & solusi |
 | --- | --- |
-| `Permission denied (publickey)` | Key belum di-**Authorize** di cPanel (Tahap 1.2 langkah 5), atau `~/.ssh/config` salah isi. Uji dengan `ssh domainesia` — kalau berhasil masuk shell, key-nya sudah benar. |
-| `Could not resolve hostname` | `HostName` di `~/.ssh/config` salah. Salin ulang *Server Name* dari sidebar cPanel. |
+| `Permission denied (publickey)` | Key belum di-**Authorize** di cPanel (Tahap 1.2 langkah 5). Cek juga `git config --get core.sshCommand` — harus menampilkan `ssh -i ~/.ssh/invishar_deploy -o IdentitiesOnly=yes`. |
+| `Could not resolve hostname` | Push URL salah salin. Ambil ulang dari kartu deployment di panel Git Deploy Manager, lalu perbaiki dengan `git remote set-url --delete --push origin <url lama>` dan tambahkan yang benar. |
 | Push ke GitHub jalan, tapi situs tidak berubah | Push URL cPanel belum terdaftar. Cek `git remote -v` — harus ada **dua** baris `(push)`. |
 | Deploy jalan tapi `invishar.com` menampilkan daftar folder | `.cpanel.yml` tidak terbaca, jadi seluruh repo tersalin. Pastikan berkas itu ada di **root repo** (bukan di dalam `site/`) dan CI/CD sudah **Enable**. |
 | Situs tampil tapi tanpa warna/gaya | Folder `css/` atau `js/` tidak ikut tersalin. Cek lewat File Manager: `public_html` harus berisi `index.html`, `css/`, `js/`, `assets/`, `.htaccess`. |
