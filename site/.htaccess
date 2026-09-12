@@ -1,0 +1,55 @@
+# ==========================================================================
+# Invishar — konfigurasi Apache untuk hosting Domainesia (cPanel)
+# Berkas ini ikut terunggah ke public_html dan dibaca otomatis oleh server.
+# ==========================================================================
+
+# --- Halaman utama -------------------------------------------------------
+DirectoryIndex index.html
+
+# --- Paksa HTTPS ---------------------------------------------------------
+# JANGAN diaktifkan sebelum SSL menyala di cPanel (menu "SSL/TLS Status").
+# Kalau diaktifkan padahal SSL belum ada, situs jadi tidak bisa dibuka.
+# Cara mengaktifkan: hapus tanda # di empat baris di bawah ini.
+#
+# <IfModule mod_rewrite.c>
+#   RewriteEngine On
+#   RewriteCond %{HTTPS} !=on
+#   RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# </IfModule>
+
+# --- Kompresi ------------------------------------------------------------
+# Memperkecil ukuran kiriman HTML/CSS/JS, halaman terasa lebih cepat.
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain
+  AddOutputFilterByType DEFLATE application/javascript application/json
+  AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# --- Cache browser -------------------------------------------------------
+# Aset disimpan lama di browser pengunjung; HTML sengaja pendek supaya
+# perubahan teks langsung terlihat setelah deploy.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html                 "access plus 10 minutes"
+  ExpiresByType text/css                  "access plus 1 month"
+  ExpiresByType application/javascript    "access plus 1 month"
+  ExpiresByType image/png                 "access plus 1 year"
+  ExpiresByType image/jpeg                "access plus 1 year"
+  ExpiresByType image/webp                "access plus 1 year"
+  ExpiresByType image/svg+xml             "access plus 1 year"
+  ExpiresByType font/woff2                "access plus 1 year"
+</IfModule>
+
+# --- Keamanan dasar ------------------------------------------------------
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Sembunyikan daftar isi folder kalau tidak ada index.html di dalamnya.
+Options -Indexes
+
+# Jangan sajikan berkas catatan deploy ke publik.
+<FilesMatch "^\.ftp-deploy-sync-state\.json$">
+  Require all denied
+</FilesMatch>

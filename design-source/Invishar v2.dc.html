@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/classical-1bb0dc6c-3924-4c4b-b26f-95cc6eb6c378/styles.css">
+<script src="_ds/classical-1bb0dc6c-3924-4c4b-b26f-95cc6eb6c378/_ds_bundle.js"></script>
+<script src="./image-slot.js"></script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400..600;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #eef4ea; }
+  a { color: #2f5c26; }
+  a:hover { color: #3f7a33; }
+  * { -webkit-tap-highlight-color: rgba(63,122,51,0.15); }
+  @keyframes inv-slide { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @keyframes inv-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -7px; } }
+  :focus-visible { outline: 2px solid #3f7a33; outline-offset: 2px; }
+</style>
+</helmet>
+
+<div style="background: #eef4ea; color: #1a1917; font-family: 'DM Sans', system-ui, sans-serif; min-height: 100%; overflow-x: hidden; -webkit-font-smoothing: antialiased;">
+
+  <div style="position: sticky; top: 0; z-index: 30; background: rgba(238,244,234,0.9); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(26,25,23,0.1);">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 12px clamp(16px, 4vw, 28px); display: flex; align-items: center; gap: 18px;">
+      <a href="#atas" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; margin-right: auto;">
+        <img src="assets/invishar-logo.png" alt="Invishar" style="width: 30px; height: 30px; border-radius: 6px;">
+        <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -0.03em;">invishar</span>
+      </a>
+      <div style="{{ navLinksStyle }}">
+        <a href="#katalog" onClick="{{ closeMenu }}" style="color: rgba(26,25,23,0.72); text-decoration: none; font-size: 15px; font-weight: 500; transition: color .16s ease;" style-hover="color: #23441c;">Katalog</a>
+        <a href="#jasa" onClick="{{ closeMenu }}" style="color: rgba(26,25,23,0.72); text-decoration: none; font-size: 15px; font-weight: 500; transition: color .16s ease;" style-hover="color: #23441c;">Jasa</a>
+        <a href="#kelas" onClick="{{ closeMenu }}" style="color: rgba(26,25,23,0.72); text-decoration: none; font-size: 15px; font-weight: 500; transition: color .16s ease;" style-hover="color: #23441c;">Kelas</a>
+        <a href="#sorotan" onClick="{{ closeMenu }}" style="color: rgba(26,25,23,0.72); text-decoration: none; font-size: 15px; font-weight: 500; transition: color .16s ease;" style-hover="color: #23441c;">Sorotan</a>
+        <a href="#tanya" onClick="{{ closeMenu }}" style="color: rgba(26,25,23,0.72); text-decoration: none; font-size: 15px; font-weight: 500; transition: color .16s ease;" style-hover="color: #23441c;">Tanya jawab</a>
+        <a href="#kontak" onClick="{{ closeMenu }}" style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 14.5px; padding: 10px 18px; border-radius: 999px; background: #23441c; color: #eef4ea; text-decoration: none; text-align: center; transition: background .16s ease, transform .16s ease;" style-hover="background: #2f5c26; transform: translateY(-1px);">Ngobrol dulu</a>
+      </div>
+      <button type="button" aria-label="Menu" onClick="{{ toggleMenu }}" style="{{ burgerStyle }}">
+        <span style="display: block; width: 18px; height: 1.8px; background: #1a1917; border-radius: 2px;"></span>
+        <span style="display: block; width: 18px; height: 1.8px; background: #1a1917; border-radius: 2px;"></span>
+        <span style="display: block; width: 18px; height: 1.8px; background: #1a1917; border-radius: 2px;"></span>
+      </button>
+    </div>
+  </div>
+
+  <section id="atas" style="max-width: 1180px; margin: 0 auto; padding: clamp(34px, 6vw, 52px) clamp(16px, 4vw, 28px) 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: clamp(30px, 5vw, 48px); align-items: center;">
+    <div style="min-width: 0;">
+      <div data-reveal="0" style="display: inline-flex; align-items: center; gap: 8px; font-family: 'Space Grotesk', sans-serif; font-size: 12.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #2f5c26; background: #d6e7cd; padding: 6px 13px; border-radius: 999px; margin-bottom: 20px;">Studio produk digital</div>
+      <h1 data-reveal="80" style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: clamp(36px, 7.4vw, 76px); line-height: 0.99; letter-spacing: -0.042em; margin: 0 0 18px;">Kami bikin yang <span style="color: #3a7330;">bikin ribet</span> jadi selesai.</h1>
+      <p data-reveal="160" style="font-size: clamp(15.5px, 1.6vw, 17px); line-height: 1.58; color: rgba(26,25,23,0.72); max-width: 42ch; margin: 0 0 26px; text-wrap: pretty;">Produk digital untuk keluarga, sekolah, dan pesantren. Plus jasa pembuatan aplikasi dan kelas &mdash; kalau Anda mau tangan sendiri yang membangun.</p>
+      <div data-reveal="240" style="display: flex; flex-wrap: wrap; gap: 10px;">
+        <a href="#katalog" style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; padding: 13px 24px; border-radius: 999px; background: #23441c; color: #eef4ea; text-decoration: none; transition: background .18s ease, transform .18s ease, box-shadow .18s ease;" style-hover="background: #2f5c26; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(35,68,28,0.22);">Lihat katalog</a>
+        <a href="#kontak" style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; padding: 13px 24px; border-radius: 999px; border: 1.5px solid rgba(26,25,23,0.2); color: #1a1917; text-decoration: none; transition: border-color .18s ease, color .18s ease, transform .18s ease;" style-hover="border-color: #4f8f3f; color: #2f5c26; transform: translateY(-2px);">Tanya-tanya dulu</a>
+      </div>
+    </div>
+    <div style="{{ stackStyle }}">
+      <div data-reveal-fade="120" style="{{ card1Style }}">
+        <div style="font-family: 'Space Grotesk', sans-serif; font-size: 11.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #3a7330;">Produk &middot; Live</div>
+        <div style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 22px; letter-spacing: -0.025em; margin: 8px 0 6px;">Ponpes Manager</div>
+        <div style="font-size: 13.5px; color: rgba(26,25,23,0.68); line-height: 1.5;">Santri, kamar, uang saku, perizinan.</div>
+      </div>
+      <div data-reveal-fade="240" style="{{ card2Style }}">
+        <div style="font-family: 'Space Grotesk', sans-serif; font-size: 11.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #3a7330;">Produk &middot; Live</div>
+        <div style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 22px; letter-spacing: -0.025em; margin: 8px 0 6px;">amanafinance.id</div>
+        <div style="font-size: 13.5px; color: rgba(26,25,23,0.68); line-height: 1.5;">Catat keuangan keluarga lewat obrolan, dibantu AI.</div>
+      </div>
+      <div data-reveal-fade="360" style="{{ card3Style }}">
+        <div style="font-family: 'Space Grotesk', sans-serif; font-size: 11.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #9ec68e;">Kelas &middot; Dibuka</div>
+        <div style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 22px; letter-spacing: -0.025em; margin: 8px 0 0;">Dashboard Sosial Media</div>
+      </div>
+    </div>
+  </section>
+
+  <div style="border-top: 1px solid rgba(26,25,23,0.1); border-bottom: 1px solid rgba(26,25,23,0.1); overflow: hidden; padding: 13px 0; margin-top: 26px;">
+    <div style="display: flex; gap: 44px; width: max-content; animation: inv-slide 28s linear infinite; font-family: 'Space Grotesk', sans-serif; font-weight: 500; font-size: 15px; letter-spacing: -0.01em; color: rgba(26,25,23,0.5); white-space: nowrap;">
+      <span>PWA keuangan keluarga &nbsp;&bull;&nbsp; Portal sekolah &nbsp;&bull;&nbsp; Administrasi pesantren &nbsp;&bull;&nbsp; Dashboard sosial media &nbsp;&bull;&nbsp; Otomatisasi WhatsApp &nbsp;&bull;&nbsp; Aplikasi pesanan &nbsp;&bull;&nbsp;</span>
+      <span>PWA keuangan keluarga &nbsp;&bull;&nbsp; Portal sekolah &nbsp;&bull;&nbsp; Administrasi pesantren &nbsp;&bull;&nbsp; Dashboard sosial media &nbsp;&bull;&nbsp; Otomatisasi WhatsApp &nbsp;&bull;&nbsp; Aplikasi pesanan &nbsp;&bull;&nbsp;</span>
+    </div>
+  </div>
+
+  <section style="max-width: 1180px; margin: 0 auto; padding: clamp(40px, 6vw, 56px) clamp(16px, 4vw, 28px) 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
+    <sc-for list="{{ pintu }}" as="p" hint-placeholder-count="3">
+      <div data-reveal="{{ p.delay }}" style="background: #f7faf5; border: 1px solid rgba(26,25,23,0.1); border-radius: 16px; padding: 26px; transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;" style-hover="border-color: #7fae6d; transform: translateY(-3px); box-shadow: 0 10px 24px rgba(35,68,28,0.08);">
+        <div style="font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #3a7330; font-variant-numeric: tabular-nums;">{{ p.no }}</div>
+        <h3 style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 22px; letter-spacing: -0.028em; margin: 12px 0 8px;">{{ p.judul }}</h3>
+        <p style="font-size: 14.5px; line-height: 1.58; color: rgba(26,25,23,0.7); margin: 0; text-wrap: pretty;">{{ p.teks }}</p>
+      </div>
+    </sc-for>
+  </section>
+
+  <section style="max-width: 1180px; margin: 0 auto; padding: clamp(36px, 5vw, 52px) clamp(16px, 4vw, 28px) 0;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 2px; background: rgba(26,25,23,0.1); border: 1px solid rgba(26,25,23,0.1); border-radius: 16px; overflow: hidden;">
+      <sc-for list="{{ angka }}" as="a" hint-placeholder-count="4">
+        <div data-reveal="{{ a.delay }}" style="background: #eef4ea; padding: 22px 20px;">
+          <div style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: clamp(28px, 4vw, 38px); letter-spacing: -0.04em; line-height: 1; color: #23441c; font-variant-numeric: tabular-nums;">{{ a.nilai }}</div>
+          <div style="font-size: 13.5px; color: rgba(26,25,23,0.62); margin-top: 7px;">{{ a.label }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section id="katalog" style="max-width: 1180px; margin: 0 auto; padding: clamp(44px, 6vw, 64px) clamp(16px, 4vw, 28px) 0;">
+    <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 18px; margin-bottom: 24px;">
+      <div data-reveal="0" style="min-width: 0; margin-right: auto;">
+        <h2 style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: clamp(28px, 5vw, 46px); letter-spacing: -0.038em; line-height: 1.04; margin: 0 0 8px;">Katalog</h2>
+        <p style="font-size: 15px; color: rgba(26,25,23,0.65); margin: 0;">Semua yang bisa Anda ambil hari ini.</p>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+          <button type="button" onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 18px;">
+      <sc-for list="{{ items }}" as="it" hint-placeholder-count="6">
+        <article data-reveal="{{ it.delay }}" style="display: flex; flex-direction: column; gap: 12px; background: #f7faf5; border: 1px solid rgba(26,25,23,0.1); border-radius: 16px; padding: 22px; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;" style-hover="border-color: #7fae6d; transform: translateY(-4px); box-shadow: 0 12px 28px rgba(35,68,28,0.10);">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+            <span style="font-family: 'Space Grotesk', sans-serif; font-size: 11.5px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: #3a7330;">{{ it.kategori }}</span>
+            <span style="font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; background: #d6e7cd; color: #23441c; padding: 4px 10px; border-radius: 999px;">{{ it.status }}</span>
+          </div>
+          <h3 style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 23px; letter-spacing: -0.03em; line-height: 1.16; margin: 0;">{{ it.nama }}</h3>
+          <p style="font-size: 14.5px; line-height: 1.56; color: rgba(26,25,23,0.7); margin: 0; text-wrap: pretty;">{{ it.desc }}</p>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid rgba(26,25,23,0.1); padding-top: 14px; margin-top: auto;">
+            <sc-if value="{{ showHarga }}" hint-placeholder-val="{{ true }}">
+              <span style="font-size: 13px; color: rgba(26,25,23,0.58); font-variant-numeric: tabular-nums;">{{ it.harga }}</span>
+            </sc-if>
+            <a href="#kontak" style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 14px; color: #2f5c26; text-decoration: none; margin-left: auto; transition: color .16s ease;" style-hover="color: #3f7a33;">{{ it.aksi }} &rarr;</a>
+          </div>
+        </article>
+      </sc-for>
+    </div>
+  </section>
+
+  <section id="jasa" style="max-width: 1180px; margin: 0 auto; padding: clamp(50px, 7vw, 76px) clamp(16px, 4vw, 28px) 0;">
+    <div data-reveal="0" style="background: #23441c; color: #eef4ea; border-radius: 24px; padding: clamp(26px, 4vw, 44px); display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: clamp(28px, 4vw, 44px); align-items: start;">
+      <div style="min-width: 0;">
+        <div style="font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #9ec68e; margin-bottom: 14px;">Jasa pembuatan aplikasi</div>
+        <h2 style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: clamp(26px, 4.4vw, 42px); letter-spacing: -0.038em; line-height: 1.05; margin: 0 0 16px;">Dikerjakan berdua dengan Anda, bukan di balik dinding.</h2>
+        <p style="font-size: 15.5px; line-height: 1.6; color: rgba(238,244,234,0.76); margin: 0 0 24px; max-width: 40ch;">Setiap pekerjaan mulai dari percakapan, bukan dari daftar harga. Kami petakan alur kerja Anda dulu, baru menulis kode.</p>
+        <a href="#kontak" style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; padding: 13px 24px; border-radius: 999px; background: #eef4ea; color: #23441c; text-decoration: none; display: inline-block; transition: background .18s ease, transform .18s ease;" style-hover="background: #d6e7cd; transform: translateY(-2px);">Mulai percakapan</a>
+      </div>
+      <div style="min-width: 0;">
+        <sc-for list="{{ langkah }}" as="s" hint-placeholder-count="4">
+          <div style="display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 14px; padding: 17px 0; border-bottom: 1px solid rgba(238,244,234,0.16);">
+            <div style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; color: #9ec68e; font-variant-numeric: tabular-nums;">{{ s.no }}</div>
+            <div style="min-width: 0;">
+              <h4 style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 18px; letter-spacing: -0.025em; margin: 0 0 5px;">{{ s.judul }}</h4>
+              <p style="font-size: 14px; line-height: 1.55; color: rgba(238,244,234,0.7); margin: 0; text-wrap: pretty;">{{ s.teks }}</p>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section id="kelas" style="max-width: 1180px; margin: 0 auto; padding: clamp(50px, 7vw, 76px) clamp(16px, 4vw, 28px) 0;">
+    <div data-reveal="0" style="background: #f7faf5; border: 1px solid rgba(26,25,23,0.1); border-radius: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); overflow: hidden;">
+      <div style="padding: clamp(24px, 3.4vw, 38px); border-bottom: 1px solid rgba(26,25,23,0.1);">
+        <div style="font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #3a7330; margin-bottom: 14px;">Kelas unggulan</div>
+        <h2 style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: clamp(24px, 4vw, 38px); letter-spacing: -0.036em; line-height: 1.06; margin: 0 0 14px;">Membuat Dashboard Sosial Media</h2>
+        <p style="font-size: 15px; line-height: 1.58; color: rgba(26,25,23,0.7); margin: 0 0 22px;">Dari menarik data sampai grafik yang enak dibaca. Satu proyek nyata, dikerjakan bareng sampai bisa Anda pakai untuk klien sendiri.</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+          <a href="#kontak" style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; padding: 12px 22px; border-radius: 999px; background: #23441c; color: #eef4ea; text-decoration: none; transition: background .18s ease, transform .18s ease;" style-hover="background: #2f5c26; transform: translateY(-2px);">Ambil kelasnya &mdash; Rp 249rb</a>
+          <a href="#kontak" style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; padding: 12px 22px; border-radius: 999px; border: 1.5px solid rgba(26,25,23,0.2); color: #1a1917; text-decoration: none; transition: border-color .18s ease, color .18s ease;" style-hover="border-color: #4f8f3f; color: #2f5c26;">Silabus</a>
+        </div>
+      </div>
+      <div style="padding: clamp(24px, 3.4vw, 38px);">
+        <sc-for list="{{ modul }}" as="m" hint-placeholder-count="5">
+          <div style="display: flex; align-items: baseline; gap: 12px; padding: 11px 0; border-bottom: 1px solid rgba(26,25,23,0.08); font-size: 14.5px;">
+            <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 12.5px; color: #4f8f3f; font-variant-numeric: tabular-nums; min-width: 22px;">{{ m.no }}</span>
+            <span style="color: rgba(26,25,23,0.8); min-width: 0;">{{ m.judul }}</span>
+            <span style="margin-left: auto; font-size: 12.5px; color: rgba(26,25,23,0.5); font-variant-numeric: tabular-nums; white-space: nowrap;">{{ m.durasi }}</span>
+          </div>
+        </sc-for>
+        <p style="font-size: 13.5px; line-height: 1.55; color: rgba(26,25,23,0.58); margin: 18px 0 0;">Rekaman + file proyek, akses selamanya. Kelas berikutnya: otomatisasi WhatsApp.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="sorotan" style="max-width: 1180px; margin: 0 auto; padding: clamp(50px, 7vw, 76px) clamp(16px, 4vw, 28px) 0;">
+    <div data-reveal="0" style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px; margin-bottom: 24px;">
+      <div style="min-width: 0; margin-right: auto;">
+        <h2 style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: clamp(28px, 5vw, 46px); letter-spacing: -0.038em; line-height: 1.04; margin: 0 0 8px;">Sorotan produk</h2>
+        <p style="font-size: 15px; color: rgba(26,25,23,0.65); margin: 0;">Tampilan asli dari aplikasi yang sedang berjalan.</p>
+      </div>
+      <a href="#katalog" style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 14.5px; color: #2f5c26; text-decoration: none;" style-hover="color: #3f7a33;">Lihat semua &rarr;</a>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 18px;">
+      <div data-reveal="0" style="background: #f7faf5; border: 1px solid rgba(26,25,23,0.1); border-radius: 18px; padding: 16px;">
+        <div style="position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 12px; overflow: hidden;">
+          <image-slot id="inv-shot-amana" shape="rounded" radius="12" placeholder="Screenshot amanafinance.id"></image-slot>
+        </div>
+        <div style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 19px; letter-spacing: -0.026em; margin: 16px 0 6px;">amanafinance.id</div>
+        <p style="font-size: 14px; line-height: 1.55; color: rgba(26,25,23,0.68); margin: 0;">Obrolan jadi catatan keuangan — ringkasan bulanan otomatis.</p>
+      </div>
+      <div data-reveal="80" style="background: #f7faf5; border: 1px solid rgba(26,25,23,0.1); border-radius: 18px; padding: 16px;">
+        <div style="position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 12px; overflow: hidden;">
+          <image-slot id="inv-shot-sekolah" shape="rounded" radius="12" placeholder="Screenshot Portal Anak Sekolah"></image-slot>
+        </div>
+        <div style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 19px; letter-spacing: -0.026em; margin: 16px 0 6px;">Portal Anak Sekolah</div>
+        <p style="font-size: 14px; line-height: 1.55; color: rgba(26,25,23,0.68); margin: 0;">Nilai, presensi, dan tagihan dalam satu tampilan wali murid.</p>
+      </div>
+      <div data-reveal="160" style="background: #f7faf5; border: 1px solid rgba(26,25,23,0.1); border-radius: 18px; padding: 16px;">
+        <div style="position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 12px; overflow: hidden;">
+          <image-slot id="inv-shot-ponpes" shape="rounded" radius="12" placeholder="Screenshot Ponpes Manager"></image-slot>
+        </div>
+        <div style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 19px; letter-spacing: -0.026em; margin: 16px 0 6px;">Ponpes Manager</div>
+        <p style="font-size: 14px; line-height: 1.55; color: rgba(26,25,23,0.68); margin: 0;">Data santri, kamar, uang saku, dan perizinan untuk pengurus.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="tanya" style="max-width: 1180px; margin: 0 auto; padding: clamp(50px, 7vw, 76px) clamp(16px, 4vw, 28px) 0;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: clamp(24px, 4vw, 44px); align-items: start;">
+      <div data-reveal="0" style="min-width: 0;">
+        <h2 style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: clamp(28px, 4.6vw, 44px); letter-spacing: -0.04em; line-height: 1.04; margin: 0 0 12px;">Tanya jawab</h2>
+        <p style="font-size: 15.5px; line-height: 1.58; color: rgba(26,25,23,0.7); max-width: 34ch; margin: 0;">Empat hal yang paling sering ditanyakan sebelum mulai kerja sama.</p>
+      </div>
+      <div style="min-width: 0;">
+        <sc-for list="{{ faq }}" as="f" hint-placeholder-count="4">
+          <div style="border-bottom: 1px solid rgba(26,25,23,0.12);">
+            <button type="button" onClick="{{ f.onClick }}" style="width: 100%; display: flex; align-items: center; gap: 14px; background: none; border: none; padding: 18px 2px; cursor: pointer; text-align: left; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 16.5px; letter-spacing: -0.02em; color: #1a1917;">
+              <span style="min-width: 0;">{{ f.q }}</span>
+              <span style="{{ f.iconStyle }}">+</span>
+            </button>
+            <div style="{{ f.bodyStyle }}">
+              <div style="min-height: 0; overflow: hidden;">
+                <p style="font-size: 14.5px; line-height: 1.6; color: rgba(26,25,23,0.7); margin: 0; padding: 0 2px 18px; text-wrap: pretty;">{{ f.a }}</p>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section id="kontak" style="max-width: 1180px; margin: 0 auto; padding: clamp(50px, 7vw, 76px) clamp(16px, 4vw, 28px) clamp(54px, 7vw, 84px);">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: clamp(30px, 5vw, 48px); align-items: start;">
+      <div data-reveal="0" style="min-width: 0;">
+        <h2 style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: clamp(30px, 5.4vw, 52px); letter-spacing: -0.042em; line-height: 1.0; margin: 0 0 16px;">Ceritakan dulu, gratis.</h2>
+        <p style="font-size: 16px; line-height: 1.58; color: rgba(26,25,23,0.72); max-width: 42ch; margin: 0 0 26px; text-wrap: pretty;">Belum yakin butuh produk jadi, aplikasi baru, atau cukup ikut kelas? Kirim satu paragraf tentang keadaan Anda &mdash; kami balas dengan rekomendasi jujur, termasuk kalau jawabannya &ldquo;belum perlu&rdquo;.</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 26px; font-size: 15px;">
+          <div>
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 11.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(26,25,23,0.5); margin-bottom: 5px;">Surel</div>
+            <a href="mailto:hello@invishar.id" style="font-weight: 500;">hello@invishar.id</a>
+          </div>
+          <div>
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 11.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(26,25,23,0.5); margin-bottom: 5px;">WhatsApp</div>
+            <a href="#kontak" style="font-weight: 500;">+62 812 0000 0000</a>
+          </div>
+        </div>
+      </div>
+      <form onSubmit="{{ onSubmit }}" data-reveal="100" style="min-width: 0; display: flex; flex-direction: column; gap: 14px; background: #f7faf5; border: 1px solid rgba(26,25,23,0.1); border-radius: 20px; padding: clamp(20px, 3vw, 26px);">
+        <div>
+          <label for="v2nama" style="display: block; font-family: 'Space Grotesk', sans-serif; font-size: 11.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(26,25,23,0.55); margin-bottom: 7px;">Nama</label>
+          <input id="v2nama" type="text" placeholder="Nama atau lembaga" style="width: 100%; box-sizing: border-box; font-family: 'DM Sans', sans-serif; font-size: 16px; padding: 12px 14px; border: 1px solid rgba(26,25,23,0.18); border-radius: 10px; background: #ffffff; color: #1a1917;">
+        </div>
+        <div>
+          <label for="v2surel" style="display: block; font-family: 'Space Grotesk', sans-serif; font-size: 11.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(26,25,23,0.55); margin-bottom: 7px;">Surel</label>
+          <input id="v2surel" type="email" placeholder="nama@domain.id" style="width: 100%; box-sizing: border-box; font-family: 'DM Sans', sans-serif; font-size: 16px; padding: 12px 14px; border: 1px solid rgba(26,25,23,0.18); border-radius: 10px; background: #ffffff; color: #1a1917;">
+        </div>
+        <div>
+          <label for="v2pesan" style="display: block; font-family: 'Space Grotesk', sans-serif; font-size: 11.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(26,25,23,0.55); margin-bottom: 7px;">Yang ingin dibereskan</label>
+          <textarea id="v2pesan" rows="4" placeholder="Mis. pencatatan keuangan pesantren masih di buku tulis&hellip;" style="width: 100%; box-sizing: border-box; font-family: 'DM Sans', sans-serif; font-size: 16px; padding: 12px 14px; border: 1px solid rgba(26,25,23,0.18); border-radius: 10px; background: #ffffff; color: #1a1917; resize: vertical;"></textarea>
+        </div>
+        <button type="submit" style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; padding: 14px 22px; border-radius: 999px; border: none; background: #23441c; color: #eef4ea; cursor: pointer; transition: background .18s ease;" style-hover="background: #2f5c26;">{{ tombolKirim }}</button>
+        <p style="font-size: 13px; color: rgba(26,25,23,0.55); margin: 0; text-align: center;">Dibalas dalam 1&ndash;2 hari kerja.</p>
+      </form>
+    </div>
+  </section>
+
+  <div style="background: #1a1917; color: #eef4ea;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 28px clamp(16px, 4vw, 28px); display: flex; flex-wrap: wrap; align-items: center; gap: 14px;">
+      <img src="assets/invishar-logo.png" alt="" style="width: 26px; height: 26px; border-radius: 5px;">
+      <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 17px; letter-spacing: -0.03em;">invishar</span>
+      <span style="font-size: 13.5px; color: rgba(238,244,234,0.6);">Produk, jasa, dan kelas digital &mdash; Indonesia.</span>
+      <span style="margin-left: auto; font-size: 13px; color: rgba(238,244,234,0.5); font-variant-numeric: tabular-nums;">&copy; 2026 Invishar</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;kategoriAwal&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Semua&quot;,&quot;Produk&quot;,&quot;Jasa&quot;,&quot;Kelas&quot;],&quot;default&quot;:&quot;Semua&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Katalog&quot;},&quot;tampilkanHarga&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Katalog&quot;},&quot;animasi&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Motion&quot;}}">
+class Component extends DCLogic {
+  state = { tab: null, terkirim: false, menu: false, mob: false, faqOpen: 0 };
+
+  componentDidMount() {
+    this._syncMob = () => {
+      const mob = window.innerWidth <= 760;
+      if (mob !== this.state.mob) this.setState({ mob: mob, menu: false });
+    };
+    this.setState({ mob: window.innerWidth <= 760 });
+    window.addEventListener("resize", this._syncMob);
+    this._mqTimer = setInterval(this._syncMob, 700);
+    this.probeReveal();
+  }
+
+  componentDidUpdate() {
+    if (this._ioActive) this.hideAndObserve();
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this._syncMob);
+    clearInterval(this._mqTimer);
+    if (this._io) this._io.disconnect();
+  }
+
+  // Only hide anything once we've proven IntersectionObserver actually delivers
+  // entries in this environment — otherwise the page would stay invisible.
+  probeReveal() {
+    if (this.props.animasi === false) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!("IntersectionObserver" in window)) return;
+    const probe = document.querySelector("[data-reveal], [data-reveal-fade]");
+    if (!probe) return;
+    let fired = false;
+    const io = new IntersectionObserver(() => {
+      fired = true;
+      io.disconnect();
+      this._ioActive = true;
+      this.hideAndObserve();
+    });
+    io.observe(probe);
+    setTimeout(() => { if (!fired) io.disconnect(); }, 400);
+  }
+
+  hideAndObserve() {
+    const ease = "cubic-bezier(.22,.68,.3,1)";
+    const nodes = Array.from(document.querySelectorAll("[data-reveal], [data-reveal-fade]"))
+      .filter((el) => !el.dataset.revealed && !el.dataset.revealArmed);
+    if (!nodes.length) return;
+    if (!this._io) {
+      this._io = new IntersectionObserver((entries) => {
+        entries.forEach((en) => {
+          if (!en.isIntersecting) return;
+          this.show(en.target);
+          this._io.unobserve(en.target);
+        });
+      }, { rootMargin: "0px 0px -6% 0px", threshold: 0.05 });
+    }
+    nodes.forEach((el) => {
+      el.dataset.revealArmed = "1";
+      el.style.opacity = "0";
+      if (!el.hasAttribute("data-reveal-fade")) el.style.transform = "translateY(18px)";
+      el.style.transition = "opacity .62s " + ease + ", transform .62s " + ease;
+      this._io.observe(el);
+    });
+    clearTimeout(this._safety);
+    this._safety = setTimeout(() => {
+      document.querySelectorAll("[data-reveal-armed='1']").forEach((el) => this.show(el));
+      nodes.forEach((el) => this.show(el));
+    }, 1400);
+  }
+
+  show(el) {
+    if (el.dataset.revealed) return;
+    const d = parseInt(el.dataset.reveal || el.dataset.revealFade || "0", 10);
+    el.style.transitionDelay = d + "ms";
+    el.style.opacity = "1";
+    el.style.transform = "";
+    el.dataset.revealed = "1";
+  }
+
+  data() {
+    return [
+      { kategori: "Produk", nama: "amanafinance.id", status: "Live", harga: "Gratis \u00b7 ada Pro", aksi: "Coba sekarang",
+        desc: "PWA pencatatan keuangan keluarga berbasis asisten AI: catat lewat obrolan, lihat pola belanja, rencanakan bareng pasangan." },
+      { kategori: "Produk", nama: "Portal Anak Sekolah", status: "Beta", harga: "Mulai Rp 350rb/bln", aksi: "Minta demo",
+        desc: "Nilai, presensi, tagihan, dan pengumuman kelas untuk wali murid dan guru — tanpa berebut di grup WhatsApp." },
+      { kategori: "Produk", nama: "Ponpes Manager", status: "Live", harga: "Mulai Rp 500rb/bln", aksi: "Minta demo",
+        desc: "Administrasi pesantren dalam satu tempat: data santri, kamar, uang saku, perizinan, dan laporan pengurus." },
+      { kategori: "Jasa", nama: "Aplikasi Pesanan", status: "Terbuka", harga: "Penawaran per proyek", aksi: "Ajukan proyek",
+        desc: "Web app, PWA, atau dashboard internal sesuai alur kerja lembaga Anda — termasuk integrasi WhatsApp dan pembayaran." },
+      { kategori: "Jasa", nama: "Audit & Perbaikan Sistem", status: "Terbuka", harga: "Mulai Rp 3jt", aksi: "Jadwalkan audit",
+        desc: "Aplikasi lama lambat, berantakan, atau ditinggalkan pembuatnya? Kami rapikan dan lanjutkan." },
+      { kategori: "Kelas", nama: "Dashboard Sosial Media", status: "Dibuka", harga: "Rp 249rb", aksi: "Ambil kelas",
+        desc: "Tutorial lengkap: menarik data, mengolah metrik, dan menyusun dashboard yang enak dibaca klien." },
+      { kategori: "Kelas", nama: "Otomatisasi WhatsApp", status: "Segera", harga: "Daftar tunggu", aksi: "Ikut daftar tunggu",
+        desc: "Membangun bot pengingat, tagihan, dan laporan harian untuk usaha kecil dan lembaga pendidikan." }
+    ];
+  }
+
+  cardBase(top, left, width, rot) {
+    if (this.state.mob) {
+      return "position: relative; width: 100%; margin-bottom: 12px; border-radius: 16px; padding: 20px;";
+    }
+    return "position: absolute; top: " + top + "px; left: " + left + "; width: " + width +
+      "; transform: rotate(" + rot + "deg); border-radius: 16px; padding: 20px;";
+  }
+
+  renderVals() {
+    const mob = this.state.mob;
+    const aktif = this.state.tab ?? (this.props.kategoriAwal ?? "Semua");
+    const semua = this.data();
+    const light = "background: #ffffff; border: 1px solid rgba(26,25,23,0.1); box-shadow: 0 8px 24px rgba(35,68,28,0.10); ";
+    const faqData = [
+      { q: "Berapa lama pengerjaan satu aplikasi?", a: "Untuk lingkup kecil (satu alur, satu peran pengguna) biasanya 3–5 pekan. Sistem dengan banyak peran seperti portal sekolah 8–12 pekan, dikirim bertahap tiap dua pekan." },
+      { q: "Apakah produk yang sudah ada bisa disesuaikan?", a: "Bisa. amanafinance, Portal Sekolah, dan Ponpes Manager punya opsi penyesuaian merek, form, dan laporan — jauh lebih murah daripada membangun dari nol." },
+      { q: "Bagaimana kalau saya belum punya tim teknis?", a: "Justru itu bagian kami. Ada pelatihan pemakaian, dokumentasi ringkas berbahasa Indonesia, dan paket pemeliharaan bulanan kalau dibutuhkan." },
+      { q: "Datanya aman di mana?", a: "Server dengan enkripsi saat transit dan pencadangan harian. Untuk lembaga yang mewajibkannya, kami bisa memasang di server milik Anda sendiri." }
+    ];
+    return {
+      showHarga: this.props.tampilkanHarga ?? true,
+      tombolKirim: this.state.terkirim ? "Terima kasih \u2014 segera kami balas" : "Kirim pesan",
+      onSubmit: (e) => { e.preventDefault(); this.setState({ terkirim: true }); },
+      toggleMenu: () => this.setState((s) => ({ menu: !s.menu })),
+      closeMenu: () => this.setState({ menu: false }),
+      burgerStyle: "display: " + (mob ? "flex" : "none") +
+        "; flex-direction: column; gap: 4px; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1.5px solid rgba(26,25,23,0.16); border-radius: 12px; background: transparent; cursor: pointer;",
+      navLinksStyle: mob
+        ? ("display: " + (this.state.menu ? "flex" : "none") +
+           "; flex-direction: column; gap: 4px; position: absolute; top: 62px; left: 12px; right: 12px; background: #f7faf5; border: 1px solid rgba(26,25,23,0.12); border-radius: 16px; padding: 12px; box-shadow: 0 14px 34px rgba(35,68,28,0.14);")
+        : "display: flex; align-items: center; gap: 22px;",
+      stackStyle: mob
+        ? "min-width: 0; position: relative;"
+        : "min-width: 0; position: relative; height: 420px;",
+      card1Style: light + this.cardBase(6, "5%", "74%", -4) + (mob ? "" : "animation: inv-float 7s ease-in-out infinite;"),
+      card2Style: light + this.cardBase(172, "20%", "76%", 2.5) + (mob ? "" : "animation: inv-float 7s ease-in-out infinite .9s;"),
+      card3Style: "background: #23441c; color: #eef4ea; box-shadow: 0 12px 30px rgba(35,68,28,0.22); " +
+        this.cardBase(302, "3%", "72%", -1.5) + (mob ? "" : "animation: inv-float 7s ease-in-out infinite 1.8s;"),
+      tabs: ["Semua", "Produk", "Jasa", "Kelas"].map((label) => {
+        const on = label === aktif;
+        return { label, onClick: () => this.setState({ tab: label }),
+          style: "font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer; padding: 10px 17px; border-radius: 999px; transition: background .16s ease, color .16s ease, border-color .16s ease; background: " +
+            (on ? "#23441c" : "transparent") + "; color: " + (on ? "#eef4ea" : "rgba(26,25,23,0.7)") +
+            "; border: 1.5px solid " + (on ? "#23441c" : "rgba(26,25,23,0.16)") + ";" };
+      }),
+      items: (aktif === "Semua" ? semua : semua.filter((d) => d.kategori === aktif))
+        .map((d, i) => Object.assign({}, d, { delay: String(i * 70) })),
+      faq: faqData.map((f, i) => {
+        const open = this.state.faqOpen === i;
+        return Object.assign({}, f, {
+          onClick: () => this.setState({ faqOpen: open ? -1 : i }),
+          iconStyle: "margin-left: auto; font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 400; line-height: 1; color: #3a7330; transition: transform .24s cubic-bezier(.22,.68,.3,1); transform: rotate(" + (open ? "135deg" : "0deg") + ");",
+          bodyStyle: "overflow: hidden; transition: grid-template-rows .3s cubic-bezier(.22,.68,.3,1), opacity .3s ease; display: grid; grid-template-rows: " +
+            (open ? "1fr" : "0fr") + "; opacity: " + (open ? "1" : "0") + ";"
+        });
+      }),
+      angka: [
+        { nilai: "4", label: "Produk berjalan", delay: "0" },
+        { nilai: "12+", label: "Lembaga & keluarga terbantu", delay: "70" },
+        { nilai: "2 pekan", label: "Jeda tiap versi bisa dicoba", delay: "140" },
+        { nilai: "< 2 hari", label: "Balasan pertanyaan masuk", delay: "210" }
+      ],
+      pintu: [
+        { no: "01", judul: "Produk digital jadi", delay: "0", teks: "Sudah berjalan dan dipakai orang sungguhan. Daftar, masuk, selesai — tanpa menunggu proses pembuatan." },
+        { no: "02", judul: "Jasa pembuatan aplikasi", delay: "80", teks: "Dirancang dari nol untuk alur kerja Anda: web, PWA, dashboard, integrasi WhatsApp dan pembayaran." },
+        { no: "03", judul: "Kelas & tutorial", delay: "160", teks: "Kami buka dapurnya. Praktik satu proyek nyata sampai jadi, bukan sampai teori." }
+      ],
+      langkah: [
+        { no: "01", judul: "Percakapan awal", teks: "30 menit memetakan masalah, siapa yang memakai, dan apa yang sebenarnya menghambat." },
+        { no: "02", judul: "Rancangan & perkiraan", teks: "Alur layar, lingkup pekerjaan, jadwal, dan angka yang jelas sebelum sepakat." },
+        { no: "03", judul: "Pengerjaan bertahap", teks: "Versi bisa dicoba setiap dua pekan — Anda ikut menguji, bukan menunggu kejutan." },
+        { no: "04", judul: "Serah terima & rawat", teks: "Pelatihan pemakaian, dokumentasi ringkas, dan pemeliharaan bulanan bila perlu." }
+      ],
+      modul: [
+        { no: "01", judul: "Menyiapkan sumber data & izin API", durasi: "24 mnt" },
+        { no: "02", judul: "Membersihkan dan menyatukan metrik", durasi: "38 mnt" },
+        { no: "03", judul: "Memilih grafik yang tidak menipu", durasi: "31 mnt" },
+        { no: "04", judul: "Menyusun tata letak dashboard", durasi: "42 mnt" },
+        { no: "05", judul: "Menerbitkan & laporan otomatis", durasi: "27 mnt" }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
