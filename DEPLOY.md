@@ -1,9 +1,18 @@
-# Panduan Deploy ke Domainesia — untuk pemula
+# Panduan Deploy ke Domainesia
 
 Domain: **invishar.com** · Repo: **github.com/invishar/invishar**
 
-Tujuannya: setelah setup ini beres, **cukup `git push`** — satu perintah itu
-mengirim kode ke GitHub *sekaligus* memperbarui situs di invishar.com.
+> ## ✅ SETUP SUDAH SELESAI — situs sudah live
+>
+> Seluruh Tahap 1–5 di bawah **sudah dikerjakan** pada 12 September 2026.
+> Kamu **tidak perlu mengulanginya**. Untuk mengubah isi situs, langsung
+> lompat ke bagian [Cara mengubah isi situs](#sesudah-ini-cara-mengubah-isi-situs).
+>
+> Tahap 1–5 disimpan sebagai catatan: berguna kalau nanti ganti komputer,
+> ganti hosting, atau perlu menelusuri kenapa sesuatu disetel begitu.
+
+Tujuannya: **cukup `git push`** — satu perintah mengirim kode ke GitHub
+*sekaligus* memperbarui situs di invishar.com.
 
 ## Cara kerjanya
 
