@@ -17,9 +17,15 @@ deployment:
     # Catatan teknis untuk pengembang, tidak perlu bisa diakses pengunjung.
     - /bin/rm -f ~/public_html/README.md
 
+    # Halaman "Ready to Launch" bawaan Domainesia. Deploy tidak menghapus
+    # berkas yang tidak dilacak Git, jadi harus dibuang eksplisit — kalau
+    # dibiarkan ia bisa merebut posisi halaman depan.
+    - /bin/rm -f ~/public_html/default.html
+
     # Catat waktu deploy terakhir, berguna untuk memastikan deploy benar jalan.
     # Cek kapan saja di: https://invishar.com/deploy-terakhir.txt
     #
-    # Tanda kutip tunggal di bawah WAJIB ada: tanpa itu, tanda ":" dan "%"
-    # di dalam format tanggal membuat berkas YAML ini gagal dibaca.
-    - '/bin/date "+Deploy terakhir: %Y-%m-%d %H:%M:%S %Z" > ~/public_html/deploy-terakhir.txt'
+    # Harus dibungkus /bin/sh -c: cPanel menjalankan tiap tugas tanpa shell,
+    # jadi tanda ">" tidak diartikan sebagai pengalihan keluaran dan berkasnya
+    # tidak pernah terbentuk. Kutip tunggal di luar menjaga YAML tetap sah.
+    - '/bin/sh -c "date > ~/public_html/deploy-terakhir.txt"'
