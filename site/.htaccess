@@ -7,15 +7,20 @@
 DirectoryIndex index.html
 
 # --- Paksa HTTPS ---------------------------------------------------------
-# JANGAN diaktifkan sebelum SSL menyala di cPanel (menu "SSL/TLS Status").
-# Kalau diaktifkan padahal SSL belum ada, situs jadi tidak bisa dibuka.
-# Cara mengaktifkan: hapus tanda # di empat baris di bawah ini.
+# AKTIF. Sudah diverifikasi bahwa SSL hidup di invishar.com maupun
+# www.invishar.com (keduanya menjawab 200 lewat https).
 #
-# <IfModule mod_rewrite.c>
-#   RewriteEngine On
-#   RewriteCond %{HTTPS} !=on
-#   RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-# </IfModule>
+# Aturan ini perlu ada di sini karena deploy menimpa .htaccess di
+# public_html — tanpa ini, pengalihan http -> https yang sudah berjalan
+# bisa ikut hilang saat deploy pertama.
+#
+# %{HTTP_HOST} dipertahankan apa adanya, jadi www tetap ke www dan
+# non-www tetap non-www; sertifikatnya cocok untuk dua-duanya.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
 
 # --- Kompresi ------------------------------------------------------------
 # Memperkecil ukuran kiriman HTML/CSS/JS, halaman terasa lebih cepat.

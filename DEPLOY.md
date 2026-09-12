@@ -218,9 +218,10 @@ git push
 
 ## Sentuhan akhir setelah situs hidup
 
-1. **Aktifkan HTTPS.** cPanel → **SSL/TLS Status** → centang `invishar.com` →
-   **Run AutoSSL**. Tunggu hijau. Sesudah itu buka `site/.htaccess`, hapus
-   tanda `#` pada empat baris di blok *Paksa HTTPS*, lalu commit & push.
+1. ~~**Aktifkan HTTPS.**~~ **Sudah beres.** Sertifikat sudah valid untuk
+   `invishar.com` maupun `www.invishar.com`, dan blok *Paksa HTTPS* di
+   `site/.htaccess` sudah diaktifkan supaya pengalihan itu tidak hilang saat
+   deploy menimpa berkas `.htaccess` di server.
 2. **Ganti alamat surel.** Masih `hello@invishar.id` di bagian kontak
    (`site/index.html` baris 315) — sesuaikan kalau domainmu `.com`.
 3. **Ganti nomor WhatsApp.** Masih `+62 812 0000 0000` / `wa.me/628120000000`.
