@@ -29,4 +29,14 @@ return [
 
     // Zona waktu untuk seluruh pencatatan waktu di panel.
     'zona_waktu' => 'Asia/Jakarta',
+
+    // Bantuan AI untuk mengisi kolom kelas (9router, sesuai OpenAI API).
+    // Kunci hanya dipakai di sisi server — peramban tidak pernah melihatnya.
+    // Kosongkan 'kunci' untuk mematikan seluruh tombol bantuan AI.
+    'ai' => [
+        'endpoint'  => 'https://r62dmm3.abc-tunnel.us/v1',
+        'kunci'     => '',
+        'model'     => 'amana',
+        'batas_detik' => 90,
+    ],
 ];
