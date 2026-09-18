@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/inc/awal.php';
+wajibMasuk();   // sebelum kueri apa pun: tamu dialihkan, bukan disuguhi galat
 
 $judul = 'Ringkasan';
 $menu  = 'ringkasan';
