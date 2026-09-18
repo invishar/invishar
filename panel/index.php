@@ -24,19 +24,19 @@ require __DIR__ . '/inc/kepala.php';
 ?>
 
 <div class="angka-kisi">
-  <a class="angka" href="order.php?status=baru">
+  <a class="angka" href="<?= tautan('order') ?>?status=baru">
     <span class="angka-num"><?= $orderBaru ?></span>
     <span class="angka-lbl">Order baru</span>
   </a>
-  <a class="angka" href="order.php">
+  <a class="angka" href="<?= tautan('order') ?>">
     <span class="angka-num"><?= $orderJalan ?></span>
     <span class="angka-lbl">Sedang berjalan</span>
   </a>
-  <a class="angka" href="kelas.php">
+  <a class="angka" href="<?= tautan('kelas') ?>">
     <span class="angka-num"><?= $kelasTerbit ?>/<?= $kelasTotal ?></span>
     <span class="angka-lbl">Kelas dibuka</span>
   </a>
-  <a class="angka" href="inventaris.php">
+  <a class="angka" href="<?= tautan('inventaris') ?>">
     <span class="angka-num"><?= $asetTotal ?></span>
     <span class="angka-lbl">Aset tercatat</span>
   </a>
@@ -47,7 +47,7 @@ require __DIR__ . '/inc/kepala.php';
   <section class="kotak">
     <div class="kotak-kepala">
       <h2>Order terakhir</h2>
-      <a class="tautan-lain" href="order.php">Semua &rarr;</a>
+      <a class="tautan-lain" href="<?= tautan('order') ?>">Semua &rarr;</a>
     </div>
 
     <?php if (!$orderTerakhir): ?>
@@ -56,7 +56,7 @@ require __DIR__ . '/inc/kepala.php';
       <ul class="daftar-ringkas">
         <?php foreach ($orderTerakhir as $o): ?>
           <li>
-            <a href="order-detail.php?id=<?= (int) $o['id'] ?>">
+            <a href="<?= tautan('order/' . (int) $o['id']) ?>">
               <span class="dr-judul"><?= e($o['nama']) ?><?= $o['lembaga'] ? ' · ' . e($o['lembaga']) : '' ?></span>
               <span class="dr-sub"><?= e(mb_strimwidth($o['kebutuhan'], 0, 90, '…')) ?></span>
             </a>

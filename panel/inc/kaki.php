@@ -8,6 +8,6 @@
   </div>
 </div>
 
-<script src="aset/panel.js" defer></script>
+<script src="<?= e(aset('panel.js')) ?>" defer></script>
 </body>
 </html>

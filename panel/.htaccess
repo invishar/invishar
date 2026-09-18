@@ -13,6 +13,37 @@ DirectoryIndex index.php
   RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 </IfModule>
 
+# --- Alamat yang enak dibaca ---------------------------------------------
+# /panel/kelas/7 dibaca sebagai kelas-edit.php?id=7, dan /panel/order sebagai
+# order.php. Alamat .php yang lama tetap jalan karena berkasnya memang ada;
+# aturan di bawah hanya menangani alamat yang TIDAK menunjuk berkas nyata.
+#
+# Semua jalur ditulis relatif, tanpa RewriteBase, supaya tetap benar baik saat
+# panel dipasang di public_html/panel maupun di akar subdomain nanti.
+<IfModule mod_rewrite.c>
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^kelas/([0-9]+)/?$ kelas-edit.php?id=$1 [L,QSA]
+
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^order/([0-9]+)/?$ order-detail.php?id=$1 [L,QSA]
+
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^inventaris/([0-9]+)/?$ inventaris.php?sunting=$1 [L,QSA]
+
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^aplikasi/([0-9]+)/?$ aplikasi.php?sunting=$1 [L,QSA]
+
+  # Sisanya: /panel/kelas -> kelas.php, /panel/masuk -> masuk.php, dan
+  # seterusnya. Nama berkas asli tetap bisa dipakai.
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^([a-z][a-z-]*)/?$ $1.php [L,QSA]
+</IfModule>
+
 # --- Berkas yang tidak boleh diunduh --------------------------------------
 # Folder inc/ dijaga oleh .htaccess miliknya sendiri, supaya aturannya tetap
 # berlaku walau panel dipasang bukan di akar subdomain.

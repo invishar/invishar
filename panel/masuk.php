@@ -3,7 +3,7 @@ declare(strict_types=1);
 require __DIR__ . '/inc/awal.php';
 
 if (penggunaKini() !== null) {
-    pergi('index.php');
+    pergi(tautan());
 }
 
 $galat = '';
@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             q('UPDATE pengguna SET terakhir_masuk = NOW() WHERE id = ?', [$pengguna['id']]);
             q('DELETE FROM login_gagal WHERE ip = ?', [$ip]);
 
-            $tujuan = $_SESSION['tujuan'] ?? 'index.php';
+            $tujuan = $_SESSION['tujuan'] ?? tautan();
             unset($_SESSION['tujuan']);
             pergi($tujuan);
         }
@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400..600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="aset/panel.css">
+<link rel="stylesheet" href="<?= e(aset('panel.css')) ?>">
 </head>
 <body class="body-masuk">
 

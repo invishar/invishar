@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             pesan('Aplikasi "' . $isi[0] . '" ditambahkan.');
         }
     }
-    pergi('aplikasi.php');
+    pergi(tautan('aplikasi'));
 }
 
 $sunting = null;
@@ -60,7 +60,7 @@ require __DIR__ . '/inc/kepala.php';
         <?php if ($a['url_situs']): ?>
           <a class="tbl tbl-kecil" href="<?= e($a['url_situs']) ?>" target="_blank" rel="noopener">Situs</a>
         <?php endif; ?>
-        <a class="tautan-lain" href="aplikasi.php?sunting=<?= (int) $a['id'] ?>">Ubah</a>
+        <a class="tautan-lain" href="<?= tautan('aplikasi/' . (int) $a['id']) ?>">Ubah</a>
       </div>
     </article>
   <?php endforeach; ?>
@@ -69,7 +69,7 @@ require __DIR__ . '/inc/kepala.php';
     <h2>Kelas (course)</h2>
     <p>Belum punya admin sendiri &mdash; dikelola langsung di panel ini.</p>
     <div class="kartu-app-kaki">
-      <a class="tbl tbl-kecil tbl-utama" href="kelas.php">Kelola kelas</a>
+      <a class="tbl tbl-kecil tbl-utama" href="<?= tautan('kelas') ?>">Kelola kelas</a>
       <a class="tbl tbl-kecil" href="https://invishar.com/kelas.html" target="_blank" rel="noopener">Situs</a>
     </div>
   </article>
@@ -78,7 +78,7 @@ require __DIR__ . '/inc/kepala.php';
 <section class="kotak kotak-form">
   <div class="kotak-kepala">
     <h2><?= $sunting ? 'Ubah aplikasi' : 'Tambah aplikasi' ?></h2>
-    <?php if ($sunting): ?><a class="tautan-lain" href="aplikasi.php">Batal</a><?php endif; ?>
+    <?php if ($sunting): ?><a class="tautan-lain" href="<?= tautan('aplikasi') ?>">Batal</a><?php endif; ?>
   </div>
 
   <form method="post" class="form-panel">

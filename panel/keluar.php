@@ -9,4 +9,4 @@ if (ini_get('session.use_cookies')) {
 }
 session_destroy();
 
-pergi('masuk.php');
+pergi(tautan('masuk'));

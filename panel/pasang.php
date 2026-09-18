@@ -106,7 +106,7 @@ if ($sudahAda) {
         $_SESSION['pengguna_id'] = (int) ambilNilai('SELECT id FROM pengguna WHERE surel = ?', [$surel]);
         catatLog('pasang panel', $surel);
         pesan('Panel terpasang dan Anda sudah masuk.');
-        pergi('index.php');
+        pergi(tautan());
     }
 }
 ?>
@@ -118,7 +118,7 @@ if ($sudahAda) {
 <meta name="robots" content="noindex, nofollow">
 <title>Pasang Panel Invishar</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400..600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="aset/panel.css">
+<link rel="stylesheet" href="<?= e(aset('panel.css')) ?>">
 </head>
 <body class="body-masuk">
 
@@ -150,7 +150,7 @@ if ($sudahAda) {
       <button class="tbl tbl-utama tbl-penuh" type="submit">Pasang panel</button>
     </form>
   <?php else: ?>
-    <p><a class="tbl tbl-utama tbl-penuh" href="masuk.php">Ke halaman masuk</a></p>
+    <p><a class="tbl tbl-utama tbl-penuh" href="<?= tautan('masuk') ?>">Ke halaman masuk</a></p>
   <?php endif; ?>
 </main>
 

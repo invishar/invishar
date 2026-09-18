@@ -8,7 +8,7 @@ $order = ambilSatu('SELECT * FROM order_jasa WHERE id = ?', [$id]);
 
 if ($order === null) {
     pesan('Order tidak ditemukan.', 'buruk');
-    pergi('order.php');
+    pergi(tautan('order'));
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         q('DELETE FROM order_jasa WHERE id = ?', [$id]);
         catatLog('hapus order', $order['nama']);
         pesan('Order dari "' . $order['nama'] . '" dihapus.');
-        pergi('order.php');
+        pergi(tautan('order'));
     }
 
     $statusBaru = masukan('status', $order['status']);
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     pesan('Order diperbarui.');
-    pergi('order-detail.php?id=' . $id);
+    pergi(tautan('order/' . $id));
 }
 
 $riwayat = ambilSemua('SELECT * FROM order_riwayat WHERE order_id = ? ORDER BY dibuat_pada DESC', [$id]);
@@ -51,7 +51,7 @@ $menu  = 'order';
 require __DIR__ . '/inc/kepala.php';
 ?>
 
-<p class="remah"><a href="order.php">&larr; Semua order</a></p>
+<p class="remah"><a href="<?= tautan('order') ?>">&larr; Semua order</a></p>
 
 <div class="dua-kolom">
 

@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             pesan('Aset "' . $isi[0] . '" dicatat.');
         }
     }
-    pergi('inventaris.php');
+    pergi(tautan('inventaris'));
 }
 
 $sunting = isset($_GET['sunting'])
@@ -74,9 +74,9 @@ require __DIR__ . '/inc/kepala.php';
       </thead>
       <tbody>
         <?php foreach ($daftar as $a): ?>
-          <tr onclick="location='inventaris.php?sunting=<?= (int) $a['id'] ?>'">
+          <tr onclick="location='<?= tautan('inventaris/' . (int) $a['id']) ?>'">
             <td>
-              <a class="tabel-utama" href="inventaris.php?sunting=<?= (int) $a['id'] ?>"><?= e($a['nama']) ?></a>
+              <a class="tabel-utama" href="<?= tautan('inventaris/' . (int) $a['id']) ?>"><?= e($a['nama']) ?></a>
               <?php if ($a['nomor_seri']): ?><span class="tabel-sub"><?= e($a['nomor_seri']) ?></span><?php endif; ?>
             </td>
             <td><?= e($a['kategori']) ?></td>
@@ -94,7 +94,7 @@ require __DIR__ . '/inc/kepala.php';
 <section class="kotak kotak-form">
   <div class="kotak-kepala">
     <h2><?= $sunting ? 'Ubah aset' : 'Catat aset baru' ?></h2>
-    <?php if ($sunting): ?><a class="tautan-lain" href="inventaris.php">Batal</a><?php endif; ?>
+    <?php if ($sunting): ?><a class="tautan-lain" href="<?= tautan('inventaris') ?>">Batal</a><?php endif; ?>
   </div>
 
   <form method="post" class="form-panel">

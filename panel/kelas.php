@@ -31,9 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = (int) db()->lastInsertId();
         catatLog('tambah kelas', $judulBaru);
         pesan('Kelas "' . $judulBaru . '" dibuat. Lengkapi isinya di bawah.');
-        pergi('kelas-edit.php?id=' . $id);
+        pergi(tautan('kelas/' . $id));
     }
-    pergi('kelas.php');
+    pergi(tautan('kelas'));
 }
 
 $daftar = ambilSemua(
@@ -57,7 +57,7 @@ $judul = 'Kelas';
 $menu  = 'kelas';
 
 ob_start(); ?>
-  <form method="post" action="terbitkan.php" class="sebaris">
+  <form method="post" action="<?= tautan('terbitkan') ?>" class="sebaris">
     <?= csrfInput() ?>
     <button class="tbl <?= $perluTerbit ? 'tbl-utama' : '' ?>" type="submit">Terbitkan ke situs</button>
   </form>
@@ -87,9 +87,9 @@ require __DIR__ . '/inc/kepala.php';
     </thead>
     <tbody>
       <?php foreach ($daftar as $k): ?>
-        <tr onclick="location='kelas-edit.php?id=<?= (int) $k['id'] ?>'">
+        <tr onclick="location='<?= tautan('kelas/' . (int) $k['id']) ?>'">
           <td>
-            <a class="tabel-utama" href="kelas-edit.php?id=<?= (int) $k['id'] ?>"><?= e($k['judul']) ?></a>
+            <a class="tabel-utama" href="<?= tautan('kelas/' . (int) $k['id']) ?>"><?= e($k['judul']) ?></a>
             <span class="tabel-sub"><?= e($k['slug']) ?></span>
           </td>
           <td><?= e($k['kategori']) ?></td>

@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    pergi('pengaturan.php');
+    pergi(tautan('pengaturan'));
 }
 
 $jejak = ambilSemua('SELECT * FROM log_aktivitas ORDER BY dibuat_pada DESC LIMIT 40');

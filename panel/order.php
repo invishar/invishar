@@ -23,9 +23,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             [$id, 'Dicatat manual']);
         catatLog('tambah order', $nama);
         pesan('Order dari "' . $nama . '" dicatat.');
-        pergi('order-detail.php?id=' . $id);
+        pergi(tautan('order/' . $id));
     }
-    pergi('order.php');
+    pergi(tautan('order'));
 }
 
 $saring = $_GET['status'] ?? '';
@@ -46,11 +46,11 @@ require __DIR__ . '/inc/kepala.php';
 ?>
 
 <div class="saring">
-  <a class="cip<?= $saring === '' ? ' is-on' : '' ?>" href="order.php">
+  <a class="cip<?= $saring === '' ? ' is-on' : '' ?>" href="<?= tautan('order') ?>">
     Semua <span><?= array_sum($hitung) ?></span>
   </a>
   <?php foreach (STATUS_ORDER as $kunci => $label): ?>
-    <a class="cip<?= $saring === $kunci ? ' is-on' : '' ?>" href="order.php?status=<?= e($kunci) ?>">
+    <a class="cip<?= $saring === $kunci ? ' is-on' : '' ?>" href="<?= tautan('order') ?>?status=<?= e($kunci) ?>">
       <?= e($label) ?> <span><?= $hitung[$kunci] ?? 0 ?></span>
     </a>
   <?php endforeach; ?>
@@ -74,9 +74,9 @@ require __DIR__ . '/inc/kepala.php';
       </thead>
       <tbody>
         <?php foreach ($daftar as $o): ?>
-          <tr onclick="location='order-detail.php?id=<?= (int) $o['id'] ?>'">
+          <tr onclick="location='<?= tautan('order/' . (int) $o['id']) ?>'">
             <td>
-              <a class="tabel-utama" href="order-detail.php?id=<?= (int) $o['id'] ?>"><?= e($o['nama']) ?></a>
+              <a class="tabel-utama" href="<?= tautan('order/' . (int) $o['id']) ?>"><?= e($o['nama']) ?></a>
               <?php if ($o['lembaga']): ?><span class="tabel-sub"><?= e($o['lembaga']) ?></span><?php endif; ?>
             </td>
             <td class="tabel-panjang"><?= e(mb_strimwidth($o['kebutuhan'], 0, 110, '…')) ?></td>

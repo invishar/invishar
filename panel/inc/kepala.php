@@ -7,12 +7,12 @@ $judul = $judul ?? 'Panel';
 $menu  = $menu ?? '';
 
 $daftarMenu = [
-    'ringkasan'  => ['Ringkasan',       'index.php'],
-    'order'      => ['Order jasa',      'order.php'],
-    'kelas'      => ['Kelas',           'kelas.php'],
-    'inventaris' => ['Inventaris',      'inventaris.php'],
-    'aplikasi'   => ['Aplikasi',        'aplikasi.php'],
-    'pengaturan' => ['Pengaturan',      'pengaturan.php'],
+    'ringkasan'  => ['Ringkasan',  tautan()],
+    'order'      => ['Order jasa', tautan('order')],
+    'kelas'      => ['Kelas',      tautan('kelas')],
+    'inventaris' => ['Inventaris', tautan('inventaris')],
+    'aplikasi'   => ['Aplikasi',   tautan('aplikasi')],
+    'pengaturan' => ['Pengaturan', tautan('pengaturan')],
 ];
 
 $orderBaru = (int) ambilNilai("SELECT COUNT(*) FROM order_jasa WHERE status = 'baru'");
@@ -28,9 +28,9 @@ $orderBaru = (int) ambilNilai("SELECT COUNT(*) FROM order_jasa WHERE status = 'b
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400..600;1,9..40,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="aset/panel.css">
+<link rel="stylesheet" href="<?= e(aset('panel.css')) ?>">
 </head>
-<body>
+<body data-akar="<?= e(tautan()) ?>">
 
 <a class="skip" href="#isi">Lompat ke konten</a>
 
@@ -38,7 +38,7 @@ $orderBaru = (int) ambilNilai("SELECT COUNT(*) FROM order_jasa WHERE status = 'b
 
   <aside class="sisi" id="sisi">
     <div class="sisi-atas">
-      <a class="merek" href="index.php">
+      <a class="merek" href="<?= tautan() ?>">
         <span class="merek-tanda">iv</span>
         <span class="merek-teks">Panel<em>Invishar</em></span>
       </a>
@@ -58,7 +58,7 @@ $orderBaru = (int) ambilNilai("SELECT COUNT(*) FROM order_jasa WHERE status = 'b
     <div class="sisi-bawah">
       <p class="sisi-nama"><?= e($pengguna['nama']) ?></p>
       <p class="sisi-surel"><?= e($pengguna['surel']) ?></p>
-      <a class="sisi-keluar" href="keluar.php">Keluar</a>
+      <a class="sisi-keluar" href="<?= tautan('keluar') ?>">Keluar</a>
     </div>
   </aside>
 

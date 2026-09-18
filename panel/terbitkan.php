@@ -12,7 +12,7 @@ wajibMasuk();
    ============================================================================= */
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    pergi('kelas.php');
+    pergi(tautan('kelas'));
 }
 periksaCsrf();
 
@@ -20,11 +20,11 @@ $tujuan = rtrim((string) konfig('situs_data'), '/');
 
 if (!is_dir($tujuan) && !@mkdir($tujuan, 0755, true) && !is_dir($tujuan)) {
     pesan('Folder terbitan tidak bisa dibuat: ' . $tujuan, 'buruk');
-    pergi('kelas.php');
+    pergi(tautan('kelas'));
 }
 if (!is_writable($tujuan)) {
     pesan('Folder terbitan tidak bisa ditulis: ' . $tujuan, 'buruk');
-    pergi('kelas.php');
+    pergi(tautan('kelas'));
 }
 
 /** Tulis lewat berkas sementara supaya pembaca tidak pernah melihat isi separuh. */
@@ -100,7 +100,7 @@ foreach ($daftarKelas as $k) {
 
     if (!tulisJson($tujuan . '/course-' . $k['slug'] . '.json', $isiKelas)) {
         pesan('Gagal menulis berkas kelas "' . $k['judul'] . '".', 'buruk');
-        pergi('kelas.php');
+        pergi(tautan('kelas'));
     }
     $jumlahBerkas++;
 
@@ -126,7 +126,7 @@ foreach ($daftarKelas as $k) {
 
 if (!tulisJson($tujuan . '/kelas.json', ['kategori' => $kategori, 'daftar' => $kartu])) {
     pesan('Gagal menulis daftar kelas.', 'buruk');
-    pergi('kelas.php');
+    pergi(tautan('kelas'));
 }
 
 /* Buang berkas kelas yang kelasnya sudah dihapus, supaya tidak ada halaman
@@ -141,4 +141,4 @@ foreach (glob($tujuan . '/course-*.json') ?: [] as $berkas) {
 
 catatLog('terbitkan kelas', $jumlahBerkas . ' kelas');
 pesan('Diterbitkan: ' . $jumlahBerkas . ' kelas. Situs sudah memakai data terbaru.');
-pergi('kelas.php');
+pergi(tautan('kelas'));

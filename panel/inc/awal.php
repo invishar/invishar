@@ -101,7 +101,7 @@ function wajibMasuk(): array
     $pengguna = penggunaKini();
     if ($pengguna === null) {
         $_SESSION['tujuan'] = $_SERVER['REQUEST_URI'] ?? 'index.php';
-        pergi('masuk.php');
+        pergi(tautan('masuk'));
     }
     return $pengguna;
 }
@@ -129,6 +129,31 @@ function periksaCsrf(): void
         http_response_code(400);
         exit('Permintaan tidak sah. Muat ulang halaman lalu coba lagi.');
     }
+}
+
+/* ------------------------------------------------------------- Alamat URL */
+
+/* Akar panel: kosong kalau dipasang di akar subdomain, '/panel' kalau di
+   dalam folder. Dihitung dari jalur skrip supaya panel bisa berpindah tempat
+   tanpa satu pun tautan perlu disunting. */
+define('AKAR', rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/'));
+
+function tautan(string $jalur = ''): string
+{
+    return AKAR . '/' . ltrim($jalur, '/');
+}
+
+/**
+ * Alamat berkas aset berikut penanda versi dari waktu ubahnya.
+ *
+ * Server menyajikan CSS dan JS dengan `Cache-Control: immutable` selama 30
+ * hari — peramban tidak memeriksa ulang bahkan saat di-refresh. Tanpa penanda
+ * ini, tampilan lama bisa bertahan berminggu-minggu setelah kodenya berubah.
+ */
+function aset(string $berkas): string
+{
+    $penuh = dirname(__DIR__) . '/aset/' . $berkas;
+    return tautan('aset/' . $berkas) . '?v=' . (is_file($penuh) ? filemtime($penuh) : 0);
 }
 
 /* ------------------------------------------------------------ Alat bantu */

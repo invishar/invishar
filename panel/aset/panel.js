@@ -348,7 +348,7 @@
       tombol.disabled = true;
       tombol.textContent = "Menyusun…";
 
-      fetch("api-ai.php", {
+      fetch((document.body.dataset.akar || "") + "api-ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ csrf: csrf, tugas: tugas, konteks: konteks }),

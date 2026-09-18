@@ -8,7 +8,7 @@ $kelas = ambilSatu('SELECT * FROM kelas WHERE id = ?', [$id]);
 
 if ($kelas === null) {
     pesan('Kelas tidak ditemukan.', 'buruk');
-    pergi('kelas.php');
+    pergi(tautan('kelas'));
 }
 
 /* Detail tambahan disimpan sebagai JSON supaya menambah bidang baru tidak
@@ -104,12 +104,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Menghapusnya membuang seluruh modul dan materi sekaligus.
         if (jumlahMateriKelas($id) > 0 && masukan('konfirmasi') !== $kelas['judul']) {
             pesan('Judul kelas tidak cocok — penghapusan dibatalkan.', 'buruk');
-            pergi('kelas-edit.php?id=' . $id);
+            pergi(tautan('kelas/' . $id));
         }
         q('DELETE FROM kelas WHERE id = ?', [$id]);
         catatLog('hapus kelas', $kelas['judul']);
         pesan('Kelas "' . $kelas['judul'] . '" dihapus.');
-        pergi('kelas.php');
+        pergi(tautan('kelas'));
     }
 
     if ($aksi === 'simpan_kelas') {
@@ -121,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $slug = slugkan(masukan('slug') !== '' ? masukan('slug') : masukan('judul'));
             if (ambilNilai('SELECT id FROM kelas WHERE slug = ? AND id <> ?', [$slug, $id]) !== null) {
                 pesan('Slug "' . $slug . '" sudah dipakai kelas lain.', 'buruk');
-                pergi('kelas-edit.php?id=' . $id);
+                pergi(tautan('kelas/' . $id));
             }
             if ($slug !== $kelas['slug']) {
                 catatLog('ubah slug kelas', $kelas['slug'] . ' → ' . $slug);
@@ -156,7 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
         catatLog('ubah kelas', masukan('judul'));
         pesan('Kelas disimpan. Tekan Terbitkan supaya situs ikut berubah.');
-        pergi('kelas-edit.php?id=' . $id);
+        pergi(tautan('kelas/' . $id));
     }
 
     if ($aksi === 'simpan_modul') {
@@ -175,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             pesan('Modul ditambahkan.');
         }
         q('UPDATE kelas SET diperbarui_pada = NOW() WHERE id = ?', [$id]);
-        pergi('kelas-edit.php?id=' . $id);
+        pergi(tautan('kelas/' . $id));
     }
 
     if ($aksi === 'hapus_modul') {
@@ -183,7 +183,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         q('UPDATE kelas SET diperbarui_pada = NOW() WHERE id = ?', [$id]);
         catatLog('hapus modul', $kelas['judul']);
         pesan('Modul dihapus beserta materinya.');
-        pergi('kelas-edit.php?id=' . $id);
+        pergi(tautan('kelas/' . $id));
     }
 
     if ($aksi === 'simpan_materi') {
@@ -222,7 +222,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             q('UPDATE kelas SET diperbarui_pada = NOW() WHERE id = ?', [$id]);
         }
-        pergi('kelas-edit.php?id=' . $id);
+        pergi(tautan('kelas/' . $id));
     }
 
     if ($aksi === 'hapus_materi') {
@@ -230,7 +230,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             [(int) ($_POST['materi_id'] ?? 0), $id]);
         q('UPDATE kelas SET diperbarui_pada = NOW() WHERE id = ?', [$id]);
         pesan('Materi dihapus.');
-        pergi('kelas-edit.php?id=' . $id);
+        pergi(tautan('kelas/' . $id));
     }
 
     /* Menerima kerangka usulan AI: modul beserta materinya sekaligus.
@@ -269,10 +269,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         q('UPDATE kelas SET diperbarui_pada = NOW() WHERE id = ?', [$id]);
         catatLog('terapkan kerangka AI', $kelas['judul']);
         pesan($jmlModul . ' modul dan ' . $jmlMateri . ' materi ditambahkan. ID video masih kosong — isi satu per satu.');
-        pergi('kelas-edit.php?id=' . $id);
+        pergi(tautan('kelas/' . $id));
     }
 
-    pergi('kelas-edit.php?id=' . $id);
+    pergi(tautan('kelas/' . $id));
 }
 
 /* ---------------------------------------------------------------- Tampilan */
@@ -295,7 +295,7 @@ require __DIR__ . '/inc/kepala.php';
 ?>
 
 <p class="remah">
-  <a href="kelas.php">&larr; Semua kelas</a>
+  <a href="<?= tautan('kelas') ?>">&larr; Semua kelas</a>
   <a class="tautan-lain" href="https://invishar.com/course.html?k=<?= e($kelas['slug']) ?>" target="_blank" rel="noopener">Lihat di situs &nearr;</a>
 </p>
 
@@ -768,7 +768,7 @@ require __DIR__ . '/inc/kepala.php';
         <span class="titik-hijau"></span> Situs sudah memakai versi terbaru
       <?php endif; ?>
     </p>
-    <form method="post" action="terbitkan.php" class="sebaris">
+    <form method="post" action="<?= tautan('terbitkan') ?>" class="sebaris">
       <?= csrfInput() ?>
       <button class="tbl tbl-kecil" type="submit">Terbitkan</button>
     </form>
