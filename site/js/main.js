@@ -101,39 +101,61 @@
 
   /* ------------------------------------------------------------ 4. Form kontak */
   /*
-     Saat ini form berjalan dalam mode demo: tidak mengirim ke mana pun,
-     hanya mengubah teks tombol — persis seperti di desain aslinya.
+     Dua mode, ditentukan oleh atribut pada <form> di index.html:
 
-     Untuk mengaktifkan pengiriman sungguhan, pilih salah satu:
+     a) data-kirim="https://panel.invishar.com/api-pesan.php"
+        Pesan dikirim ke panel admin dan muncul sebagai order jasa.
 
-     a) Layanan form (paling cepat, tanpa server). Di index.html ubah:
-          <form ... action="https://formspree.io/f/KODE-ANDA" method="post">
-        lalu HAPUS atribut data-demo. Blok di bawah akan melepas form
-        ke pengiriman normal.
-
-     b) Endpoint sendiri. Hapus data-demo, lalu ganti blok ini dengan fetch()
-        ke API Anda.
-
-     c) Arahkan ke WhatsApp: rakit teks pesan dari isian form lalu
-        window.location = "https://wa.me/628120000000?text=" + encodeURIComponent(teks);
+     b) data-demo
+        Mode sekarang: tidak mengirim ke mana pun, hanya mengubah teks tombol.
+        Dipakai selama panel belum hidup — begitu panel siap, ganti data-demo
+        menjadi data-kirim dengan alamat di atas.
   */
   var form = document.getElementById("form-kontak");
+  var tombol = document.getElementById("tombol-kirim");
+  var catatan = document.getElementById("form-note");
+
+  function tandaiTerkirim() {
+    form.classList.add("is-sent");
+    if (tombol) {
+      tombol.textContent = "Terima kasih — segera kami balas";
+      tombol.disabled = true;
+    }
+    if (catatan) catatan.textContent = "Pesan tercatat. Dibalas dalam 1–2 hari kerja.";
+  }
 
   if (form && form.hasAttribute("data-demo")) {
     form.addEventListener("submit", function (e) {
       e.preventDefault();
+      tandaiTerkirim();
+    });
+  }
 
-      var tombol = document.getElementById("tombol-kirim");
-      var catatan = document.getElementById("form-note");
+  if (form && form.dataset.kirim) {
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
 
-      form.classList.add("is-sent");
       if (tombol) {
-        tombol.textContent = "Terima kasih — segera kami balas";
         tombol.disabled = true;
+        tombol.textContent = "Mengirim…";
       }
-      if (catatan) {
-        catatan.textContent = "Pesan tercatat. Dibalas dalam 1–2 hari kerja.";
-      }
+
+      fetch(form.dataset.kirim, { method: "POST", body: new FormData(form) })
+        .then(function (jawab) {
+          if (!jawab.ok) throw new Error(String(jawab.status));
+          tandaiTerkirim();
+        })
+        .catch(function () {
+          // Jangan pura-pura terkirim: beri jalan lain supaya pesannya tidak hilang.
+          if (tombol) {
+            tombol.disabled = false;
+            tombol.textContent = "Kirim pesan";
+          }
+          if (catatan) {
+            catatan.textContent = "Pesan gagal terkirim. Hubungi kami lewat WhatsApp di bawah.";
+          }
+          form.classList.add("is-failed");
+        });
     });
   }
 

@@ -1,0 +1,38 @@
+# ==========================================================================
+# Panel Invishar — konfigurasi Apache untuk panel.invishar.com
+# ==========================================================================
+
+DirectoryIndex index.php
+
+# --- Paksa HTTPS ---------------------------------------------------------
+# Panel memakai kata sandi dan kuki sesi; tanpa ini keduanya bisa terbaca
+# di jaringan yang sama.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# --- Folder yang tidak boleh diakses dari luar ---------------------------
+# inc/ berisi konfig.php dengan kata sandi basis data.
+RedirectMatch 404 ^/inc(/.*)?$
+
+# Skema dan data awal tidak perlu bisa diunduh siapa pun.
+<FilesMatch "\.(sql|json|md)$">
+  Require all denied
+</FilesMatch>
+
+# --- Kepala keamanan -----------------------------------------------------
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set Referrer-Policy "same-origin"
+  Header always set Strict-Transport-Security "max-age=31536000"
+</IfModule>
+
+# Panel tidak untuk mesin pencari.
+<IfModule mod_headers.c>
+  Header set X-Robots-Tag "noindex, nofollow"
+</IfModule>
+
+Options -Indexes

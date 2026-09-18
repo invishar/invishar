@@ -893,6 +893,18 @@ section[id] { scroll-margin-top: 76px; }
 }
 .form textarea { resize: vertical; }
 
+/* Perangkap robot: harus tetap ada di DOM, tapi tidak boleh terlihat maupun
+   terbaca pembaca layar. display:none dihindari karena sebagian pengirim
+   otomatis justru melewatinya. */
+.jebakan {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .form-note {
   font-size: 13px;
   color: var(--ink-55);
@@ -900,6 +912,7 @@ section[id] { scroll-margin-top: 76px; }
   text-align: center;
 }
 .form.is-sent .form-note { color: var(--green-700); font-weight: 500; }
+.form.is-failed .form-note { color: #a23a2a; font-weight: 500; }
 
 /* -------------------------------------------------------------- 16. Footer */
 .footer { background: var(--ink); color: var(--on-dark); }

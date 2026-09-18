@@ -1,9 +1,11 @@
 # Rencana Panel Admin Invishar
 
-Dokumen perencanaan untuk **panel.invishar.com**. Belum ada kode yang ditulis;
-berkas ini dulu yang disepakati.
+Dokumen rencana dan rujukan untuk **panel.invishar.com**.
 
-Status: **draf** · Disusun 18 September 2026
+Status: **tahap 0–3 sudah ditulis**, menunggu subdomain dan basis data dibuat
+di cPanel. Cara memasangnya ada di bagian 9.
+
+Disusun 18 September 2026
 
 ---
 
@@ -25,16 +27,16 @@ sendiri bagian yang memang belum punya admin.
 
 **Yang TIDAK dikerjakan panel:**
 
-- Mengelola order, produk, dan keuangan catatorder — sudah ada admin-nya sendiri
-  (`Orders`, `Products`, `Customers`, `Expenses`, `BankAccounts`, `Analytics`).
-- Mengelola data amanafinance.
-- Menarik dan menggabungkan angka dari kedua aplikasi itu. **Menyusul**, setelah
-  keduanya mapan di Domainesia. Untuk sekarang panel hanya menautkannya.
+- Mengurus isi amanafinance dan catatorder. Keduanya **produk**, bukan bagian
+  administrasi Invishar: angka order dan pengeluaran di dalamnya milik pengguna
+  masing-masing aplikasi, bukan pembukuan Invishar. Panel hanya menautkannya.
+- Menggabungkan angka dari kedua produk itu ke ringkasan. **Menyusul.** Kalau
+  nanti dikerjakan, yang ditarik adalah angka yang memang milik Invishar —
+  jumlah pengguna dan langganan aktif — bukan isi buku pengguna.
 
-Menyatukan data keuangan dari dua aplikasi ke panel terlalu dini: selama
-sumbernya masih berpindah hosting, angka di panel berisiko berbeda dengan angka
-di aplikasi aslinya — dan angka keuangan yang berbeda lebih buruk daripada tidak
-ada angka sama sekali.
+Perbedaan ini penting karena mudah tergelincir: menaruh omzet pengguna
+catatorder di ringkasan Invishar akan menghasilkan angka yang kelihatan resmi
+padahal salah arti.
 
 ---
 
@@ -218,26 +220,66 @@ sangat menolong saat suatu hari muncul pertanyaan "kenapa harganya berubah".
 
 ## 7. Urutan pengerjaan
 
-| Tahap | Isi | Hasil yang bisa dilihat |
+| Tahap | Isi | Keadaan |
 | --- | --- | --- |
-| 0 | Subdomain, basis data, kerangka panel, login | Bisa masuk ke panel kosong |
-| 1 | Menu Aplikasi + Ringkasan sederhana | Satu pintu masuk ke semua admin |
-| 2 | Admin kelas + tombol Terbitkan | Kelas bisa diubah tanpa menyentuh kode |
-| 3 | Order jasa + form kontak disambungkan | Tidak ada lagi calon klien yang hilang |
-| 4 | Editor konten website | Teks landing bisa diubah sendiri |
-| 5 | Inventaris aset kantor | Barang kantor tercatat, tidak lagi dari ingatan |
-| 6 | Integrasi angka amanafinance & catatorder | Ringkasan keuangan lintas aplikasi |
+| 0 | Kerangka panel, login, pemasang | **Sudah ditulis** |
+| 1 | Menu Aplikasi + Ringkasan | **Sudah ditulis** |
+| 2 | Admin kelas + tombol Terbitkan | **Sudah ditulis** |
+| 3 | Order jasa + penerima form kontak | **Sudah ditulis** |
+| 5 | Inventaris aset kantor | **Sudah ditulis** (dimajukan, kecil) |
+| 4 | Editor konten website | Belum |
+| 6 | Integrasi angka produk | Belum, menunggu keduanya mapan di Domainesia |
 
-Tahap 2 dan 3 yang paling mendesak: satu menutup pekerjaan manual yang sekarang
-Anda lakukan, satu lagi menutup kebocoran calon klien.
+Semuanya masih **belum pernah dijalankan** — di komputer ini tidak ada PHP,
+jadi pengujian sungguhan baru bisa dilakukan setelah dipasang di server.
 
 ---
 
-## 8. Yang masih perlu dipastikan
+## 8. Berkas panel
+
+```
+panel/
+├── pasang.php        pemasang sekali pakai: bikin tabel + akun + isi awal
+├── masuk.php         login (dibatasi 8 percobaan per 15 menit)
+├── index.php         ringkasan
+├── order.php         daftar order jasa + catat manual
+├── order-detail.php  ubah status, nilai, catatan, riwayat
+├── kelas.php         daftar kelas + tombol Terbitkan
+├── kelas-edit.php    keterangan kelas, modul, dan materi
+├── terbitkan.php     menulis JSON ke folder data/ di public_html
+├── inventaris.php    aset kantor
+├── aplikasi.php      tautan ke admin tiap produk
+├── pengaturan.php    akun, kata sandi, jejak perubahan
+├── api-pesan.php     penerima form kontak invishar.com
+├── skema.sql         seluruh tabel
+├── isi-awal.json     kelas yang sekarang tayang, untuk mengisi panel
+└── inc/              konfigurasi, basis data, sesi, tata letak
+```
+
+---
+
+## 9. Cara memasang
+
+1. **cPanel → Subdomains**: buat `panel.invishar.com`. Catat *Document Root*-nya.
+2. **cPanel → MySQL Databases**: buat basis data + pengguna, beri hak penuh.
+3. Buka `.cpanel.yml`, hapus tanda pagar pada dua baris tugas panel, dan
+   sesuaikan tujuannya dengan Document Root tadi. Lalu `git push cpanel main`.
+4. Di server, salin `panel/inc/konfig.contoh.php` menjadi `panel/inc/konfig.php`,
+   isi data basis data dan `situs_data` (biasanya `/home/invishar/public_html/data`).
+   Berkas ini tidak ikut Git, jadi aman dari penimpaan saat deploy.
+5. Buka `https://panel.invishar.com/pasang.php`, isi nama, surel, dan kata sandi.
+6. **Hapus `pasang.php` dari server.**
+7. Masuk ke panel, buka **Kelas**, tekan **Terbitkan** sekali supaya situs mulai
+   memakai data panel.
+8. Di `site/index.html`, ganti `data-demo` pada form kontak menjadi
+   `data-kirim="https://panel.invishar.com/api-pesan.php"`, lalu deploy.
+   Sejak saat itu pesan masuk muncul di menu Order jasa.
+
+---
+
+## 10. Yang masih perlu dipastikan
 
 1. Versi PHP dan jatah MySQL pada paket Domainesia yang sekarang.
-2. Subdomain `panel.invishar.com` perlu dibuat di cPanel, lalu `.cpanel.yml`
-   ditambah satu tugas salin ke folder tujuannya.
-3. Form kontak invishar.com: langsung disambungkan ke panel pada tahap 3, atau
-   sementara dilempar ke WhatsApp dulu?
+2. Document Root subdomain `panel.invishar.com`, untuk mengisi `.cpanel.yml`.
+3. Apakah folder `public_html/data` bisa ditulis oleh proses PHP panel.
 4. Pencadangan basis data — siapa dan seberapa sering.

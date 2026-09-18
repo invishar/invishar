@@ -25,12 +25,25 @@ site/
 Alurnya tiga lapis: menu **Kelas** → `kelas.html` (galeri) → `course.html`
 (detail satu kelas) → `materi.html` (menonton materi).
 
+### Dari mana isinya datang
+
+Dua lapis, dicoba berurutan:
+
+1. **`data/*.json`** — terbitan panel admin (`panel/terbitkan.php`). Folder ini
+   hanya ada di server, tidak dilacak Git, dan tidak tertimpa deploy.
+2. **`js/kelas-data.js` + `js/course-data.js`** — data bawaan, dipakai kalau (1)
+   belum ada atau gagal dimuat.
+
+Artinya situs tetap hidup walau panel belum dipasang atau sedang mati. Kelas
+mana yang dibuka ditentukan `?k=<slug>` di alamat `course.html` dan
+`materi.html`; tanpa itu, kelas pertama pada daftar yang dipakai.
+
 ### Galeri — `kelas.html`
 
-Daftarnya diambil dari **`js/kelas-data.js`**. Untuk sekarang baru satu kelas
-yang materinya benar-benar ada, sisanya contoh — karena itu semua kartu masih
-mengarah ke `course.html` yang sama. Begitu tiap kelas punya berkas datanya
-sendiri, `tautan` tinggal diisi `course.html?k=<slug>`.
+Selama panel belum menerbitkan apa pun, daftarnya diambil dari
+**`js/kelas-data.js`**. Di sana baru satu kelas yang materinya benar-benar ada,
+sisanya contoh — karena itu semua kartu cadangan mengarah ke `course.html` yang
+sama.
 
 Galeri juga menampilkan sambungan **"Sedang Anda jalani"** kalau progres kelas
 sudah tercatat di peramban, langsung menuju materi berikutnya.

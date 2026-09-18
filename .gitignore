@@ -11,3 +11,10 @@ desktop.ini
 # Log & sementara
 *.log
 tmp/
+
+# Konfigurasi panel — berisi kata sandi basis data, hanya ada di server
+panel/inc/konfig.php
+
+# Berkas terbitan panel. Tempatnya di public_html/data pada server, dibuat
+# oleh tombol Terbitkan. Sengaja tidak dilacak Git supaya tidak tertimpa deploy.
+site/data/

@@ -321,7 +321,8 @@
       </div>
     </div>
 
-    <!-- Form belum terhubung ke mana pun (mode demo). Cara mengaktifkan ada di js/main.js. -->
+    <!-- Mode demo: belum mengirim ke mana pun. Begitu panel admin hidup, ganti
+         data-demo menjadi data-kirim="https://panel.invishar.com/api-pesan.php" -->
     <form class="form" id="form-kontak" data-demo action="#" method="post" data-reveal="100">
       <div class="field">
         <label for="nama">Nama</label>
@@ -335,6 +336,9 @@
         <label for="pesan">Yang ingin dibereskan</label>
         <textarea id="pesan" name="pesan" rows="4" placeholder="Mis. pencatatan keuangan pesantren masih di buku tulis&hellip;" required></textarea>
       </div>
+      <!-- Perangkap robot: tersembunyi dari manusia, hanya diisi oleh pengirim otomatis. -->
+      <input class="jebakan" type="text" name="alamat" tabindex="-1" autocomplete="off" aria-hidden="true">
+
       <button class="btn btn-solid btn-block" type="submit" id="tombol-kirim">Kirim pesan</button>
       <p class="form-note" id="form-note">Dibalas dalam 1&ndash;2 hari kerja.</p>
     </form>

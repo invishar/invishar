@@ -1,0 +1,344 @@
+{
+  "kategori": [
+    "Semua",
+    "Data & Analitik",
+    "Otomatisasi",
+    "Web & Aplikasi",
+    "Dasar"
+  ],
+  "kelas": [
+    {
+      "slug": "dashboard-sosial-media",
+      "judul": "Membuat Dashboard Sosial Media",
+      "kategori": "Data & Analitik",
+      "ringkas": "Dari menarik data mentah sampai grafik yang enak dibaca klien. Satu proyek nyata, dikerjakan bareng sampai jadi.",
+      "level": "Pemula — Menengah",
+      "harga": "Rp 249rb",
+      "status": "Dibuka",
+      "ikon": "grafik",
+      "urutan": 0,
+      "detail": {
+        "kicker": "Kelas unggulan",
+        "bahasa": "Bahasa Indonesia",
+        "akses": "Akses selamanya",
+        "pengajar": {
+          "nama": "Tim Invishar",
+          "peran": "Studio produk digital"
+        },
+        "ikhtisar": {
+          "hasil": [
+            "Menarik data dari API sosial media dan menyimpannya dengan rapi.",
+            "Membersihkan metrik yang berantakan jadi satu tabel yang bisa dipercaya.",
+            "Memilih bentuk grafik yang jujur, bukan yang sekadar terlihat ramai.",
+            "Menyusun tata letak dashboard yang terbaca dalam sepuluh detik.",
+            "Menerbitkan dashboard dan mengirim laporan otomatis tiap pekan."
+          ],
+          "untukSiapa": [
+            "Pengelola sosial media yang capek menyalin angka ke spreadsheet tiap bulan.",
+            "Freelancer yang ingin menaikkan nilai laporan ke klien.",
+            "Staf lembaga atau sekolah yang mengurus akun resmi."
+          ],
+          "syarat": [
+            "Bisa memakai spreadsheet pada tingkat dasar.",
+            "Punya akun sosial media yang datanya boleh dipakai latihan.",
+            "Tidak perlu bisa memrogram — semua langkah dipandu."
+          ]
+        },
+        "sumber": [
+          {
+            "judul": "Berkas proyek",
+            "desc": "Data contoh, templat spreadsheet, dan berkas awal untuk tiap modul.",
+            "aksi": "Unduh",
+            "url": "#"
+          },
+          {
+            "judul": "Lembar contekan metrik",
+            "desc": "Satu halaman berisi definisi metrik dan rumus yang dipakai di kelas.",
+            "aksi": "Buka",
+            "url": "#"
+          },
+          {
+            "judul": "Templat dashboard",
+            "desc": "Tata letak siap pakai yang tinggal Anda sambungkan ke data sendiri.",
+            "aksi": "Unduh",
+            "url": "#"
+          },
+          {
+            "judul": "Grup tanya jawab",
+            "desc": "Tempat bertanya kalau ada langkah yang macet di tengah jalan.",
+            "aksi": "Gabung",
+            "url": "#kontak"
+          }
+        ],
+        "tanya": [
+          {
+            "q": "Saya sama sekali belum pernah memrogram, bisa ikut?",
+            "a": "Bisa. Semua langkah dipandu dari awal dan berkas proyek sudah disiapkan. Yang dibutuhkan hanya kemampuan dasar memakai spreadsheet dan kesediaan mengerjakan sambil menonton."
+          },
+          {
+            "q": "Berapa lama akses kelasnya?",
+            "a": "Selamanya. Rekaman dan berkas proyek tetap bisa dibuka, termasuk materi tambahan yang kami sisipkan setelah kelas dirilis."
+          },
+          {
+            "q": "Apakah materinya bisa dipakai untuk platform selain yang dicontohkan?",
+            "a": "Ya. Cara menarik data memang berbeda tiap platform, tetapi alur membersihkan data, memilih grafik, dan menyusun dashboard berlaku sama di mana pun."
+          },
+          {
+            "q": "Kalau macet di tengah materi, bagaimana?",
+            "a": "Kirim pertanyaan lewat grup tanya jawab atau kontak di halaman utama. Pertanyaan yang sering muncul kami jawab dengan menambah materi baru di kelas ini."
+          }
+        ]
+      },
+      "modul": [
+        {
+          "judul": "Menyiapkan sumber data",
+          "materi": [
+            {
+              "kode": "m01",
+              "judul": "Selamat datang & cara memakai kelas ini",
+              "durasi": "6 mnt",
+              "youtube_id": "aircAruvnKk",
+              "ringkas": "Gambaran isi kelas, berkas proyek yang perlu diunduh, dan urutan belajar yang disarankan. Tonton ini dulu supaya materi berikutnya terasa nyambung.",
+              "poin": "Unduh berkas proyek sebelum lanjut ke materi berikutnya.\nKerjakan sambil menonton — jangan ditonton habis dulu.\nSetiap materi punya satu hasil yang bisa dilihat di layar Anda."
+            },
+            {
+              "kode": "m02",
+              "judul": "Mengenali metrik yang benar-benar penting",
+              "durasi": "14 mnt",
+              "youtube_id": "M7lc1UVf-VE",
+              "ringkas": "Jangkauan, tayangan, interaksi, klik — banyak angka terlihat mirip padahal artinya jauh berbeda. Di sini kita pilih metrik mana yang layak masuk dashboard.",
+              "poin": "Bedakan metrik jangkauan dan metrik interaksi.\nSatu pertanyaan bisnis cukup dijawab dua sampai tiga metrik.\nMetrik kesombongan: kelihatan besar, tidak bisa ditindaklanjuti."
+            },
+            {
+              "kode": "m03",
+              "judul": "Izin API & kunci akses",
+              "durasi": "18 mnt",
+              "youtube_id": "ysz5S6PUM-U",
+              "ringkas": "Mendaftarkan aplikasi, meminta izin yang secukupnya, dan menyimpan kunci akses supaya tidak bocor ke repositori publik.",
+              "poin": "Minta cakupan izin paling sempit yang masih cukup.\nKunci akses tidak pernah ditulis langsung di dalam kode.\nSiapkan cara memperbarui token sebelum kedaluwarsa."
+            }
+          ]
+        },
+        {
+          "judul": "Mengolah data",
+          "materi": [
+            {
+              "kode": "m04",
+              "judul": "Menarik data pertama Anda",
+              "durasi": "21 mnt",
+              "youtube_id": "jNQXAC9IVRw",
+              "ringkas": "Permintaan pertama ke API, membaca jawabannya, dan menyimpannya sebagai berkas mentah yang tidak pernah kita ubah lagi.",
+              "poin": "Simpan jawaban mentah apa adanya sebagai cadangan.\nBatas permintaan (rate limit) diperhitungkan sejak awal.\nBeri nama berkas dengan tanggal supaya mudah dilacak."
+            },
+            {
+              "kode": "m05",
+              "judul": "Membersihkan dan menyatukan metrik",
+              "durasi": "24 mnt",
+              "youtube_id": "aircAruvnKk",
+              "ringkas": "Tanggal beda format, nama kolom beda ejaan, angka yang sebenarnya teks. Kita rapikan semuanya jadi satu tabel siap pakai.",
+              "poin": "Satu baris = satu unggahan pada satu tanggal.\nSelesaikan zona waktu di awal, bukan saat membuat grafik.\nNilai kosong ditandai, bukan diam-diam diisi nol."
+            },
+            {
+              "kode": "m06",
+              "judul": "Menghitung pertumbuhan tanpa menipu diri",
+              "durasi": "16 mnt",
+              "youtube_id": "M7lc1UVf-VE",
+              "ringkas": "Rata-rata bergerak, perbandingan periode, dan kenapa kenaikan 300% dari angka tiga tidak pantas dijadikan berita utama.",
+              "poin": "Rata-rata tujuh hari meredam ramai harian.\nBandingkan dengan periode sepadan, bukan periode terbaik.\nAngka dasar yang kecil membuat persentase jadi menyesatkan."
+            }
+          ]
+        },
+        {
+          "judul": "Menyusun tampilan",
+          "materi": [
+            {
+              "kode": "m07",
+              "judul": "Memilih grafik yang tidak menipu",
+              "durasi": "19 mnt",
+              "youtube_id": "ysz5S6PUM-U",
+              "ringkas": "Garis, batang, atau angka besar saja? Kita cocokkan bentuk grafik dengan pertanyaan yang ingin dijawab pembacanya.",
+              "poin": "Perubahan waktu: garis. Perbandingan kategori: batang.\nSumbu batang selalu mulai dari nol.\nDiagram lingkaran hampir selalu ada penggantinya yang lebih baik."
+            },
+            {
+              "kode": "m08",
+              "judul": "Tata letak dashboard",
+              "durasi": "22 mnt",
+              "youtube_id": "jNQXAC9IVRw",
+              "ringkas": "Menyusun kartu ringkasan, grafik utama, dan tabel pendukung supaya pembaca paham keadaan hanya dari layar pertama.",
+              "poin": "Kesimpulan di atas, rincian di bawah.\nPaling banyak lima kartu ringkasan pada satu layar.\nSetiap grafik diberi judul yang menyatakan temuan, bukan nama kolom."
+            },
+            {
+              "kode": "m09",
+              "judul": "Warna, label, dan keterbacaan",
+              "durasi": "15 mnt",
+              "youtube_id": "aircAruvnKk",
+              "ringkas": "Palet yang konsisten, label yang tidak bertumpuk, dan kontras yang tetap terbaca di proyektor ruang rapat.",
+              "poin": "Satu warna aksen, sisanya netral.\nWarna jangan jadi satu-satunya pembeda.\nLabel langsung di garis lebih mudah dibaca daripada legenda."
+            }
+          ]
+        },
+        {
+          "judul": "Menerbitkan",
+          "materi": [
+            {
+              "kode": "m10",
+              "judul": "Menerbitkan dashboard & mengatur akses",
+              "durasi": "17 mnt",
+              "youtube_id": "M7lc1UVf-VE",
+              "ringkas": "Menaikkan dashboard ke hosting, memasang tautan berbagi, dan mengatur siapa yang boleh melihat apa.",
+              "poin": "Pisahkan tampilan klien dan tampilan internal.\nTautan rahasia bukan pengganti kata sandi.\nCatat tanggal pembaruan terakhir di sudut dashboard."
+            },
+            {
+              "kode": "m11",
+              "judul": "Laporan otomatis tiap pekan",
+              "durasi": "20 mnt",
+              "youtube_id": "ysz5S6PUM-U",
+              "ringkas": "Penjadwalan, ringkasan otomatis lewat surel atau WhatsApp, dan penutup: apa yang perlu Anda kerjakan setelah kelas ini.",
+              "poin": "Jadwalkan pada jam sepi supaya tidak bentrok dengan batas API.\nLaporan dibuka dengan satu kalimat kesimpulan.\nSiapkan pemberitahuan kalau pengambilan data gagal."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "otomatisasi-whatsapp",
+      "judul": "Otomatisasi WhatsApp untuk Usaha Kecil",
+      "kategori": "Otomatisasi",
+      "ringkas": "Bot pengingat tagihan, konfirmasi pesanan, dan laporan harian yang berjalan sendiri tanpa ditunggui.",
+      "level": "Menengah",
+      "harga": "Rp 349rb",
+      "status": "Segera",
+      "ikon": "pesan",
+      "urutan": 1,
+      "detail": {
+        "kicker": "Kelas",
+        "bahasa": "Bahasa Indonesia",
+        "akses": "Akses selamanya",
+        "pengajar": {
+          "nama": "Tim Invishar",
+          "peran": "Studio produk digital"
+        },
+        "ikhtisar": {
+          "hasil": [],
+          "untukSiapa": [],
+          "syarat": []
+        },
+        "sumber": [],
+        "tanya": []
+      },
+      "modul": []
+    },
+    {
+      "slug": "portal-sekolah",
+      "judul": "Merakit Portal Sekolah Sederhana",
+      "kategori": "Web & Aplikasi",
+      "ringkas": "Nilai, presensi, dan pengumuman dalam satu portal yang bisa dibuka wali murid dari ponsel.",
+      "level": "Menengah",
+      "harga": "Rp 449rb",
+      "status": "Segera",
+      "ikon": "tata",
+      "urutan": 2,
+      "detail": {
+        "kicker": "Kelas",
+        "bahasa": "Bahasa Indonesia",
+        "akses": "Akses selamanya",
+        "pengajar": {
+          "nama": "Tim Invishar",
+          "peran": "Studio produk digital"
+        },
+        "ikhtisar": {
+          "hasil": [],
+          "untukSiapa": [],
+          "syarat": []
+        },
+        "sumber": [],
+        "tanya": []
+      },
+      "modul": []
+    },
+    {
+      "slug": "spreadsheet-rapi",
+      "judul": "Spreadsheet yang Tidak Bikin Pusing",
+      "kategori": "Dasar",
+      "ringkas": "Menyusun data supaya bisa dipakai ulang: satu baris satu kejadian, rumus yang tidak patah, dan laporan yang ikut memperbarui diri.",
+      "level": "Pemula",
+      "harga": "Rp 149rb",
+      "status": "Baru",
+      "ikon": "kilau",
+      "urutan": 3,
+      "detail": {
+        "kicker": "Kelas",
+        "bahasa": "Bahasa Indonesia",
+        "akses": "Akses selamanya",
+        "pengajar": {
+          "nama": "Tim Invishar",
+          "peran": "Studio produk digital"
+        },
+        "ikhtisar": {
+          "hasil": [],
+          "untukSiapa": [],
+          "syarat": []
+        },
+        "sumber": [],
+        "tanya": []
+      },
+      "modul": []
+    },
+    {
+      "slug": "keuangan-keluarga",
+      "judul": "Mencatat Keuangan Keluarga dengan Rapi",
+      "kategori": "Dasar",
+      "ringkas": "Kebiasaan mencatat yang bertahan lebih dari sebulan, lalu membacanya jadi keputusan belanja yang lebih tenang.",
+      "level": "Pemula",
+      "harga": "Gratis",
+      "status": "Dibuka",
+      "ikon": "perisai",
+      "urutan": 4,
+      "detail": {
+        "kicker": "Kelas",
+        "bahasa": "Bahasa Indonesia",
+        "akses": "Akses selamanya",
+        "pengajar": {
+          "nama": "Tim Invishar",
+          "peran": "Studio produk digital"
+        },
+        "ikhtisar": {
+          "hasil": [],
+          "untukSiapa": [],
+          "syarat": []
+        },
+        "sumber": [],
+        "tanya": []
+      },
+      "modul": []
+    },
+    {
+      "slug": "konten-video-lembaga",
+      "judul": "Produksi Konten Video untuk Lembaga",
+      "kategori": "Otomatisasi",
+      "ringkas": "Alur kerja ringkas dari ide, rekam, potong, sampai jadwal tayang — cukup dikerjakan satu orang.",
+      "level": "Pemula — Menengah",
+      "harga": "Rp 199rb",
+      "status": "Segera",
+      "ikon": "video",
+      "urutan": 5,
+      "detail": {
+        "kicker": "Kelas",
+        "bahasa": "Bahasa Indonesia",
+        "akses": "Akses selamanya",
+        "pengajar": {
+          "nama": "Tim Invishar",
+          "peran": "Studio produk digital"
+        },
+        "ikhtisar": {
+          "hasil": [],
+          "untukSiapa": [],
+          "syarat": []
+        },
+        "sumber": [],
+        "tanya": []
+      },
+      "modul": []
+    }
+  ]
+}
