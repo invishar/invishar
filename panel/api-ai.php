@@ -100,23 +100,56 @@ function panggilAI(array $pesan, int $maxToken): string
     return (string) $isi;
 }
 
-/** Model kadang membungkus JSON dengan pagar kode; buang dulu sebelum diurai. */
-function uraiJson(string $teks): array
+/**
+ * Mengurai jawaban model jadi larik.
+ *
+ * Model tidak selalu patuh pada bentuk yang diminta: kadang dibungkus pagar
+ * kode, kadang diberi kalimat pengantar, dan cukup sering dibungkus larik satu
+ * unsur — `[{"ringkas":"…"}]` alih-alih `{"ringkas":"…"}`. Ketiganya ditangani
+ * di sini supaya penanganan tiap tugas tidak perlu mengulang-ulang.
+ *
+ * $wajib = false mengembalikan larik kosong, bukan menghentikan permintaan,
+ * untuk tugas yang jawabannya masih berguna walau berupa teks biasa.
+ */
+function uraiJson(string $teks, bool $wajib = true): array
 {
-    $teks = trim($teks);
-    $teks = (string) preg_replace('/^```(?:json)?|```$/m', '', $teks);
+    $teks = trim((string) preg_replace('/^```(?:json)?|```$/m', '', trim($teks)));
 
-    $awal = strpos($teks, '{');
-    $akhir = strrpos($teks, '}');
-    if ($awal !== false && $akhir !== false) {
-        $teks = substr($teks, $awal, $akhir - $awal + 1);
+    $hasil = json_decode($teks, true);
+
+    if (!is_array($hasil)) {
+        foreach ([['{', '}'], ['[', ']']] as [$buka, $tutup]) {
+            $awal  = strpos($teks, $buka);
+            $akhir = strrpos($teks, $tutup);
+            if ($awal !== false && $akhir !== false && $akhir > $awal) {
+                $hasil = json_decode(substr($teks, $awal, $akhir - $awal + 1), true);
+                if (is_array($hasil)) {
+                    break;
+                }
+            }
+        }
     }
 
-    $hasil = json_decode(trim($teks), true);
+    if (is_array($hasil) && array_is_list($hasil) && count($hasil) === 1 && is_array($hasil[0])) {
+        $hasil = $hasil[0];
+    }
+
     if (!is_array($hasil)) {
-        jawab(502, ['galat' => 'Jawaban AI tidak berbentuk JSON yang bisa dipakai.']);
+        if ($wajib) {
+            jawab(502, ['galat' => 'Jawaban AI tidak berbentuk JSON yang bisa dipakai. Coba sekali lagi.']);
+        }
+        return [];
     }
     return $hasil;
+}
+
+/** Mengambil daftar dari kunci yang diminta, atau dari larik telanjang. */
+function ambilDaftar(array $isi, string $kunci): array
+{
+    if (isset($isi[$kunci]) && is_array($isi[$kunci])) {
+        return $isi[$kunci];
+    }
+    return array_is_list($isi) ? $isi : [];
 }
 
 function teks(array $sumber, string $kunci, int $batas = 400): string
@@ -156,14 +189,26 @@ $dasar = "Judul kelas: \"$judul\"."
 
 switch ($tugas) {
     case 'ringkasan':
-        $isi = uraiJson(panggilAI([
+        $mentah = panggilAI([
             $sistem,
             ['role' => 'user', 'content' => "$dasar\n\n" .
                 "Buat JSON {\"ringkas\": \"…\"} berisi satu kalimat yang menjelaskan kelas ini " .
                 "kepada calon peserta. Maksimal 160 karakter. Sebut hasil nyata yang didapat, " .
                 "bukan janji kosong."],
-        ], 1600));
-        jawab(200, ['baik' => true, 'hasil' => ['ringkas' => (string) ($isi['ringkas'] ?? '')]]);
+        ], 2000);
+
+        $isi = uraiJson($mentah, false);
+        $ringkas = trim((string) ($isi['ringkas'] ?? ''));
+
+        // Kalau model menjawab kalimat biasa tanpa JSON, kalimat itu justru
+        // persis yang dibutuhkan — tidak perlu digagalkan.
+        if ($ringkas === '') {
+            $ringkas = trim($mentah, " \t\n\r\"'`");
+        }
+        if ($ringkas === '' || mb_strlen($ringkas) > 400) {
+            jawab(502, ['galat' => 'Jawaban AI tidak bisa dipakai. Coba sekali lagi.']);
+        }
+        jawab(200, ['baik' => true, 'hasil' => ['ringkas' => $ringkas]]);
 
     case 'ikhtisar':
         $isi = uraiJson(panggilAI([
@@ -188,7 +233,7 @@ switch ($tugas) {
                 "akses, dan hasil. Jawaban 1-2 kalimat, jujur, boleh menyebut keterbatasan."],
         ], 2500));
         $daftar = [];
-        foreach ((array) ($isi['tanya'] ?? []) as $t) {
+        foreach (ambilDaftar($isi, 'tanya') as $t) {
             if (!empty($t['q']) && !empty($t['a'])) {
                 $daftar[] = ['q' => (string) $t['q'], 'a' => (string) $t['a']];
             }
@@ -206,7 +251,7 @@ switch ($tugas) {
                 "Urutkan dari yang harus dikuasai lebih dulu."],
         ], 4000));
         $modul = [];
-        foreach ((array) ($isi['modul'] ?? []) as $m) {
+        foreach (ambilDaftar($isi, 'modul') as $m) {
             if (empty($m['judul'])) {
                 continue;
             }
