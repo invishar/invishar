@@ -112,6 +112,23 @@ dijelaskan sebagai komentar di `js/main.js`:
 3. **Lempar ke WhatsApp** — rakit teks dari isian form lalu arahkan ke
    `https://wa.me/…?text=…`.
 
+## Penanda versi berkas — **jangan dilupakan**
+
+Semua tautan ke CSS dan JS diberi akhiran `?v=20260918`. Ini bukan hiasan:
+server menyajikan CSS/JS dengan `Cache-Control: max-age=2592000, immutable`,
+artinya peramban menyimpannya **30 hari dan tidak memeriksa ulang walau
+di-refresh**. Tanpa penanda versi, pengunjung lama bisa memakai CSS lama
+bersama HTML baru — halaman jadi berantakan, dan gejalanya menyesatkan karena
+berkas di server sudah benar.
+
+**Setiap kali mengubah berkas di `css/` atau `js/`, ganti angka `?v=` di
+seluruh berkas HTML.** Pakai tanggal hari itu, misalnya `?v=20261025`.
+
+```bash
+cd site
+sed -i 's/?v=[0-9]\{8\}/?v=20261025/g' *.html
+```
+
 ## Catatan teknis
 
 - **Breakpoint mobile 760px**, mengikuti ambang `mob` di desain asli. Di bawah
