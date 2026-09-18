@@ -1,0 +1,234 @@
+/* =============================================================================
+   Invishar — galeri kelas (kelas.html)
+   Menampilkan daftar kelas dari js/kelas-data.js, menyaring per kategori dan
+   kata kunci, serta menampilkan sambungan "sedang Anda jalani" kalau progres
+   kelas sudah tercatat di peramban.
+   ============================================================================= */
+(function () {
+  "use strict";
+
+  var data = window.INVISHAR_KELAS;
+  if (!data) return;
+
+  var MOBILE = 760;
+
+  function $(sel) { return document.querySelector(sel); }
+  function buat(tag, kelasNama, teks) {
+    var el = document.createElement(tag);
+    if (kelasNama) el.className = kelasNama;
+    if (teks != null) el.textContent = teks;
+    return el;
+  }
+
+  /* --------------------------------------------------------- 1. Menu mobile */
+  (function () {
+    var burger = $("#burger");
+    var navLinks = $("#nav-links");
+    if (!burger || !navLinks) return;
+
+    function setMenu(buka) {
+      navLinks.classList.toggle("is-open", buka);
+      burger.setAttribute("aria-expanded", buka ? "true" : "false");
+      burger.setAttribute("aria-label", buka ? "Tutup menu" : "Buka menu");
+    }
+    burger.addEventListener("click", function () {
+      setMenu(!navLinks.classList.contains("is-open"));
+    });
+    navLinks.addEventListener("click", function (e) {
+      if (e.target.closest("a")) setMenu(false);
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && navLinks.classList.contains("is-open")) {
+        setMenu(false);
+        burger.focus();
+      }
+    });
+    document.addEventListener("click", function (e) {
+      if (!navLinks.classList.contains("is-open")) return;
+      if (e.target.closest(".nav-inner")) return;
+      setMenu(false);
+    });
+    window.addEventListener("resize", function () {
+      if (window.innerWidth > MOBILE) setMenu(false);
+    });
+  })();
+
+  /* ------------------------------------------------------------- 2. Gambar */
+  /* Gambar vektor sederhana untuk sampul kartu — tanpa berkas gambar supaya
+     halaman tetap ringan dan warnanya ikut token tema. */
+  var GAMBAR = {
+    grafik: ["M3 3v18h18", "M7 14l3-4 3 3 5-7"],
+    pesan: ["M21 11.5a7.5 7.5 0 0 1-7.5 7.5H8l-4 3v-4.9A7.5 7.5 0 0 1 8.5 4h5A7.5 7.5 0 0 1 21 11.5z", "M9 11h6"],
+    tata: ["M4 4h6v6H4z", "M14 4h6v3h-6z", "M14 11h6v9h-6z", "M4 14h6v6H4z"],
+    kilau: ["M12 3l2.2 5.3L20 10.5l-5.8 2.2L12 18l-2.2-5.3L4 10.5l5.8-2.2z", "M18.5 16.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z"],
+    perisai: ["M12 3l7.5 3v6c0 4.2-3.2 7.6-7.5 8.7C7.7 19.6 4.5 16.2 4.5 12V6z", "M9 12l2.2 2.2L15.5 10"],
+    video: ["M3.5 6.5h11v11h-11z", "M14.5 10.5l6-3.5v10l-6-3.5z"],
+  };
+
+  function gambar(nama) {
+    var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("aria-hidden", "true");
+    (GAMBAR[nama] || GAMBAR.kilau).forEach(function (d) {
+      var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", d);
+      path.setAttribute("stroke", "currentColor");
+      path.setAttribute("stroke-width", "1.6");
+      path.setAttribute("stroke-linecap", "round");
+      path.setAttribute("stroke-linejoin", "round");
+      svg.appendChild(path);
+    });
+    return svg;
+  }
+
+  /* ----------------------------------------------------- 3. Angka ringkasan */
+  var semua = data.daftar;
+
+  var totalMenit = semua.reduce(function (jml, k) {
+    var cocok = /(?:(\d+)\s*jam)?\s*(?:(\d+)\s*mnt)?/.exec(k.durasi) || [];
+    return jml + (parseInt(cocok[1], 10) || 0) * 60 + (parseInt(cocok[2], 10) || 0);
+  }, 0);
+
+  var ringkasan = [
+    [semua.length, "kelas"],
+    [semua.filter(function (k) { return k.status !== "Segera"; }).length, "sudah dibuka"],
+    [Math.round(totalMenit / 60) + " jam", "rekaman"],
+    [semua.reduce(function (j, k) { return j + k.materi; }, 0), "materi"],
+  ];
+
+  var wadahAngka = $("#g-angka");
+  ringkasan.forEach(function (baris) {
+    var li = document.createElement("li");
+    li.appendChild(buat("span", "angka-num", String(baris[0])));
+    li.appendChild(buat("span", "angka-lbl", baris[1]));
+    wadahAngka.appendChild(li);
+  });
+
+  /* ------------------------------------------------------------- 4. Kartu */
+  var grid = $("#g-grid");
+
+  semua.forEach(function (k, i) {
+    var kartu = document.createElement("a");
+    kartu.className = "kartu";
+    kartu.href = k.tautan;
+    kartu.dataset.kategori = k.kategori;
+    kartu.dataset.cari = (k.judul + " " + k.ringkas + " " + k.kategori + " " + k.level).toLowerCase();
+    kartu.dataset.nada = String(i % 4); // memilih perpaduan warna sampul di CSS
+
+    var sampul = buat("span", "sampul");
+    sampul.appendChild(buat("span", "sampul-status " + (k.status === "Segera" ? "is-nanti" : ""), k.status));
+    var lingkar = buat("span", "sampul-ikon");
+    lingkar.appendChild(gambar(k.ikon));
+    sampul.appendChild(lingkar);
+    sampul.appendChild(buat("span", "sampul-kategori", k.kategori));
+    kartu.appendChild(sampul);
+
+    var isi = buat("span", "kartu-isi");
+    isi.appendChild(buat("span", "kartu-judul", k.judul));
+    isi.appendChild(buat("span", "kartu-ringkas", k.ringkas));
+
+    var meta = buat("span", "kartu-meta");
+    [k.materi + " materi", k.durasi, k.level].forEach(function (teks) {
+      meta.appendChild(buat("span", null, teks));
+    });
+    isi.appendChild(meta);
+
+    var kaki = buat("span", "kartu-kaki");
+    kaki.appendChild(buat("span", "kartu-harga", k.harga));
+    kaki.appendChild(buat("span", "kartu-aksi", "Lihat kelas →"));
+    isi.appendChild(kaki);
+
+    kartu.appendChild(isi);
+    grid.appendChild(kartu);
+  });
+
+  /* ------------------------------------------------- 5. Saringan & pencarian */
+  var tabs = $("#g-tabs");
+  var cari = $("#g-cari");
+  var hitung = $("#g-hitung");
+  var kosong = $("#g-kosong");
+  var kategoriKini = "Semua";
+
+  data.kategori.forEach(function (nama) {
+    var tombol = document.createElement("button");
+    tombol.className = "tab" + (nama === "Semua" ? " is-on" : "");
+    tombol.type = "button";
+    tombol.textContent = nama;
+    tombol.setAttribute("aria-pressed", nama === "Semua" ? "true" : "false");
+    tombol.addEventListener("click", function () {
+      kategoriKini = nama;
+      tabs.querySelectorAll(".tab").forEach(function (t) {
+        var aktif = t === tombol;
+        t.classList.toggle("is-on", aktif);
+        t.setAttribute("aria-pressed", aktif ? "true" : "false");
+      });
+      saring();
+    });
+    tabs.appendChild(tombol);
+  });
+
+  function saring() {
+    var kata = cari.value.trim().toLowerCase();
+    var tampil = 0;
+
+    grid.querySelectorAll(".kartu").forEach(function (kartu) {
+      var cocokKategori = kategoriKini === "Semua" || kartu.dataset.kategori === kategoriKini;
+      var cocokKata = !kata || kartu.dataset.cari.indexOf(kata) !== -1;
+      var lolos = cocokKategori && cocokKata;
+      kartu.hidden = !lolos;
+      if (lolos) tampil++;
+    });
+
+    hitung.textContent = tampil === semua.length
+      ? semua.length + " kelas tersedia"
+      : tampil + " dari " + semua.length + " kelas";
+    kosong.hidden = tampil !== 0;
+  }
+
+  cari.addEventListener("input", saring);
+
+  $("#g-bersih").addEventListener("click", function () {
+    cari.value = "";
+    tabs.querySelector(".tab").click();
+    cari.focus();
+  });
+
+  saring();
+
+  /* -------------------------------------------------- 6. Sambungan belajar */
+  /* Memakai catatan progres yang sama dengan course.html / materi.html. */
+  (function () {
+    var kelas = window.INVISHAR_COURSE;
+    if (!kelas) return;
+
+    var semuaMateri = [];
+    kelas.modul.forEach(function (mod) {
+      (mod.materi || []).forEach(function (m) { semuaMateri.push(m); });
+    });
+    if (!semuaMateri.length) return;
+
+    var paham = [];
+    try {
+      paham = JSON.parse(localStorage.getItem("invishar.course." + kelas.slug + ".paham")) || [];
+    } catch (e) { return; }
+    if (!Array.isArray(paham) || !paham.length) return;
+
+    var selesai = semuaMateri.filter(function (m) { return paham.indexOf(m.id) !== -1; }).length;
+    if (!selesai) return;
+
+    var persen = Math.round((selesai / semuaMateri.length) * 100);
+    var berikut = semuaMateri.filter(function (m) { return paham.indexOf(m.id) === -1; })[0];
+
+    $("#g-lanjut-judul").textContent = kelas.judul;
+    $("#g-lanjut-persen").textContent = persen + "%";
+    $("#g-lanjut-ring").style.setProperty("--p", persen + "%");
+    $("#g-lanjut-sub").textContent = berikut
+      ? selesai + " dari " + semuaMateri.length + " materi · lanjut: " + berikut.judul
+      : "Semua materi sudah ditandai paham.";
+    $("#g-lanjut").href = berikut
+      ? "materi.html?m=" + encodeURIComponent(berikut.id)
+      : "course.html";
+    $("#g-lanjut-wrap").hidden = false;
+  })();
+})();

@@ -6,18 +6,36 @@ Tanpa build step, tanpa dependensi npm. Cukup tiga berkas + aset.
 ```
 site/
 ├── index.html          markup + seluruh isi teks
-├── course.html         halaman kelas: ikhtisar, daftar materi, sumber, tanya jawab
+├── kelas.html          galeri kelas yang tersedia — tujuan menu "Kelas"
+├── course.html         detail kelas: ikhtisar, daftar materi, sumber, tanya jawab
 ├── materi.html         halaman materi: video YouTube, ceklis paham, tombol lanjut
 ├── css/style.css       token warna/tipografi di :root, lalu komponen
-├── css/course.css      lanjutan style.css khusus halaman kelas & materi
+├── css/course.css      lanjutan style.css khusus galeri, detail kelas & materi
 ├── js/main.js          menu mobile, saringan katalog, FAQ, form, reveal
-├── js/course-data.js   ISI kelas (judul, modul, materi, ID video, tanya jawab)
-├── js/course.js        perilaku halaman kelas & materi
+├── js/kelas-data.js    DAFTAR kelas yang tampil di galeri
+├── js/kelas.js         perilaku galeri: saringan kategori, pencarian, sambungan belajar
+├── js/course-data.js   ISI satu kelas (judul, modul, materi, ID video, tanya jawab)
+├── js/course.js        perilaku detail kelas & halaman materi
 └── assets/
     └── invishar-logo.png
 ```
 
 ## Halaman kelas
+
+Alurnya tiga lapis: menu **Kelas** → `kelas.html` (galeri) → `course.html`
+(detail satu kelas) → `materi.html` (menonton materi).
+
+### Galeri — `kelas.html`
+
+Daftarnya diambil dari **`js/kelas-data.js`**. Untuk sekarang baru satu kelas
+yang materinya benar-benar ada, sisanya contoh — karena itu semua kartu masih
+mengarah ke `course.html` yang sama. Begitu tiap kelas punya berkas datanya
+sendiri, `tautan` tinggal diisi `course.html?k=<slug>`.
+
+Galeri juga menampilkan sambungan **"Sedang Anda jalani"** kalau progres kelas
+sudah tercatat di peramban, langsung menuju materi berikutnya.
+
+### Detail & materi
 
 `course.html` dan `materi.html` mengambil seluruh isinya dari satu berkas:
 **`js/course-data.js`** (`window.INVISHAR_COURSE`). Untuk mengubah kelas, cukup

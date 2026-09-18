@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kelas &mdash; Invishar</title>
+<meta name="description" content="Daftar kelas praktis Invishar: satu proyek nyata dikerjakan bareng dari awal sampai bisa dipakai.">
+<meta name="theme-color" content="#eef4ea">
+<link rel="canonical" href="https://invishar.com/kelas.html">
+<link rel="icon" href="assets/invishar-logo.png">
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="id_ID">
+<meta property="og:site_name" content="Invishar">
+<meta property="og:title" content="Kelas — Invishar">
+<meta property="og:description" content="Daftar kelas praktis Invishar: satu proyek nyata dikerjakan bareng dari awal sampai bisa dipakai.">
+<meta property="og:url" content="https://invishar.com/kelas.html">
+<meta property="og:image" content="https://invishar.com/assets/invishar-logo.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400..600;1,9..40,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/course.css">
+<script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+
+<a class="skip" href="#isi">Lompat ke konten</a>
+
+<!-- ============ NAV ============ -->
+<header class="nav">
+  <div class="nav-inner wrap">
+    <a class="brand" href="index.html">
+      <img src="assets/invishar-logo.png" alt="" width="30" height="30">
+      <span>invishar</span>
+    </a>
+
+    <nav class="nav-links" id="nav-links" aria-label="Navigasi utama">
+      <a href="index.html#katalog">Katalog</a>
+      <a href="index.html#jasa">Jasa</a>
+      <a class="is-here" href="kelas.html" aria-current="page">Kelas</a>
+      <a href="index.html#tanya">Tanya jawab</a>
+      <a class="btn btn-solid btn-sm" href="index.html#kontak">Ngobrol dulu</a>
+    </nav>
+
+    <button class="burger" type="button" id="burger" aria-label="Buka menu" aria-expanded="false" aria-controls="nav-links">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main id="isi">
+
+<!-- ============ HERO ============ -->
+<section class="wrap galeri-hero">
+  <nav class="crumb" aria-label="Remah roti">
+    <a href="index.html">Beranda</a>
+    <span aria-hidden="true">/</span>
+    <span>Kelas</span>
+  </nav>
+
+  <div class="galeri-hero-grid">
+    <div>
+      <p class="pill">Kelas &amp; tutorial</p>
+      <h1>Kami buka dapurnya.</h1>
+      <p class="lead">Setiap kelas mengerjakan satu proyek nyata sampai jadi &mdash; bukan sampai teori. Rekaman dan berkas proyeknya bisa Anda buka kapan saja.</p>
+    </div>
+    <ul class="galeri-angka" id="g-angka"></ul>
+  </div>
+</section>
+
+<!-- Sambungan belajar: hanya muncul kalau ada kelas yang sedang dijalani -->
+<section class="wrap" id="g-lanjut-wrap" hidden>
+  <a class="lanjut-strip" id="g-lanjut" href="course.html">
+    <span class="lanjut-ring" id="g-lanjut-ring"><span id="g-lanjut-persen">0%</span></span>
+    <span class="lanjut-teks">
+      <span class="lanjut-kicker">Sedang Anda jalani</span>
+      <span class="lanjut-judul" id="g-lanjut-judul"></span>
+      <span class="lanjut-sub" id="g-lanjut-sub"></span>
+    </span>
+    <span class="lanjut-aksi">Lanjutkan &rarr;</span>
+  </a>
+</section>
+
+<!-- ============ SARINGAN ============ -->
+<div class="tabbar-wrap">
+  <div class="wrap galeri-alat">
+    <div class="tabbar" role="group" aria-label="Saring kelas" id="g-tabs"></div>
+    <div class="cari">
+      <span class="cari-ikon" aria-hidden="true"></span>
+      <label class="sr-only" for="g-cari">Cari kelas</label>
+      <input id="g-cari" type="search" placeholder="Cari kelas&hellip;" autocomplete="off">
+    </div>
+  </div>
+</div>
+
+<!-- ============ GALERI ============ -->
+<section class="wrap galeri">
+  <noscript>
+    <p class="kosong">Daftar kelas dimuat dengan JavaScript. Nyalakan JavaScript untuk melihatnya.</p>
+  </noscript>
+
+  <p class="galeri-hitung" id="g-hitung"></p>
+  <div class="galeri-grid" id="g-grid"></div>
+
+  <p class="kosong-hasil" id="g-kosong" hidden>Tidak ada kelas yang cocok. Coba kata lain atau pilih kategori <button class="tautan-teks" type="button" id="g-bersih">Semua</button>.</p>
+</section>
+
+<!-- ============ AJAKAN ============ -->
+<section class="wrap ajakan">
+  <div class="panel-dark ajakan-panel">
+    <div>
+      <p class="kicker light">Belum ada yang pas?</p>
+      <h2 class="h2-dark">Bilang kelas apa yang Anda tunggu.</h2>
+      <p class="panel-lead">Materi berikutnya kami susun dari pertanyaan yang paling sering masuk &mdash; termasuk dari Anda.</p>
+      <a class="btn btn-light" href="index.html#kontak">Usulkan kelas</a>
+    </div>
+    <div class="ajakan-meta">
+      <p class="harga-besar">Akses selamanya</p>
+      <p class="harga-sub">Sekali bayar untuk kelas berbayar. Rekaman, berkas proyek, dan pembaruan materi ikut di dalamnya.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <img src="assets/invishar-logo.png" alt="" width="26" height="26">
+    <span class="footer-brand">invishar</span>
+    <span class="footer-tag">Produk, jasa, dan kelas digital &mdash; Indonesia.</span>
+    <span class="footer-copy">&copy; 2026 Invishar</span>
+  </div>
+</footer>
+
+<script src="js/kelas-data.js"></script>
+<script src="js/course-data.js"></script>
+<script src="js/kelas.js" defer></script>
+</body>
+</html>

@@ -135,6 +135,7 @@
 
     /* --- kepala halaman --- */
     $("#c-kicker").textContent = kelas.kicker || "Kelas";
+    $("#c-crumb").textContent = kelas.judul;
     $("#c-judul").textContent = kelas.judul;
     $("#c-ringkas").textContent = kelas.ringkas;
     $("#c-harga").textContent = kelas.harga || "";
@@ -360,6 +361,7 @@
 
     document.title = mat.judul + " — " + kelas.judul;
 
+    $("#m-crumb-kelas").textContent = kelas.judul;
     $("#m-crumb-modul").textContent = kini.modul.judul;
     $("#m-kicker").textContent =
       "Modul " + ("0" + kini.modulKe).slice(-2) + " · " + kini.modul.judul + " · " + mat.durasi;
