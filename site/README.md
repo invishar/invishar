@@ -6,11 +6,35 @@ Tanpa build step, tanpa dependensi npm. Cukup tiga berkas + aset.
 ```
 site/
 ├── index.html          markup + seluruh isi teks
+├── course.html         halaman kelas: ikhtisar, daftar materi, sumber, tanya jawab
+├── materi.html         halaman materi: video YouTube, ceklis paham, tombol lanjut
 ├── css/style.css       token warna/tipografi di :root, lalu komponen
+├── css/course.css      lanjutan style.css khusus halaman kelas & materi
 ├── js/main.js          menu mobile, saringan katalog, FAQ, form, reveal
+├── js/course-data.js   ISI kelas (judul, modul, materi, ID video, tanya jawab)
+├── js/course.js        perilaku halaman kelas & materi
 └── assets/
     └── invishar-logo.png
 ```
+
+## Halaman kelas
+
+`course.html` dan `materi.html` mengambil seluruh isinya dari satu berkas:
+**`js/course-data.js`** (`window.INVISHAR_COURSE`). Untuk mengubah kelas, cukup
+sunting berkas itu — tidak ada markup yang perlu disentuh.
+
+- **Video** diisi *ID*-nya saja, bukan URL penuh.
+  `https://www.youtube.com/watch?v=aircAruvnKk` → `youtube: "aircAruvnKk"`.
+  Video dimuat dengan sampul dulu; iframe `youtube-nocookie.com` baru dipasang
+  setelah pengunjung menekan tombol putar.
+- **Ceklis "sudah paham"** disimpan di `localStorage` peramban pengunjung
+  (kunci `invishar.course.<slug>.paham`), jadi belum butuh server maupun akun.
+  Saat panel admin dan login dibuat, cukup ganti fungsi `simpanan()` dan
+  `catat()` di `js/course.js` bagian 2 dengan panggilan ke API.
+- **Urutan materi** menentukan tombol *Sebelumnya* / *Materi berikutnya*; materi
+  terakhir mengarah balik ke daftar materi.
+- Halaman materi dibuka lewat `materi.html?m=<id materi>`. ID yang tidak dikenal
+  jatuh ke materi pertama.
 
 ## Menjalankan secara lokal
 
@@ -42,6 +66,8 @@ Isi folder `site/` adalah situsnya. Unggah apa adanya:
 | Domain | `index.html`, tag `<link rel="canonical">` dan `og:url`/`og:image` | Masih `https://invishar.id/` |
 | Gambar OG | `og:image` | Sekarang menunjuk logo; idealnya gambar 1200×630 |
 | Tujuan form | `js/main.js`, bagian 4 | Sedang mode demo — lihat di bawah |
+| ID video kelas | `js/course-data.js` | Masih memakai ID contoh; ganti dengan video Anda |
+| Berkas proyek kelas | `js/course-data.js`, bagian `sumber` | Semua `url` masih `#` |
 
 ### Mengaktifkan form kontak
 

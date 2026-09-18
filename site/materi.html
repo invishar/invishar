@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Materi &mdash; Invishar</title>
+<meta name="description" content="Halaman materi kelas Invishar: video, catatan, dan penanda paham.">
+<meta name="theme-color" content="#eef4ea">
+<meta name="robots" content="noindex">
+<link rel="icon" href="assets/invishar-logo.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://i.ytimg.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400..600;1,9..40,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/course.css">
+<script>document.documentElement.classList.add("js");</script>
+</head>
+<body class="body-materi">
+
+<a class="skip" href="#isi">Lompat ke konten</a>
+
+<!-- ============ NAV ============ -->
+<header class="nav">
+  <div class="nav-inner wrap">
+    <a class="brand" href="index.html">
+      <img src="assets/invishar-logo.png" alt="" width="30" height="30">
+      <span>invishar</span>
+    </a>
+
+    <nav class="nav-links" id="nav-links" aria-label="Navigasi utama">
+      <a href="index.html#katalog">Katalog</a>
+      <a href="index.html#jasa">Jasa</a>
+      <a class="is-here" href="course.html">Kelas</a>
+      <a href="index.html#tanya">Tanya jawab</a>
+      <a class="btn btn-solid btn-sm" href="index.html#kontak">Ngobrol dulu</a>
+    </nav>
+
+    <button class="burger" type="button" id="burger" aria-label="Buka menu" aria-expanded="false" aria-controls="nav-links">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main id="isi" class="wrap materi-wrap">
+
+  <noscript>
+    <p class="kosong">Halaman materi membutuhkan JavaScript. <a href="course.html">Kembali ke halaman kelas</a>.</p>
+  </noscript>
+
+  <nav class="crumb" aria-label="Remah roti">
+    <a href="course.html">Kelas</a>
+    <span aria-hidden="true">/</span>
+    <span id="m-crumb-modul">Materi</span>
+  </nav>
+
+  <div class="materi-grid">
+
+    <!-- ---- Kolom utama ---- -->
+    <article class="materi-utama">
+      <p class="kicker" id="m-kicker"></p>
+      <h1 id="m-judul">Materi</h1>
+
+      <div class="player" id="m-player"></div>
+
+      <!-- Tindakan: tandai paham + pindah materi -->
+      <div class="aksi">
+        <label class="paham" for="m-paham">
+          <input type="checkbox" id="m-paham">
+          <span class="paham-kotak" aria-hidden="true"></span>
+          <span class="paham-teks">
+            <span class="paham-judul">Saya sudah paham materi ini</span>
+            <span class="paham-sub" id="m-paham-sub">Tandai kalau sudah dicoba sendiri, bukan hanya ditonton.</span>
+          </span>
+        </label>
+
+        <div class="aksi-tombol">
+          <a class="btn btn-outline" id="m-prev" href="#">&larr; Sebelumnya</a>
+          <a class="btn btn-solid" id="m-next" href="#">Materi berikutnya &rarr;</a>
+        </div>
+      </div>
+
+      <div class="materi-isi">
+        <h2>Tentang materi ini</h2>
+        <p id="m-ringkas"></p>
+
+        <h3>Poin penting</h3>
+        <ul class="ceklis" id="m-poin"></ul>
+      </div>
+    </article>
+
+    <!-- ---- Daftar putar ---- -->
+    <aside class="daftar" aria-label="Daftar materi">
+      <div class="daftar-atas">
+        <p class="daftar-judul" id="m-kelas-judul">Daftar materi</p>
+        <p class="daftar-prog" id="m-prog">0 dari 0 selesai</p>
+        <div class="bar" aria-hidden="true"><span class="bar-fill" id="m-bar"></span></div>
+      </div>
+      <div class="daftar-isi" id="m-daftar"></div>
+    </aside>
+
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <img src="assets/invishar-logo.png" alt="" width="26" height="26">
+    <span class="footer-brand">invishar</span>
+    <span class="footer-tag">Produk, jasa, dan kelas digital &mdash; Indonesia.</span>
+    <span class="footer-copy">&copy; 2026 Invishar</span>
+  </div>
+</footer>
+
+<script src="js/course-data.js"></script>
+<script src="js/course.js" defer></script>
+</body>
+</html>

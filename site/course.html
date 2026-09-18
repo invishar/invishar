@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kelas &mdash; Invishar</title>
+<meta name="description" content="Kelas praktis Invishar: satu proyek nyata dikerjakan bareng dari awal sampai bisa dipakai.">
+<meta name="theme-color" content="#eef4ea">
+<link rel="canonical" href="https://invishar.com/course.html">
+<link rel="icon" href="assets/invishar-logo.png">
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="id_ID">
+<meta property="og:site_name" content="Invishar">
+<meta property="og:title" content="Kelas — Invishar">
+<meta property="og:description" content="Kelas praktis Invishar: satu proyek nyata dikerjakan bareng dari awal sampai bisa dipakai.">
+<meta property="og:url" content="https://invishar.com/course.html">
+<meta property="og:image" content="https://invishar.com/assets/invishar-logo.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400..600;1,9..40,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/course.css">
+<script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+
+<a class="skip" href="#isi">Lompat ke konten</a>
+
+<!-- ============ NAV ============ -->
+<header class="nav">
+  <div class="nav-inner wrap">
+    <a class="brand" href="index.html">
+      <img src="assets/invishar-logo.png" alt="" width="30" height="30">
+      <span>invishar</span>
+    </a>
+
+    <nav class="nav-links" id="nav-links" aria-label="Navigasi utama">
+      <a href="index.html#katalog">Katalog</a>
+      <a href="index.html#jasa">Jasa</a>
+      <a class="is-here" href="course.html" aria-current="page">Kelas</a>
+      <a href="index.html#tanya">Tanya jawab</a>
+      <a class="btn btn-solid btn-sm" href="index.html#kontak">Ngobrol dulu</a>
+    </nav>
+
+    <button class="burger" type="button" id="burger" aria-label="Buka menu" aria-expanded="false" aria-controls="nav-links">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main id="isi">
+
+<!-- ============ HERO KELAS ============ -->
+<section class="wrap course-hero">
+  <nav class="crumb" aria-label="Remah roti">
+    <a href="index.html">Beranda</a>
+    <span aria-hidden="true">/</span>
+    <span>Kelas</span>
+  </nav>
+
+  <div class="course-hero-grid">
+    <div class="course-hero-copy">
+      <p class="kicker" id="c-kicker">Kelas</p>
+      <h1 id="c-judul">Kelas Invishar</h1>
+      <p class="lead" id="c-ringkas"></p>
+
+      <ul class="meta-chips" id="c-meta"></ul>
+    </div>
+
+    <!-- Kartu progres: terisi oleh course.js dari catatan di peramban -->
+    <aside class="progress-card" aria-labelledby="c-prog-judul">
+      <p class="kicker light" id="c-prog-judul">Progres belajar</p>
+
+      <div class="ring-row">
+        <div class="ring" id="c-ring" role="img" aria-labelledby="c-prog-teks">
+          <span class="ring-num" id="c-ring-num">0%</span>
+        </div>
+        <div>
+          <p class="ring-teks" id="c-prog-teks">0 dari 0 materi</p>
+          <p class="ring-sub" id="c-prog-sub">Belum ada yang ditandai paham.</p>
+        </div>
+      </div>
+
+      <a class="btn btn-light btn-block" id="c-lanjut" href="#materi">Mulai belajar</a>
+      <button class="tautan-reset" type="button" id="c-reset" hidden>Atur ulang progres</button>
+    </aside>
+  </div>
+</section>
+
+<!-- ============ TAB ============ -->
+<div class="tabbar-wrap">
+  <div class="wrap">
+    <div class="tabbar" role="tablist" aria-label="Bagian kelas">
+      <button class="tab is-on" type="button" role="tab" id="tab-ikhtisar" aria-controls="panel-ikhtisar" aria-selected="true">Ikhtisar</button>
+      <button class="tab" type="button" role="tab" id="tab-materi" aria-controls="panel-materi" aria-selected="false">Materi</button>
+      <button class="tab" type="button" role="tab" id="tab-sumber" aria-controls="panel-sumber" aria-selected="false">Sumber belajar</button>
+      <button class="tab" type="button" role="tab" id="tab-tanya" aria-controls="panel-tanya" aria-selected="false">Tanya jawab</button>
+    </div>
+  </div>
+</div>
+
+<section class="wrap panel-area">
+
+  <noscript>
+    <p class="kosong">Daftar materi dimuat dengan JavaScript. Nyalakan JavaScript untuk membuka kelas ini.</p>
+  </noscript>
+
+  <!-- ---- Ikhtisar ---- -->
+  <div class="panel" role="tabpanel" id="panel-ikhtisar" aria-labelledby="tab-ikhtisar">
+    <div class="ikhtisar-grid">
+      <div>
+        <h2>Yang akan Anda kuasai</h2>
+        <ul class="ceklis" id="c-hasil"></ul>
+      </div>
+      <div class="ikhtisar-sisi">
+        <div class="kotak">
+          <h3>Cocok untuk</h3>
+          <ul class="titik" id="c-untuk"></ul>
+        </div>
+        <div class="kotak">
+          <h3>Perlu disiapkan</h3>
+          <ul class="titik" id="c-syarat"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---- Materi ---- -->
+  <div class="panel" role="tabpanel" id="panel-materi" aria-labelledby="tab-materi" hidden>
+    <div class="sec-head">
+      <div>
+        <h2>Daftar materi</h2>
+        <p class="sec-sub" id="c-materi-sub"></p>
+      </div>
+      <a class="link-more" id="c-lanjut-2" href="#">Lanjutkan &rarr;</a>
+    </div>
+
+    <div class="bar" aria-hidden="true"><span class="bar-fill" id="c-bar"></span></div>
+
+    <div id="c-modul" class="modul-list"></div>
+  </div>
+
+  <!-- ---- Sumber belajar ---- -->
+  <div class="panel" role="tabpanel" id="panel-sumber" aria-labelledby="tab-sumber" hidden>
+    <div class="sec-head">
+      <div>
+        <h2>Sumber belajar</h2>
+        <p class="sec-sub">Berkas pendukung yang dipakai sepanjang kelas.</p>
+      </div>
+    </div>
+    <div class="grid-cards" id="c-sumber"></div>
+  </div>
+
+  <!-- ---- Tanya jawab ---- -->
+  <div class="panel" role="tabpanel" id="panel-tanya" aria-labelledby="tab-tanya" hidden>
+    <div class="sec-head">
+      <div>
+        <h2>Tanya jawab</h2>
+        <p class="sec-sub">Yang paling sering ditanyakan sebelum mengambil kelas.</p>
+      </div>
+    </div>
+    <div class="faq" id="c-tanya"></div>
+  </div>
+
+</section>
+
+<!-- ============ AJAKAN ============ -->
+<section class="wrap ajakan">
+  <div class="panel-dark ajakan-panel">
+    <div>
+      <p class="kicker light">Masih ragu?</p>
+      <h2 class="h2-dark">Ceritakan keadaan Anda dulu, gratis.</h2>
+      <p class="panel-lead">Kalau ternyata kelas ini belum yang Anda butuhkan, kami bilang apa adanya.</p>
+      <a class="btn btn-light" href="index.html#kontak">Tanya dulu</a>
+    </div>
+    <div class="ajakan-meta">
+      <p class="harga-besar" id="c-harga"></p>
+      <p class="harga-sub">Sekali bayar, akses selamanya. Termasuk berkas proyek dan pembaruan materi.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <img src="assets/invishar-logo.png" alt="" width="26" height="26">
+    <span class="footer-brand">invishar</span>
+    <span class="footer-tag">Produk, jasa, dan kelas digital &mdash; Indonesia.</span>
+    <span class="footer-copy">&copy; 2026 Invishar</span>
+  </div>
+</footer>
+
+<script src="js/course-data.js"></script>
+<script src="js/course.js" defer></script>
+</body>
+</html>
