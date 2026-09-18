@@ -940,6 +940,24 @@
   background: radial-gradient(70% 80% at 22% 12%, rgba(238, 244, 234, 0.22), transparent 62%);
 }
 
+/* Sampul berupa gambar sungguhan. Pola garis dimatikan supaya tidak
+   mengotori foto, dan diganti gelap bertingkat di bawah agar label kategori
+   tetap terbaca di atas gambar seterang apa pun. */
+.sampul-gambar {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: scale .35s var(--ease);
+}
+.kartu:hover .sampul-gambar { scale: 1.04; }
+
+.sampul-foto::before { display: none; }
+.sampul-foto::after {
+  background: linear-gradient(to top, rgba(20, 38, 16, 0.58), rgba(20, 38, 16, 0.05) 55%);
+}
+
 .sampul-ikon {
   position: relative;
   z-index: 1;

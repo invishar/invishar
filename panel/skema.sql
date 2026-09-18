@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS kelas (
   harga           VARCHAR(40)  NOT NULL DEFAULT 'Gratis',
   status          VARCHAR(20)  NOT NULL DEFAULT 'Segera',
   ikon            VARCHAR(20)  NOT NULL DEFAULT 'kilau',
+  gambar          VARCHAR(160) NULL,          -- berkas sampul di public_html/data/kelas
   urutan          INT          NOT NULL DEFAULT 0,
   -- Bagian detail yang hanya tampil di halaman kelas, disimpan sebagai JSON:
   -- kicker, bahasa, akses, pengajar, ikhtisar, sumber, tanya.

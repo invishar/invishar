@@ -74,6 +74,17 @@ $orderBaru = (int) ambilNilai("SELECT COUNT(*) FROM order_jasa WHERE status = 'b
     </header>
 
     <main class="isi" id="isi">
-      <?php foreach (ambilPesan() as $p): ?>
-        <p class="kabar kabar-<?= e($p['jenis']) ?>"><?= e($p['teks']) ?></p>
-      <?php endforeach; ?>
+      <?php $kabar = ambilPesan(); ?>
+      <?php if ($kabar): ?>
+        <?php /* Melayang, bukan menempel di puncak halaman: setelah menyimpan,
+                 posisi gulir dikembalikan ke tempat semula dan pesan di atas
+                 sana tidak akan pernah terlihat. */ ?>
+        <div class="kabar-wadah" role="status" aria-live="polite">
+          <?php foreach ($kabar as $p): ?>
+            <div class="kabar kabar-<?= e($p['jenis']) ?>" data-kabar>
+              <span><?= e($p['teks']) ?></span>
+              <button class="kabar-tutup" type="button" aria-label="Tutup pesan">&times;</button>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      <?php endif; ?>

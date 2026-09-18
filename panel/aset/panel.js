@@ -207,6 +207,63 @@
     }
   });
 
+  /* --------------------------------------------------- 9b. Kabar melayang */
+  $$("[data-kabar]").forEach(function (kabar, i) {
+    var buang = function () {
+      kabar.classList.add("kabar-pudar");
+      setTimeout(function () { kabar.remove(); }, 400);
+    };
+    kabar.querySelector(".kabar-tutup").addEventListener("click", buang);
+
+    // Pesan galat dibiarkan sampai ditutup sendiri; yang lain menghilang.
+    if (!kabar.classList.contains("kabar-buruk")) {
+      setTimeout(buang, 7000 + i * 600);
+    }
+  });
+
+  /* ---------------------------------------------- 9c. Isi kolom dari cip */
+  document.addEventListener("click", function (e) {
+    var cip = e.target.closest("[data-isi]");
+    if (!cip) return;
+
+    var medan = $(cip.dataset.isi);
+    if (!medan) return;
+    medan.value = cip.dataset.nilai;
+    medan.dispatchEvent(new Event("input", { bubbles: true }));
+
+    var sekitar = cip.parentNode.querySelectorAll("[data-isi]");
+    Array.prototype.forEach.call(sekitar, function (lain) {
+      lain.classList.toggle("is-on", lain === cip);
+    });
+  });
+
+  /* ------------------------------------------ 9d. Gambar sampul terpilih */
+  var medanGambar = $("[data-gambar]");
+  if (medanGambar) {
+    medanGambar.addEventListener("change", function () {
+      var berkas = medanGambar.files && medanGambar.files[0];
+      var nama = $("#unggah-nama");
+
+      if (!berkas) {
+        if (nama) nama.textContent = "Belum ada gambar";
+        return;
+      }
+      if (nama) {
+        nama.textContent = berkas.name + " · " + Math.round(berkas.size / 1024) + " KB"
+          + (berkas.size > 3 * 1024 * 1024 ? " — terlalu besar, maksimal 3 MB" : "");
+      }
+
+      // Pratinjau langsung dari berkas di komputer, tanpa menunggu unggahan.
+      var gambar = $("#mini-gambar");
+      var ikon = $("#mini-ikon");
+      if (gambar && berkas.size <= 3 * 1024 * 1024) {
+        gambar.src = URL.createObjectURL(berkas);
+        gambar.hidden = false;
+        if (ikon) ikon.hidden = true;
+      }
+    });
+  }
+
   /* ------------------------------------------------- 10. Pratinjau kartu */
   var pratinjau = $("#pratinjau-kartu");
   if (pratinjau) {

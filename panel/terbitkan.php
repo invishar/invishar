@@ -11,8 +11,19 @@ wajibMasuk();
    publik, dan kalau panel mati situs tetap hidup.
    ============================================================================= */
 
+/* Kembali ke halaman asal, bukan selalu ke daftar kelas: tombol Terbitkan juga
+   ada di halaman sunting, dan terlempar keluar dari sana setiap kali menerbitkan
+   itu melelahkan. Hanya alamat di host yang sama yang diterima. */
+$kembali = tautan('kelas');
+$asal = $_SERVER['HTTP_REFERER'] ?? '';
+if ($asal !== '' && parse_url($asal, PHP_URL_HOST) === ($_SERVER['HTTP_HOST'] ?? '')) {
+    $jalur = (string) parse_url($asal, PHP_URL_PATH);
+    $tanya = parse_url($asal, PHP_URL_QUERY);
+    $kembali = $jalur . ($tanya ? '?' . $tanya : '');
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    pergi(tautan('kelas'));
+    pergi($kembali);
 }
 periksaCsrf();
 
@@ -20,11 +31,11 @@ $tujuan = rtrim((string) konfig('situs_data'), '/');
 
 if (!is_dir($tujuan) && !@mkdir($tujuan, 0755, true) && !is_dir($tujuan)) {
     pesan('Folder terbitan tidak bisa dibuat: ' . $tujuan, 'buruk');
-    pergi(tautan('kelas'));
+    pergi($kembali);
 }
 if (!is_writable($tujuan)) {
     pesan('Folder terbitan tidak bisa ditulis: ' . $tujuan, 'buruk');
-    pergi(tautan('kelas'));
+    pergi($kembali);
 }
 
 /** Tulis lewat berkas sementara supaya pembaca tidak pernah melihat isi separuh. */
@@ -91,6 +102,7 @@ foreach ($daftarKelas as $k) {
         'bahasa'   => $detail['bahasa'] ?? 'Bahasa Indonesia',
         'akses'    => $detail['akses'] ?? 'Akses selamanya',
         'harga'    => $k['harga'],
+        'gambar'   => $k['gambar'] ? 'data/kelas/' . $k['gambar'] : '',
         'pengajar' => $detail['pengajar'] ?? ['nama' => '', 'peran' => ''],
         'ikhtisar' => $detail['ikhtisar'] ?? ['hasil' => [], 'untukSiapa' => [], 'syarat' => []],
         'modul'    => $modulKeluar,
@@ -100,7 +112,7 @@ foreach ($daftarKelas as $k) {
 
     if (!tulisJson($tujuan . '/course-' . $k['slug'] . '.json', $isiKelas)) {
         pesan('Gagal menulis berkas kelas "' . $k['judul'] . '".', 'buruk');
-        pergi(tautan('kelas'));
+        pergi($kembali);
     }
     $jumlahBerkas++;
 
@@ -116,6 +128,8 @@ foreach ($daftarKelas as $k) {
         'harga'    => $k['harga'],
         'status'   => $k['status'],
         'ikon'     => $k['ikon'],
+        // Kosong berarti kartu memakai ikon; situs yang memutuskan.
+        'gambar'   => $k['gambar'] ? 'data/kelas/' . $k['gambar'] : '',
         'tautan'   => 'course.html?k=' . $k['slug'],
     ];
 
@@ -126,7 +140,7 @@ foreach ($daftarKelas as $k) {
 
 if (!tulisJson($tujuan . '/kelas.json', ['kategori' => $kategori, 'daftar' => $kartu])) {
     pesan('Gagal menulis daftar kelas.', 'buruk');
-    pergi(tautan('kelas'));
+    pergi($kembali);
 }
 
 /* Buang berkas kelas yang kelasnya sudah dihapus, supaya tidak ada halaman
@@ -140,5 +154,5 @@ foreach (glob($tujuan . '/course-*.json') ?: [] as $berkas) {
 }
 
 catatLog('terbitkan kelas', $jumlahBerkas . ' kelas');
-pesan('Diterbitkan: ' . $jumlahBerkas . ' kelas. Situs sudah memakai data terbaru.');
-pergi(tautan('kelas'));
+pesan('Berhasil diterbitkan: ' . $jumlahBerkas . ' kelas sudah tayang di invishar.com/kelas.html. Muat ulang halaman situs untuk melihatnya.');
+pergi($kembali);

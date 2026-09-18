@@ -86,6 +86,75 @@ function dariKolom(array $kunci): array
     return $hasil;
 }
 
+function folderGambar(): string
+{
+    return rtrim((string) konfig('situs_data'), '/') . '/kelas';
+}
+
+/** Alamat gambar sampul seperti yang dilihat pengunjung situs. */
+function urlGambar(?string $berkas): string
+{
+    return $berkas ? 'https://invishar.com/data/kelas/' . rawurlencode($berkas) : '';
+}
+
+/**
+ * Menyimpan gambar sampul yang diunggah, mengembalikan nama berkasnya.
+ *
+ * Jenis berkas ditentukan dari isinya lewat getimagesize, bukan dari nama
+ * yang dikirim peramban — nama berkas sepenuhnya dikuasai pengunggah.
+ */
+function simpanGambar(array $berkas, string $slug): ?string
+{
+    $kode = $berkas['error'] ?? UPLOAD_ERR_NO_FILE;
+    if ($kode === UPLOAD_ERR_NO_FILE) {
+        return null;
+    }
+    if ($kode !== UPLOAD_ERR_OK) {
+        pesan('Unggahan gagal. Periksa ukuran berkasnya.', 'buruk');
+        return null;
+    }
+    if (($berkas['size'] ?? 0) > 3 * 1024 * 1024) {
+        pesan('Gambar lebih dari 3 MB. Perkecil dulu.', 'buruk');
+        return null;
+    }
+
+    $ukuran = @getimagesize($berkas['tmp_name']);
+    $jenis  = [IMAGETYPE_JPEG => 'jpg', IMAGETYPE_PNG => 'png', IMAGETYPE_WEBP => 'webp'];
+
+    if (!$ukuran || !isset($jenis[$ukuran[2]])) {
+        pesan('Berkas itu bukan gambar JPG, PNG, atau WebP.', 'buruk');
+        return null;
+    }
+
+    $folder = folderGambar();
+    if (!is_dir($folder) && !@mkdir($folder, 0755, true) && !is_dir($folder)) {
+        pesan('Folder gambar tidak bisa dibuat.', 'buruk');
+        return null;
+    }
+
+    // Folder gambar tidak boleh menjalankan skrip, apa pun yang berhasil masuk.
+    $jaga = $folder . '/.htaccess';
+    if (!is_file($jaga)) {
+        file_put_contents($jaga, "<FilesMatch \"\\.(php|phtml|phar|cgi|pl|py)$\">\n  Require all denied\n</FilesMatch>\n");
+    }
+
+    $nama = $slug . '-' . bin2hex(random_bytes(3)) . '.' . $jenis[$ukuran[2]];
+    if (!move_uploaded_file($berkas['tmp_name'], $folder . '/' . $nama)) {
+        pesan('Gambar tidak bisa disimpan ke folder tujuan.', 'buruk');
+        return null;
+    }
+    @chmod($folder . '/' . $nama, 0644);
+
+    return $nama;
+}
+
+function buangGambar(?string $berkas): void
+{
+    if ($berkas) {
+        @unlink(folderGambar() . '/' . $berkas);
+    }
+}
+
 function jumlahMateriKelas(int $id): int
 {
     return (int) ambilNilai(
@@ -106,10 +175,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             pesan('Judul kelas tidak cocok — penghapusan dibatalkan.', 'buruk');
             pergi(tautan('kelas/' . $id));
         }
+        buangGambar($kelas['gambar']);
         q('DELETE FROM kelas WHERE id = ?', [$id]);
         catatLog('hapus kelas', $kelas['judul']);
         pesan('Kelas "' . $kelas['judul'] . '" dihapus.');
         pergi(tautan('kelas'));
+    }
+
+    if ($aksi === 'hapus_gambar') {
+        buangGambar($kelas['gambar']);
+        q('UPDATE kelas SET gambar = NULL, diperbarui_pada = NOW() WHERE id = ?', [$id]);
+        catatLog('hapus gambar kelas', $kelas['judul']);
+        pesan('Gambar sampul dihapus. Kartu kembali memakai ikon.');
+        pergi(tautan('kelas/' . $id));
     }
 
     if ($aksi === 'simpan_kelas') {
@@ -145,17 +223,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'tanya' => dariKolom(['q' => 'tanya_q', 'a' => 'tanya_a']),
         ];
 
+        $gambar = $kelas['gambar'];
+        $gambarBaru = simpanGambar($_FILES['gambar'] ?? [], $slug);
+        if ($gambarBaru !== null) {
+            buangGambar($gambar);
+            $gambar = $gambarBaru;
+        }
+
         q(
             'UPDATE kelas SET slug = ?, judul = ?, kategori = ?, ringkas = ?, level = ?, harga = ?,
-                    status = ?, ikon = ?, urutan = ?, detail = ?, diperbarui_pada = NOW() WHERE id = ?',
+                    status = ?, ikon = ?, gambar = ?, urutan = ?, detail = ?, diperbarui_pada = NOW() WHERE id = ?',
             [
                 $slug, masukan('judul'), masukan('kategori'), masukan('ringkas'), masukan('level'),
-                masukan('harga'), masukan('status'), masukan('ikon'), (int) ($_POST['urutan'] ?? 0),
+                masukan('harga'), masukan('status'), masukan('ikon'), $gambar, (int) ($_POST['urutan'] ?? 0),
                 json_encode($detailBaru, JSON_UNESCAPED_UNICODE), $id,
             ]
         );
         catatLog('ubah kelas', masukan('judul'));
-        pesan('Kelas disimpan. Tekan Terbitkan supaya situs ikut berubah.');
+        pesan('Kelas "' . masukan('judul') . '" tersimpan'
+            . ($gambarBaru !== null ? ' berikut gambar sampulnya' : '')
+            . '. Tekan Terbitkan supaya situs ikut berubah.');
         pergi(tautan('kelas/' . $id));
     }
 
@@ -299,7 +386,7 @@ require __DIR__ . '/inc/kepala.php';
   <a class="tautan-lain" href="https://invishar.com/course.html?k=<?= e($kelas['slug']) ?>" target="_blank" rel="noopener">Lihat di situs &nearr;</a>
 </p>
 
-<form method="post" class="form-panel" id="form-kelas" data-jaga>
+<form method="post" class="form-panel" id="form-kelas" data-jaga enctype="multipart/form-data">
   <?= csrfInput() ?>
   <input type="hidden" name="kelas_id" value="<?= (int) $id ?>">
   <input type="hidden" name="aksi" value="simpan_kelas">
@@ -334,12 +421,20 @@ require __DIR__ . '/inc/kepala.php';
       </div>
       <div class="bidang">
         <label for="f-kategori">Kategori</label>
-        <input id="f-kategori" name="kategori" type="text" value="<?= e($kelas['kategori']) ?>" list="daftar-kategori">
-        <datalist id="daftar-kategori">
-          <?php foreach (ambilSemua('SELECT DISTINCT kategori FROM kelas ORDER BY kategori') as $k): ?>
-            <option value="<?= e($k['kategori']) ?>"></option>
-          <?php endforeach; ?>
-        </datalist>
+        <input id="f-kategori" name="kategori" type="text" value="<?= e($kelas['kategori']) ?>"
+               placeholder="Ketik kategori baru" autocomplete="off">
+        <?php $kategoriAda = ambilSemua('SELECT kategori, COUNT(*) AS jml FROM kelas GROUP BY kategori ORDER BY jml DESC, kategori'); ?>
+        <?php if ($kategoriAda): ?>
+          <div class="cip-pilih">
+            <?php foreach ($kategoriAda as $k): ?>
+              <button class="cip-kecil<?= $kelas['kategori'] === $k['kategori'] ? ' is-on' : '' ?>"
+                      type="button" data-isi="#f-kategori" data-nilai="<?= e($k['kategori']) ?>">
+                <?= e($k['kategori']) ?> <span><?= (int) $k['jml'] ?></span>
+              </button>
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
+        <p class="petunjuk">Ketik apa saja untuk membuat kategori baru, atau tekan salah satu di atas.</p>
       </div>
     </div>
 
@@ -366,7 +461,24 @@ require __DIR__ . '/inc/kepala.php';
     <div class="galeri-atur">
       <div>
         <div class="bidang">
-          <label>Ikon sampul</label>
+          <label for="f-gambar">Gambar sampul</label>
+          <div class="unggah">
+            <input id="f-gambar" name="gambar" type="file" accept="image/jpeg,image/png,image/webp" data-gambar>
+            <label class="unggah-tombol" for="f-gambar">Pilih gambar&hellip;</label>
+            <span class="unggah-nama" id="unggah-nama">
+              <?= $kelas['gambar'] ? 'Terpasang: ' . e($kelas['gambar']) : 'Belum ada gambar' ?>
+            </span>
+            <?php if ($kelas['gambar']): ?>
+              <button class="tbl tbl-kecil tbl-bahaya" type="submit" name="aksi" value="hapus_gambar"
+                      formnovalidate data-pastikan="Hapus gambar sampul kelas ini?">Hapus gambar</button>
+            <?php endif; ?>
+          </div>
+          <p class="petunjuk">JPG, PNG, atau WebP. Maksimal 3 MB. Bentuk yang paling pas 16:10 &mdash; misalnya 1280&times;800.</p>
+        </div>
+
+        <div class="bidang">
+          <label>Ikon cadangan</label>
+          <p class="petunjuk petunjuk-atas">Dipakai hanya selama kelas ini belum punya gambar sampul.</p>
           <div class="ikon-pilih">
             <?php foreach (IKON as $nama => $_): ?>
               <label class="ikon-satu<?= $kelas['ikon'] === $nama ? ' is-on' : '' ?>">
@@ -382,22 +494,12 @@ require __DIR__ . '/inc/kepala.php';
           <div class="bidang">
             <label for="f-harga">Harga</label>
             <input id="f-harga" name="harga" type="text" value="<?= e($kelas['harga']) ?>"
-                   placeholder="Gratis atau Rp 249rb" list="daftar-harga">
-            <datalist id="daftar-harga">
-              <option value="Gratis"></option>
-              <?php foreach (ambilSemua("SELECT DISTINCT harga FROM kelas WHERE harga <> 'Gratis' ORDER BY harga") as $h): ?>
-                <option value="<?= e($h['harga']) ?>"></option>
-              <?php endforeach; ?>
-            </datalist>
+                   placeholder="Gratis, Rp 249rb, atau apa pun" autocomplete="off">
+            <p class="petunjuk">Ditulis apa adanya di kartu galeri.</p>
           </div>
           <div class="bidang">
             <label for="f-level">Level</label>
-            <input id="f-level" name="level" type="text" value="<?= e($kelas['level']) ?>" list="daftar-level">
-            <datalist id="daftar-level">
-              <option value="Pemula"></option>
-              <option value="Menengah"></option>
-              <option value="Pemula — Menengah"></option>
-            </datalist>
+            <input id="f-level" name="level" type="text" value="<?= e($kelas['level']) ?>" autocomplete="off">
           </div>
           <div class="bidang bidang-kecil">
             <label for="f-urutan">Urutan di galeri</label>
@@ -411,8 +513,10 @@ require __DIR__ . '/inc/kepala.php';
         <p class="pratinjau-label">Pratinjau kartu</p>
         <div class="kartu-mini" id="pratinjau-kartu">
           <div class="mini-sampul">
+            <img class="mini-gambar" id="mini-gambar" alt=""
+                 src="<?= e(urlGambar($kelas['gambar'])) ?>"<?= $kelas['gambar'] ? '' : ' hidden' ?>>
             <span class="mini-status"><?= e($kelas['status']) ?></span>
-            <span class="mini-ikon"><?= ikonSvg($kelas['ikon']) ?></span>
+            <span class="mini-ikon" id="mini-ikon"<?= $kelas['gambar'] ? ' hidden' : '' ?>><?= ikonSvg($kelas['ikon']) ?></span>
             <span class="mini-kategori"><?= e($kelas['kategori']) ?></span>
           </div>
           <p class="mini-judul"><?= e($kelas['judul']) ?></p>

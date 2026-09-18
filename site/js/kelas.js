@@ -131,10 +131,24 @@
       kartu.dataset.nada = String(i % 4); // memilih perpaduan warna sampul di CSS
 
       var sampul = buat("span", "sampul");
+
+      // Kelas yang sudah punya gambar memakai gambarnya; sisanya jatuh ke
+      // ikon vektor, jadi kartu tidak pernah kosong.
+      if (k.gambar) {
+        sampul.classList.add("sampul-foto");
+        var foto = document.createElement("img");
+        foto.className = "sampul-gambar";
+        foto.src = k.gambar;
+        foto.alt = "";
+        foto.loading = "lazy";
+        sampul.appendChild(foto);
+      } else {
+        var lingkar = buat("span", "sampul-ikon");
+        lingkar.appendChild(gambar(k.ikon));
+        sampul.appendChild(lingkar);
+      }
+
       sampul.appendChild(buat("span", "sampul-status " + (k.status === "Segera" ? "is-nanti" : ""), k.status));
-      var lingkar = buat("span", "sampul-ikon");
-      lingkar.appendChild(gambar(k.ikon));
-      sampul.appendChild(lingkar);
       sampul.appendChild(buat("span", "sampul-kategori", k.kategori));
       kartu.appendChild(sampul);
 
