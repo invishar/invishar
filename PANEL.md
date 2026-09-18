@@ -270,7 +270,7 @@ Sisanya harus dikerjakan di cPanel:
    `/home/invishar/public_html/data`. Berkas ini tidak ikut Git, jadi tidak
    pernah tertimpa deploy.
 3. Buka `https://invishar.com/panel/pasang.php`, isi nama, surel, kata sandi.
-4. **Hapus `pasang.php` dari server** setelah berhasil.
+   Setelah ada satu akun, berkas itu menolak berjalan lagi dengan sendirinya.
 5. Masuk ke panel → **Kelas** → tekan **Terbitkan** sekali, supaya situs mulai
    memakai data panel.
 6. Di `site/index.html`, ganti `data-demo` pada form kontak menjadi

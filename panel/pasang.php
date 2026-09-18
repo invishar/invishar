@@ -7,7 +7,8 @@ declare(strict_types=1);
    Membuat seluruh tabel, akun pertama, dan mengisi kelas dengan data yang
    sekarang ada di invishar.com (isi-awal.json) supaya panel tidak mulai kosong.
 
-   Setelah selesai, HAPUS berkas ini dari server.
+   Setelah ada satu akun, berkas ini menolak berjalan dengan sendirinya —
+   jadi tidak perlu dihapus, dan memang tidak bisa: tiap deploy mengembalikannya.
    ============================================================================= */
 require __DIR__ . '/inc/awal.php';
 
@@ -21,7 +22,7 @@ try {
 $galat = '';
 
 if ($sudahAda) {
-    $galat = 'Panel sudah terpasang. Hapus berkas pasang.php dari server.';
+    $galat = "Panel sudah terpasang. Berkas ini menolak berjalan lagi — biarkan saja.";
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     periksaCsrf();
 
@@ -104,7 +105,7 @@ if ($sudahAda) {
 
         $_SESSION['pengguna_id'] = (int) ambilNilai('SELECT id FROM pengguna WHERE surel = ?', [$surel]);
         catatLog('pasang panel', $surel);
-        pesan('Panel terpasang. Sekarang hapus berkas pasang.php dari server.', 'peringatan');
+        pesan('Panel terpasang dan Anda sudah masuk.');
         pergi('index.php');
     }
 }
