@@ -26,18 +26,16 @@ deployment:
     - /bin/rm -f ~/public_html/default-welcome.html
     - /bin/rm -f ~/public_html/default.html
 
-    # --- Panel admin (panel.invishar.com) --------------------------------
-    # BELUM AKTIF. Hapus tanda pagar pada dua baris di bawah setelah subdomain
-    # panel.invishar.com dibuat di cPanel, dan sesuaikan tujuannya dengan
-    # Document Root yang tertulis pada kartu subdomain — biasanya salah satu:
-    #   ~/panel.invishar.com        (pola Domainesia)
-    #   ~/public_html/panel
+    # --- Panel admin -----------------------------------------------------
+    # Dipasang di public_html/panel, jadi langsung hidup di
+    # https://invishar.com/panel/ tanpa menunggu subdomain. Saat subdomain
+    # panel.invishar.com dibuat nanti, arahkan Document Root-nya ke folder
+    # yang sama ini — tidak ada yang perlu diubah di sini.
     #
-    # Yang disalin hanya isi folder panel/. Berkas inc/konfig.php tidak ikut
-    # (tidak ada di Git), jadi kata sandi basis data di server tidak tertimpa.
-    #
-    # - /bin/mkdir -p ~/panel.invishar.com
-    # - /bin/cp -R panel/. ~/panel.invishar.com/
+    # inc/konfig.php tidak ikut tersalin (tidak ada di Git), jadi kata sandi
+    # basis data yang sudah diisi di server tidak tertimpa tiap deploy.
+    - /bin/mkdir -p ~/public_html/panel
+    - /bin/cp -R panel/. ~/public_html/panel/
 
     # Catat waktu deploy terakhir, berguna untuk memastikan deploy benar jalan.
     # Cek kapan saja di: https://invishar.com/deploy-terakhir.txt

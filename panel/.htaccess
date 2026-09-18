@@ -13,10 +13,10 @@ DirectoryIndex index.php
   RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 </IfModule>
 
-# --- Folder yang tidak boleh diakses dari luar ---------------------------
-# inc/ berisi konfig.php dengan kata sandi basis data.
-RedirectMatch 404 ^/inc(/.*)?$
-
+# --- Berkas yang tidak boleh diunduh --------------------------------------
+# Folder inc/ dijaga oleh .htaccess miliknya sendiri, supaya aturannya tetap
+# berlaku walau panel dipasang bukan di akar subdomain.
+#
 # Skema dan data awal tidak perlu bisa diunduh siapa pun.
 <FilesMatch "\.(sql|json|md)$">
   Require all denied

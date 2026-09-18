@@ -260,20 +260,29 @@ panel/
 
 ## 9. Cara memasang
 
-1. **cPanel → Subdomains**: buat `panel.invishar.com`. Catat *Document Root*-nya.
-2. **cPanel → MySQL Databases**: buat basis data + pengguna, beri hak penuh.
-3. Buka `.cpanel.yml`, hapus tanda pagar pada dua baris tugas panel, dan
-   sesuaikan tujuannya dengan Document Root tadi. Lalu `git push cpanel main`.
-4. Di server, salin `panel/inc/konfig.contoh.php` menjadi `panel/inc/konfig.php`,
-   isi data basis data dan `situs_data` (biasanya `/home/invishar/public_html/data`).
-   Berkas ini tidak ikut Git, jadi aman dari penimpaan saat deploy.
-5. Buka `https://panel.invishar.com/pasang.php`, isi nama, surel, dan kata sandi.
-6. **Hapus `pasang.php` dari server.**
-7. Masuk ke panel, buka **Kelas**, tekan **Terbitkan** sekali supaya situs mulai
+Panel ikut ter-deploy ke `public_html/panel`, jadi alamatnya
+**https://invishar.com/panel/** sejak `git push cpanel main` yang pertama.
+Sisanya harus dikerjakan di cPanel:
+
+1. **MySQL Databases**: buat basis data + pengguna, beri hak penuh.
+2. **File Manager** → `public_html/panel/inc`: salin `konfig.contoh.php` menjadi
+   `konfig.php`, isi data basis data. Periksa juga `situs_data`, seharusnya
+   `/home/invishar/public_html/data`. Berkas ini tidak ikut Git, jadi tidak
+   pernah tertimpa deploy.
+3. Buka `https://invishar.com/panel/pasang.php`, isi nama, surel, kata sandi.
+4. **Hapus `pasang.php` dari server** setelah berhasil.
+5. Masuk ke panel → **Kelas** → tekan **Terbitkan** sekali, supaya situs mulai
    memakai data panel.
-8. Di `site/index.html`, ganti `data-demo` pada form kontak menjadi
-   `data-kirim="https://panel.invishar.com/api-pesan.php"`, lalu deploy.
-   Sejak saat itu pesan masuk muncul di menu Order jasa.
+6. Di `site/index.html`, ganti `data-demo` pada form kontak menjadi
+   `data-kirim="https://invishar.com/panel/api-pesan.php"`, lalu deploy.
+   Sejak saat itu pesan yang masuk muncul di menu Order jasa.
+
+### Nanti, saat subdomain dibuat
+
+**Subdomains** → `panel.invishar.com`, arahkan *Document Root*-nya ke
+`public_html/panel`. Tidak ada berkas yang perlu diubah; yang perlu disesuaikan
+hanya `asal_diizinkan` di `konfig.php` dan alamat `data-kirim` di `index.html`
+bila ingin memakai alamat subdomain.
 
 ---
 

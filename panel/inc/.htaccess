@@ -1,0 +1,15 @@
+# Folder ini berisi konfig.php dengan kata sandi basis data.
+# Aturan ditaruh DI DALAM folder, bukan di .htaccess induk, supaya tetap
+# berlaku di mana pun panel dipasang — di akar subdomain maupun di
+# invishar.com/panel/.
+
+# Apache 2.4
+<IfModule mod_authz_core.c>
+  Require all denied
+</IfModule>
+
+# Apache 2.2
+<IfModule !mod_authz_core.c>
+  Order allow,deny
+  Deny from all
+</IfModule>
