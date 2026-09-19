@@ -58,6 +58,36 @@
     }, true);
   });
 
+  /* ------------------------------------------- 3b. Tabel jadi kartu di HP */
+  /* Di layar sempit, tabel lebar memaksa gulir ke samping dan kolom penting
+     (jumlah, status) tersembunyi di kanan. Tiap sel diberi label dari judul
+     kolomnya; CSS lalu menyusun satu baris menjadi satu kartu. */
+  $$("table.tabel").forEach(function (tabel) {
+    var judul = [];
+    $$("thead th", tabel).forEach(function (th) {
+      var rentang = parseInt(th.getAttribute("colspan") || "1", 10);
+      for (var i = 0; i < rentang; i++) judul.push(th.textContent.trim());
+    });
+    if (!judul.length) return;
+    $$("tbody tr", tabel).forEach(function (baris) {
+      var kolom = 0;
+      Array.prototype.forEach.call(baris.children, function (sel) {
+        if (judul[kolom]) sel.setAttribute("data-label", judul[kolom]);
+        if (!sel.textContent.trim() && !sel.querySelector("form, button, a, img, input, select")) {
+          sel.classList.add("sel-kosong");
+        }
+        // Isi sel dibungkus satu elemen supaya teks + keterangannya tetap
+        // bertumpuk di sisi kanan, tidak terpecah menjadi beberapa kolom.
+        var isi = document.createElement("div");
+        isi.className = "sel-isi";
+        while (sel.firstChild) isi.appendChild(sel.firstChild);
+        sel.appendChild(isi);
+        kolom += parseInt(sel.getAttribute("colspan") || "1", 10);
+      });
+    });
+    tabel.classList.add("tabel-kartu");
+  });
+
   /* ------------------------------------------- 4. Bagian yang bisa dilipat */
   document.addEventListener("click", function (e) {
     var pemicu = e.target.closest("[data-buka]");
@@ -432,6 +462,113 @@
     medan.select();
     tombol.remove();
   });
+
+  /* ======================================== 16. Produk affiliate (per baris) */
+  /* Setiap <form data-pa> berdiri sendiri (banyak formulir dalam satu halaman),
+     jadi semua pencarian dibatasi ke formulirnya. Mengatur: saklar membuka
+     isian komisi, Persen/Rupiah mengganti imbuhan, perkiraan komisi, dan
+     tombol Simpan yang menyala bila ada perubahan. */
+  $$("form[data-pa]").forEach(function (form) {
+    var saklar = $("[data-pa-saklar]", form);
+    var bagianFee = $("[data-pa-fee]", form);
+    var nilai = $("input[name=fee_nilai]", form);
+    var bulan = $("input[name=fee_bulan_berulang]", form);
+    var hargaIsian = $("[data-pa-harga]", form);
+    var perkiraan = $("[data-pa-perkiraan]", form);
+    var awal = $("[data-pa-awal]", form);
+    var akhir = $("[data-pa-akhir]", form);
+    var langganan = form.dataset.jenis === "langganan";
+    var jenisProduk = form.dataset.jenis;
+
+    var angka = function (t) {
+      var b = String(t || "").replace(/,\d{1,2}$/, "").replace(/\D/g, "");
+      return b ? parseInt(b, 10) : 0;
+    };
+    var desimal = function (t) {
+      var n = parseFloat(String(t || "").replace(/\./g, "").replace(",", "."));
+      return isNaN(n) ? 0 : n;
+    };
+    var rp = function (n) { return "Rp " + Math.max(0, n).toLocaleString("id-ID"); };
+    var jenisFee = function () {
+      var r = $("input[name=fee_jenis]:checked", form);
+      return r ? r.value : "persen";
+    };
+    var bulanUmum = bulan ? bulan.getAttribute("placeholder") : "";
+
+    var tanda = function () {
+      return JSON.stringify(Array.from(new FormData(form).entries()).filter(function (p) { return p[0] !== "csrf"; }));
+    };
+    var tandaMula = null;   // diambil setelah segarkan() pertama (isian nonaktif tidak ikut)
+
+    var segarkan = function () {
+      var buka = !saklar || saklar.checked;
+      if (bagianFee) {
+        bagianFee.hidden = !buka;
+        $$("input", bagianFee).forEach(function (m) { m.disabled = !buka; });
+      }
+      var tetap = jenisFee() === "tetap";
+      if (awal) awal.hidden = !tetap;
+      if (akhir) akhir.hidden = tetap;
+      if (nilai) nilai.placeholder = tetap ? "mis. 50.000" : "mis. 20";
+
+      if (perkiraan && buka) {
+        var harga = hargaIsian ? angka(hargaIsian.value) : parseInt(form.dataset.harga || "0", 10);
+        var n = tetap ? angka(nilai.value) : desimal(nilai.value);
+        var teks = "";
+        var awas = false;
+        if (!n) {
+          teks = tetap ? "Isi komisi dalam rupiah, mis. 50.000." : "Isi persen komisi, mis. 20.";
+        } else if (!tetap && n > 100) {
+          teks = "Persen tidak boleh lebih dari 100."; awas = true;
+        } else if (tetap && harga && n > harga) {
+          teks = "Komisi melebihi harga (" + rp(harga) + ")."; awas = true;
+        } else {
+          var komisi = tetap ? n : Math.floor(harga * Math.round(n * 100) / 10000);
+          if (!tetap && !harga) {
+            teks = jenisProduk === "penawaran" || jenisProduk === "eksternal"
+              ? "Mitra mendapat " + String(n).replace(".", ",") + "% dari nilai pembayaran yang dicatat."
+              : "Isi harga untuk melihat perkiraan komisi.";
+          } else {
+            var bln = langganan ? (bulan && bulan.value ? bulan.value : bulanUmum) : "";
+            teks = (harga && !tetap ? "Penjualan " + rp(harga) + (langganan ? "/bulan" : "") + " → " : "") +
+              "mitra mendapat <strong>" + rp(komisi) + "</strong>" +
+              (langganan ? " per bulan, selama " + bln + " bulan" : " per penjualan");
+          }
+        }
+        perkiraan.innerHTML = teks;
+        perkiraan.classList.toggle("is-awas", awas);
+      }
+
+      if (tandaMula === null) tandaMula = tanda();
+      form.classList.toggle("is-ubah", tanda() !== tandaMula);
+    };
+
+    form.addEventListener("input", segarkan);
+    form.addEventListener("change", segarkan);
+    segarkan();
+    // Isian yang gagal disimpan (dikembalikan server) langsung tampak "berubah".
+    if (form.querySelector(".pa-galat")) form.classList.add("is-ubah");
+  });
+
+  /* Tiap baris disimpan sendiri: menyimpan satu baris memuat ulang halaman,
+     jadi ubahan di baris lain akan hilang. Beri tahu dulu. */
+  if ($("form[data-pa]")) {
+    var dikirim = null;
+    document.addEventListener("submit", function (e) {
+      var lain = $$("form[data-pa].is-ubah").filter(function (f) { return f !== e.target; });
+      if (lain.length && !window.confirm(
+        "Ada " + lain.length + " baris lain yang sudah diubah tapi belum disimpan dan akan hilang. Lanjutkan?"
+      )) {
+        e.preventDefault();
+        return;
+      }
+      dikirim = e.target;
+    });
+    window.addEventListener("beforeunload", function (e) {
+      if (dikirim) return;
+      if ($("form[data-pa].is-ubah")) { e.preventDefault(); e.returnValue = ""; }
+    });
+  }
 
   /* ============================================================ 11. AI */
   var tombolAI = $$("[data-ai]");

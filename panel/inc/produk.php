@@ -24,6 +24,21 @@ function folderGambarProduk(): string
     return rtrim((string) konfig('situs_data'), '/') . '/produk';
 }
 
+/** Folder gambar produk, dibuat bila belum ada; null kalau gagal. */
+function siapkanFolderGambarProduk(): ?string
+{
+    $folder = folderGambarProduk();
+    if (!is_dir($folder) && !@mkdir($folder, 0755, true) && !is_dir($folder)) {
+        return null;
+    }
+    // Folder gambar tidak boleh menjalankan skrip, apa pun yang berhasil masuk.
+    $jaga = $folder . '/.htaccess';
+    if (!is_file($jaga)) {
+        file_put_contents($jaga, "<FilesMatch \"\\.(php|phtml|phar|cgi|pl|py)$\">\n  Require all denied\n</FilesMatch>\n");
+    }
+    return $folder;
+}
+
 function urlGambarProduk(?string $berkas): string
 {
     return $berkas ? '/data/produk/' . rawurlencode($berkas) : '';
@@ -159,15 +174,10 @@ function simpanGambarProduk(array $berkas, string $slug, ?string &$galat): ?stri
         return null;
     }
 
-    $folder = folderGambarProduk();
-    if (!is_dir($folder) && !@mkdir($folder, 0755, true) && !is_dir($folder)) {
+    $folder = siapkanFolderGambarProduk();
+    if ($folder === null) {
         $galat = 'Folder gambar tidak bisa dibuat.';
         return null;
-    }
-    // Folder gambar tidak boleh menjalankan skrip, apa pun yang berhasil masuk.
-    $jaga = $folder . '/.htaccess';
-    if (!is_file($jaga)) {
-        file_put_contents($jaga, "<FilesMatch \"\\.(php|phtml|phar|cgi|pl|py)$\">\n  Require all denied\n</FilesMatch>\n");
     }
 
     $nama = $slug . '-' . bin2hex(random_bytes(3)) . '.' . $jenis[$ukuran[2]];
@@ -188,4 +198,154 @@ function buangGambarProduk(?string $berkas): void
     if ($berkas) {
         @unlink(folderGambarProduk() . '/' . basename($berkas));
     }
+}
+
+/* ---------------------------------------------------------------------------
+   Setelan affiliate sebuah produk.
+
+   Dipakai halaman sunting produk dan halaman Produk affiliate, supaya aturan
+   komisinya satu. $lama berisi setelan yang sedang tersimpan: kalau affiliate
+   dimatikan, isian fee tidak terkirim dan nilai lama dipertahankan (siap
+   dipakai lagi saat dinyalakan kembali).
+   --------------------------------------------------------------------------- */
+function bacaSetelanAffiliate(array $lama, string $jenis, ?int $harga, array &$galat): array
+{
+    $d = [
+        'affiliate_aktif'    => isset($_POST['affiliate_aktif']) ? 1 : 0,
+        'fee_jenis'          => $lama['fee_jenis'] ?? 'persen',
+        'fee_nilai'          => (string) ($lama['fee_nilai'] ?? '0'),
+        'fee_bulan_berulang' => $lama['fee_bulan_berulang'] ?? null,
+    ];
+    if (!$d['affiliate_aktif']) {
+        return $d;
+    }
+
+    $d['fee_jenis'] = masukan('fee_jenis') === 'tetap' ? 'tetap' : 'persen';
+    if ($d['fee_jenis'] === 'persen') {
+        $teksPersen = str_replace(',', '.', str_replace('.', '', masukan('fee_nilai')));
+        $d['fee_nilai'] = is_numeric($teksPersen) ? (string) round((float) $teksPersen, 2) : '';
+    } else {
+        $n = angkaRupiah(masukan('fee_nilai'));
+        $d['fee_nilai'] = $n === null ? '' : (string) $n;
+    }
+    $bulan = trim(masukan('fee_bulan_berulang'));
+    $d['fee_bulan_berulang'] = $jenis === 'langganan' && $bulan !== '' ? (int) $bulan : null;
+
+    if ($d['fee_nilai'] === '') {
+        $galat[] = 'Isi besar komisi, atau matikan saklar "Buka untuk affiliate".';
+    } elseif ($d['fee_jenis'] === 'persen') {
+        if ($d['fee_nilai'] === '' || (float) $d['fee_nilai'] <= 0 || (float) $d['fee_nilai'] > 100) {
+            $galat[] = 'Komisi persen harus di antara 0 dan 100.';
+        }
+    } else {
+        if ($d['fee_nilai'] === '' || (int) $d['fee_nilai'] <= 0) {
+            $galat[] = 'Isi besar komisi tetap dalam rupiah.';
+        } elseif ($harga !== null && (int) $d['fee_nilai'] > $harga) {
+            $galat[] = 'Komisi tetap (' . rupiah((int) $d['fee_nilai']) . ') tidak boleh melebihi harga (' . rupiah($harga) . ').';
+        }
+    }
+    if ($d['fee_bulan_berulang'] !== null && ($d['fee_bulan_berulang'] < 1 || $d['fee_bulan_berulang'] > 60)) {
+        $galat[] = 'Bulan komisi berulang harus 1–60, atau kosongkan untuk mengikuti setelan umum.';
+    }
+    if ($d['fee_nilai'] === '') {
+        $d['fee_nilai'] = '0';
+    }
+    return $d;
+}
+
+/** Nilai isian "Besar komisi" seperti yang diketik admin (20 / 12,5 / 100.000). */
+function teksIsianFee(array $p): string
+{
+    if (($p['fee_jenis'] ?? 'persen') === 'tetap') {
+        return (int) $p['fee_nilai'] > 0 ? number_format((int) $p['fee_nilai'], 0, ',', '.') : '';
+    }
+    return (float) $p['fee_nilai'] > 0 ? rtrim(rtrim(number_format((float) $p['fee_nilai'], 2, ',', ''), '0'), ',') : '';
+}
+
+/* ---------------------------------------------------------------------------
+   Kelas → produk.
+
+   Kelas di menu Kelas hanya berisi materi dan tampilan galeri; harganya teks
+   bebas ("Rp 249rb"). Supaya bisa dibeli dan dipromosikan affiliate, kelas
+   perlu satu baris produk yang ditautkan lewat produk.kelas_id.
+   --------------------------------------------------------------------------- */
+
+/** "Rp 249rb" → 249000, "Rp 1,5jt" → 1500000, "Gratis" → 0; tak terbaca → null. */
+function hargaDariTeksKelas(string $teks): ?int
+{
+    $t = strtolower(trim($teks));
+    if ($t === '') {
+        return null;
+    }
+    if (preg_match('/gratis|free/', $t)) {
+        return 0;
+    }
+    if (preg_match('/(\d+(?:[.,]\d+)?)\s*(rb|ribu|k|jt|juta)\b/', $t, $m)) {
+        $angka = (float) str_replace(',', '.', $m[1]);
+        return (int) round($angka * (in_array($m[2], ['jt', 'juta'], true) ? 1000000 : 1000));
+    }
+    return angkaRupiah($t);
+}
+
+/** Produk yang sudah ditautkan ke kelas ini (yang tayang didahulukan), atau null. */
+function produkUntukKelas(int $kelasId): ?array
+{
+    return ambilSatu(
+        "SELECT * FROM produk WHERE kelas_id = ? ORDER BY FIELD(status, 'aktif', 'draf', 'arsip'), id LIMIT 1",
+        [$kelasId]
+    );
+}
+
+/**
+ * Membuat produk "sekali bayar" dari sebuah kelas: nama, ringkasan, daftar
+ * hasil belajar, tanya jawab, dan gambar sampulnya ikut tersalin sebagai isi
+ * awal landing page. Mengembalikan id produk baru.
+ */
+function buatProdukDariKelas(array $kelas, int $harga, string $status, array $affiliate): int
+{
+    $detail = json_decode((string) ($kelas['detail'] ?? ''), true) ?: [];
+    $hasil = array_values(array_filter(array_map('trim', (array) ($detail['ikhtisar']['hasil'] ?? []))));
+    $tanya = [];
+    foreach ((array) ($detail['tanya'] ?? []) as $t) {
+        if (is_array($t) && trim((string) ($t['q'] ?? '')) !== '' && trim((string) ($t['a'] ?? '')) !== '') {
+            $tanya[] = ['q' => trim((string) $t['q']), 'a' => trim((string) $t['a'])];
+        }
+    }
+
+    // Alamat landing page = slug kelas, ditambah angka kalau sudah terpakai.
+    $dasar = slugkan((string) $kelas['slug']) ?: slugkan((string) $kelas['judul']);
+    $slug = $dasar;
+    for ($i = 2; ambilNilai('SELECT 1 FROM produk WHERE slug = ?', [$slug]) !== null; $i++) {
+        $slug = $dasar . '-' . $i;
+    }
+
+    q(
+        'INSERT INTO produk (slug, nama, jenis, kelas_id, tagline, ringkas, isi, manfaat, tanya, gambar, harga,
+                             url_eksternal, label_tombol, status, urutan, affiliate_aktif, fee_jenis, fee_nilai,
+                             fee_bulan_berulang, dibuat_pada, diperbarui_pada)
+         VALUES (?, ?, \'sekali\', ?, NULL, ?, NULL, ?, ?, NULL, ?, NULL, NULL, ?, ?, ?, ?, ?, NULL, NOW(), NOW())',
+        [
+            $slug, mb_substr((string) $kelas['judul'], 0, 160), (int) $kelas['id'],
+            trim((string) $kelas['ringkas']) ?: null,
+            $hasil ? implode("\n", $hasil) : null,
+            json_encode($tanya, JSON_UNESCAPED_UNICODE),
+            $harga, $status, (int) $kelas['urutan'],
+            (int) $affiliate['affiliate_aktif'], $affiliate['fee_jenis'], $affiliate['fee_nilai'],
+        ]
+    );
+    $id = (int) db()->lastInsertId();
+
+    // Gambar sampul kelas disalin (bukan dipindah): menghapus salah satunya
+    // nanti tidak ikut menghapus yang lain.
+    if (!empty($kelas['gambar'])) {
+        $asal = rtrim((string) konfig('situs_data'), '/') . '/kelas/' . basename((string) $kelas['gambar']);
+        $folder = is_file($asal) ? siapkanFolderGambarProduk() : null;
+        if ($folder !== null) {
+            $nama = $slug . '-' . bin2hex(random_bytes(3)) . '.' . strtolower(pathinfo($asal, PATHINFO_EXTENSION));
+            if (@copy($asal, $folder . '/' . $nama)) {
+                q('UPDATE produk SET gambar = ? WHERE id = ?', [$nama, $id]);
+            }
+        }
+    }
+    return $id;
 }

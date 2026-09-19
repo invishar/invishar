@@ -284,7 +284,7 @@ a:hover { color: var(--green-500); }
 /* ---------------------------------------------------------------- Angka */
 .angka-kisi {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr));
   gap: 14px;
   margin-bottom: 22px;
 }
@@ -315,7 +315,7 @@ a:hover { color: var(--green-500); }
 /* ---------------------------------------------------------------- Kotak */
 .dua-kolom {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
   gap: 18px;
   align-items: start;
 }
@@ -388,7 +388,7 @@ a:hover { color: var(--green-500); }
 .form-panel { display: flex; flex-direction: column; gap: 14px; }
 .baris-form {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
   gap: 14px;
 }
 .bidang { min-width: 0; }
@@ -578,7 +578,7 @@ input:focus, select:focus, textarea:focus {
 /* -------------------------------------------------------------- Aplikasi */
 .kartu-kisi {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr));
   gap: 16px;
   margin-bottom: 22px;
 }
@@ -737,9 +737,20 @@ input:focus, select:focus, textarea:focus {
   font-size: 12.5px;
   color: var(--ink-50);
   white-space: nowrap;
+  /* Di kolom sempit awalan yang mengalah (dipotong dari depan: "…/p/"),
+     supaya isian slug tetap cukup lebar untuk dibaca. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  direction: rtl;
+  flex: 0 1 auto;
+  min-width: 4.5em;
 }
+/* Penanda arah kiri-ke-kanan: "/" dan "=" di ujung tetap di tempatnya. */
+.slug-awalan::before, .slug-awalan::after { content: "\200E"; }
 .slug-baris input {
   border: none;
+  flex: 1 1 128px;
+  min-width: 80px;
   background: transparent;
   padding-inline: 0;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -1302,7 +1313,7 @@ input:focus, select:focus, textarea:focus {
 .angka-sorot .angka-catatan { color: var(--on-dark-50); }
 
 /* --- pilihan berbentuk kartu (radio) --- */
-.pilih-kisi { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.pilih-kisi { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 10px; }
 .pilih-kartu {
   position: relative;
   display: flex;
@@ -1508,5 +1519,183 @@ input:focus, select:focus, textarea:focus {
   .materi-ringkas { flex-wrap: wrap; row-gap: 4px; }
 }
 
+/* Tabel jadi kartu di layar sempit (label tiap sel diisi panel.js). Sel
+   pertama menjadi judul kartu; sisanya berbaris "label — nilai". */
+@media (max-width: 720px) {
+  .tabel-bungkus:has(.tabel-kartu) { overflow-x: visible; }
+  .tabel-kartu, .tabel-kartu tbody { display: block; }
+  .tabel-kartu thead { display: none; }
+  .tabel-kartu tbody tr {
+    display: block;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .tabel-kartu tbody tr:last-child { border-bottom: none; }
+  .tabel-kartu td {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 5px 0;
+    border-bottom: none;
+    text-align: right;
+    white-space: normal;
+    max-width: none;
+  }
+  .tabel-kartu .sel-isi { min-width: 0; overflow-wrap: anywhere; }
+  .tabel-kartu td::before {
+    content: attr(data-label);
+    flex: none;
+    max-width: 45%;
+    text-align: left;
+    font-family: var(--font-ui);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-50);
+    padding-top: 3px;
+  }
+  .tabel-kartu td:not([data-label])::before,
+  .tabel-kartu td[data-label=""]::before { content: none; }
+  .tabel-kartu td:not([data-label]),
+  .tabel-kartu td[data-label=""] { justify-content: flex-end; }
+  .tabel-kartu td.sel-kosong { display: none; }
+  .tabel-kartu td .tabel-sub { text-align: right; }
+  /* Sel pertama: judul kartu, rata kiri, tanpa label. */
+  .tabel-kartu td:first-child {
+    display: block;
+    text-align: left;
+    padding: 0 0 8px;
+    margin-bottom: 4px;
+    border-bottom: 1px dashed var(--line);
+  }
+  .tabel-kartu td:first-child::before { content: none; }
+  .tabel-kartu td:first-child .tabel-sub { text-align: left; }
+}
+
 /* Isi <aside> ikut menjadi sel grid sendiri-sendiri (tanpa kolom kosong). */
 .aside-lebur { display: contents; }
+
+/* ======================================================================
+   Produk affiliate (produk-affiliate.php)
+   ====================================================================== */
+.titik-abu { width: 8px; height: 8px; border-radius: 50%; flex: none; display: inline-block; background: rgba(26, 25, 23, 0.25); }
+
+.pa-bagian { margin-top: 28px; }
+.pa-kepala {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 20px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.pa-kepala h2 { font-weight: 700; font-size: 19px; letter-spacing: -0.03em; margin: 0 0 4px; }
+.pa-kepala .teks-kecil { margin: 0; max-width: 72ch; }
+
+.pa-daftar {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  margin-bottom: 12px;
+}
+.pa-baris {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 430px);
+  gap: 16px 28px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+  scroll-margin-top: 90px;
+}
+.pa-baris:last-child { border-bottom: none; }
+.pa-baris:target, .pa-kelas:target { animation: pa-sorot 2.4s var(--ease); }
+@keyframes pa-sorot { 0%, 40% { background: var(--green-100); } 100% { background: transparent; } }
+
+.pa-info { min-width: 0; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.pa-info p { margin: 0; }
+.pa-nama { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; }
+.pa-nama .tabel-utama { font-size: 15.5px; }
+.pa-meta { font-size: 13.5px; color: var(--ink-62); margin: 0; }
+.pa-meta strong { color: var(--ink); font-weight: 600; }
+.pa-keadaan { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--ink-70); }
+.pa-tayang { margin-top: 6px; }
+
+.pa-atur { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.pa-fee { display: flex; flex-direction: column; gap: 8px; }
+.pa-fee-baris { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; }
+.pa-nilai { flex: 1 1 120px; min-width: 110px; }
+.pa-nilai input { width: 100%; font-variant-numeric: tabular-nums; }
+.pa-bulan { flex: 1 1 100%; }
+.pa-bulan input { width: 100%; }
+.pa-perkiraan { margin: 0; font-size: 13px; color: var(--ink-62); min-height: 1.4em; }
+.pa-perkiraan strong { font-family: var(--font-ui); color: var(--green-900); }
+.pa-perkiraan.is-awas { color: var(--merah); }
+.pa-simpan { display: flex; align-items: center; gap: 10px; }
+.pa-simpan .tbl { min-width: 96px; }
+
+.pa-galat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  background: var(--merah-muda);
+  color: var(--merah);
+  font-size: 13.5px;
+}
+.pa-baris.is-galat, .pa-kelas.is-galat { background: rgba(162, 58, 42, 0.04); }
+
+/* Pilihan dua tombol (Persen / Rupiah tetap). */
+.segmen {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--r-sm);
+  background: rgba(26, 25, 23, 0.06);
+  flex: none;
+}
+.segmen label { position: relative; cursor: pointer; }
+.segmen input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.segmen span {
+  display: block;
+  padding: 7px 12px;
+  border-radius: 7px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-62);
+  white-space: nowrap;
+  transition: background .14s ease, color .14s ease;
+}
+.segmen input:checked + span { background: var(--white); color: var(--green-900); box-shadow: 0 1px 3px rgba(20, 38, 16, 0.14); }
+.segmen input:focus-visible + span { outline: 2px solid var(--green-500); outline-offset: 1px; }
+
+/* Kartu kelas yang belum dijual. */
+.pa-kelas-kisi { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: 14px; }
+.pa-kelas {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  scroll-margin-top: 90px;
+}
+.pa-kelas > p { margin: 0; }
+.pa-kelas .pa-atur { margin-top: 8px; padding-top: 14px; border-top: 1px dashed var(--line-kuat); flex: 1; }
+.pa-kelas .tbl-penuh { margin-top: auto; }
+.pa-centang { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; cursor: pointer; }
+.pa-centang input { margin-top: 3px; accent-color: var(--green-700); width: 16px; height: 16px; flex: none; }
+.pa-centang .teks-kecil { display: block; }
+
+/* Tombol simpan menyala saat ada perubahan yang belum tersimpan. */
+.pa-atur.is-ubah [data-pa-tombol] { background: var(--green-900); color: var(--on-dark); border-color: var(--green-900); }
+
+@media (max-width: 860px) {
+  .pa-baris { grid-template-columns: minmax(0, 1fr); padding: 16px; }
+  .pa-baris .pa-atur { padding-top: 12px; border-top: 1px dashed var(--line); }
+}
+
+/* --- kotak penjualan di halaman sunting kelas --- */
+.jual-kelas .keadaan { margin-bottom: 12px; }

@@ -18,6 +18,7 @@ $grupMenu = [
         'transaksi'  => ['Transaksi',  tautan('transaksi')],
     ],
     'Affiliate' => [
+        'produk-affiliate' => ['Produk affiliate', tautan('produk-affiliate')],
         'affiliate'  => ['Affiliator', tautan('affiliate')],
         'penarikan'  => ['Penarikan',  tautan('penarikan')],
     ],

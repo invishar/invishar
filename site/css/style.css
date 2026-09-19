@@ -326,7 +326,7 @@ section[id] { scroll-margin-top: 76px; }
 /* ----------------------------------------------------------------- 6. Hero */
 .hero {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(290px, 100%), 1fr));
   gap: clamp(30px, 5vw, 48px);
   align-items: center;
   padding-top: clamp(34px, 6vw, 52px);
@@ -437,7 +437,7 @@ section[id] { scroll-margin-top: 76px; }
 /* ---------------------------------------------------------- 8. Tiga pintu */
 .doors {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
   gap: 16px;
   padding-top: clamp(40px, 6vw, 56px);
 }
@@ -479,7 +479,7 @@ section[id] { scroll-margin-top: 76px; }
 /* -------------------------------------------------------------- 9. Statistik */
 .stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
   gap: 2px;
   background: var(--line);
   border: 1px solid var(--line);
@@ -529,7 +529,7 @@ section[id] { scroll-margin-top: 76px; }
 
 .grid-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(270px, 100%), 1fr));
   gap: 18px;
 }
 
@@ -608,7 +608,7 @@ section[id] { scroll-margin-top: 76px; }
   border-radius: var(--r-xl);
   padding: clamp(26px, 4vw, 44px);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   gap: clamp(28px, 4vw, 44px);
   align-items: start;
 }
@@ -663,7 +663,7 @@ section[id] { scroll-margin-top: 76px; }
   border: 1px solid var(--line);
   border-radius: var(--r-xl);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   overflow: hidden;
 }
 .kelas-copy {
@@ -759,7 +759,7 @@ section[id] { scroll-margin-top: 76px; }
 /* ---------------------------------------------------------- 14. Tanya jawab */
 .faq-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   gap: clamp(24px, 4vw, 44px);
   align-items: start;
 }
@@ -828,7 +828,7 @@ section[id] { scroll-margin-top: 76px; }
 }
 .kontak-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(290px, 100%), 1fr));
   gap: clamp(30px, 5vw, 48px);
   align-items: start;
 }

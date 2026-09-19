@@ -137,7 +137,7 @@
 }
 .produk-isi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(290px, 100%), 1fr));
   gap: clamp(26px, 4vw, 52px);
   align-items: start;
 }
@@ -156,7 +156,7 @@
 /* ---------------------------------------------------------- Penawaran */
 .penawaran-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(290px, 100%), 1fr));
   gap: clamp(26px, 4vw, 48px);
   align-items: start;
   background: var(--surface);

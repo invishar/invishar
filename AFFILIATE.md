@@ -32,6 +32,8 @@ Disusun 19 September 2026
 
 | Kejadian | Yang dilakukan | Di mana |
 |---|---|---|
+| Ingin menjual kelas & membukanya untuk mitra | Di bagian *Kelas yang belum dijual*: isi harga + komisi → *Jual kelas ini* (nama, ringkasan, hasil belajar, tanya jawab, dan gambar ikut tersalin) | Produk affiliate (atau tombol *Jual & buka untuk affiliate* di halaman kelas) |
+| Buka/tutup affiliate atau ubah komisi produk | Saklar *Buka untuk affiliate*, pilih Persen/Rupiah tetap, isi besar → *Simpan* per baris. Mitra hanya melihat produk yang dibuka **dan** Tayang | Produk affiliate |
 | Ada pendaftar (lencana di menu Affiliator) | Baca rencana promosinya → *Setujui & aktifkan* (kode boleh diganti) atau *Tolak* | Affiliator |
 | Pembeli lunas lewat checkout | Kirim akses ke WhatsApp pembeli, tulis di catatan transaksi | Transaksi |
 | Pembayaran lewat transfer/WA | *+ Catat pembayaran manual* (pilih affiliate kalau ada) | Transaksi |
@@ -267,6 +269,7 @@ Kode affiliate: 6 karakter dari huruf/angka tanpa yang mirip (`ABCDEFGHJKMNPQRST
 - `panel/inc/konfig.contoh.php` — tambah `rahasia_ref`, `gerbang => 'uji'`, `midtrans => [server_key, client_key, produksi => false]`.
 
 ### Panel admin (menu baru di `panel/inc/kepala.php`)
+- **Produk affiliate** — `produk-affiliate.php`: komisi semua produk dalam satu halaman (simpan per baris) dan kelas yang belum punya produk → dijadikan produk "sekali bayar" (`buatProdukDariKelas()` di `inc/produk.php`). Aturan komisi dipakai bersama dengan `produk-edit.php` lewat `bacaSetelanAffiliate()`. Halaman sunting kelas punya kotak *Penjualan & affiliate*, daftar kelas punya kolom *Dijual & affiliate*.
 - **Produk** — `produk.php`, `produk-edit.php`: isi landing page, harga, jenis, tautan ke kelas, dan kotak *Setelan affiliate* (aktif, persen/tetap, nilai, bulan berulang). `terbitkan.php` ditambah menulis `data/produk.json`.
 - **Affiliate** — `affiliate.php` (saring per status, jumlah menunggu di menu), `affiliate-detail.php` (setujui + tetapkan kode, tolak, bekukan, reset sandi, statistik, daftar komisi & penarikan, tombol *Cairkan sekarang* per komisi atau untuk semua komisi tertahan).
 - **Transaksi** — `transaksi.php`, `transaksi-detail.php`: daftar, riwayat status, **catat pembayaran manual** (termasuk perpanjangan langganan bulan ke-n), tandai refund. `order-detail.php` dapat tombol *Catat pembayaran* yang mengisi produk & affiliate dari order.

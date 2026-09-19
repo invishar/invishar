@@ -31,6 +31,8 @@ require __DIR__ . '/inc/kepala.php';
   Semua yang dijual atau dipromosikan affiliate ada di sini. Setiap produk berstatus <strong>Tayang</strong> otomatis punya
   landing page di <code><?= e(preg_replace('#^https?://#', '', urlSitus())) ?>/p/nama-produk</code>. Perubahan langsung tayang
   begitu disimpan, tanpa langkah terbitkan terpisah.
+  Untuk mengatur komisi semua produk sekaligus, atau menjual kelas, buka
+  <a href="<?= tautan('produk-affiliate') ?>">Produk affiliate</a>.
 </p>
 
 <?php if (array_sum($hitung) > 0): ?>

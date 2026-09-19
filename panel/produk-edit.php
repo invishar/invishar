@@ -92,20 +92,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $d['slug'] = $slugKiriman;
     }
 
-    // Setelan affiliate. Kalau dimatikan, isian fee tidak terkirim — nilai lama dipertahankan.
-    $d['affiliate_aktif'] = isset($_POST['affiliate_aktif']) ? 1 : 0;
-    if ($d['affiliate_aktif']) {
-        $d['fee_jenis'] = masukan('fee_jenis') === 'tetap' ? 'tetap' : 'persen';
-        if ($d['fee_jenis'] === 'persen') {
-            $teksPersen = str_replace(',', '.', str_replace('.', '', masukan('fee_nilai')));
-            $d['fee_nilai'] = is_numeric($teksPersen) ? (string) round((float) $teksPersen, 2) : '';
-        } else {
-            $n = angkaRupiah(masukan('fee_nilai'));
-            $d['fee_nilai'] = $n === null ? '' : (string) $n;
-        }
-        $bulan = trim(masukan('fee_bulan_berulang'));
-        $d['fee_bulan_berulang'] = $d['jenis'] === 'langganan' && $bulan !== '' ? (int) $bulan : null;
-    }
+    // Setelan affiliate (aturan bersama dengan halaman Produk affiliate).
+    $d = array_merge($d, bacaSetelanAffiliate($p, $d['jenis'], $d['harga'], $galat));
 
     /* ---- periksa ---- */
     if ($d['nama'] === '') {
@@ -126,23 +114,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($d['jenis'] === 'eksternal' && !preg_match('#^https?://[^\s]+\.[^\s]+#i', $d['url_eksternal'])) {
         $galat[] = 'Isi alamat aplikasi lengkap dengan https:// (mis. https://amanafinance.id).';
     }
-    if ($d['affiliate_aktif']) {
-        if ($d['fee_jenis'] === 'persen') {
-            if ($d['fee_nilai'] === '' || (float) $d['fee_nilai'] <= 0 || (float) $d['fee_nilai'] > 100) {
-                $galat[] = 'Komisi persen harus di antara 0 dan 100.';
-            }
-        } else {
-            if ($d['fee_nilai'] === '' || (int) $d['fee_nilai'] <= 0) {
-                $galat[] = 'Isi besar komisi tetap dalam rupiah.';
-            } elseif ($d['harga'] !== null && (int) $d['fee_nilai'] > $d['harga']) {
-                $galat[] = 'Komisi tetap (' . rupiah((int) $d['fee_nilai']) . ') tidak boleh melebihi harga (' . rupiah($d['harga']) . ').';
-            }
-        }
-        if ($d['fee_bulan_berulang'] !== null && ($d['fee_bulan_berulang'] < 1 || $d['fee_bulan_berulang'] > 60)) {
-            $galat[] = 'Bulan komisi berulang harus 1–60, atau kosongkan untuk mengikuti setelan umum.';
-        }
-    }
-
     /* ---- gambar ---- */
     $gambarBaru = null;
     if (!$galat) {
@@ -162,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $d['slug'], $d['nama'], $d['jenis'], $d['kelas_id'], $d['tagline'] ?: null, $d['ringkas'] ?: null,
             $d['isi'] ?: null, $d['manfaat'] ?: null, $d['tanya'], $d['gambar'], $d['harga'],
             $d['url_eksternal'] ?: null, $d['label_tombol'] ?: null, $d['status'], $d['urutan'],
-            $d['affiliate_aktif'], $d['fee_jenis'], $d['fee_nilai'] === '' ? '0' : $d['fee_nilai'], $d['fee_bulan_berulang'],
+            $d['affiliate_aktif'], $d['fee_jenis'], $d['fee_nilai'], $d['fee_bulan_berulang'],
         ];
         if ($lama) {
             q(
@@ -212,9 +183,7 @@ $ringkasan = $lama ? ambilSatu(
 $komisiDibayar = $lama ? (int) ambilNilai("SELECT COALESCE(SUM(jumlah), 0) FROM komisi WHERE produk_id = ? AND status = 'berlaku'", [$id]) : 0;
 $urlHalaman = urlSitus() . '/p/' . ($lama['slug'] ?? '');
 $hargaTampil = $p['harga'] !== null && $p['harga'] !== '' ? number_format((int) $p['harga'], 0, ',', '.') : '';
-$feeTampil = $p['fee_jenis'] === 'tetap'
-    ? ((int) $p['fee_nilai'] > 0 ? number_format((int) $p['fee_nilai'], 0, ',', '.') : '')
-    : ((float) $p['fee_nilai'] > 0 ? rtrim(rtrim(number_format((float) $p['fee_nilai'], 2, ',', ''), '0'), ',') : '');
+$feeTampil = teksIsianFee($p);
 
 $judul = $lama ? $lama['nama'] : 'Produk baru';
 $menu  = 'produk';

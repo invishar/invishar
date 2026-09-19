@@ -43,6 +43,16 @@ $daftar = ambilSemua(
      FROM kelas k ORDER BY k.urutan, k.judul'
 );
 
+// Produk yang ditautkan ke tiap kelas (kalau fitur penjualan sudah aktif).
+$siapJual = penjualanSiap();
+$jualKelas = [];
+if ($siapJual) {
+    require_once __DIR__ . '/inc/produk.php';
+    foreach (ambilSemua("SELECT * FROM produk WHERE kelas_id IS NOT NULL ORDER BY FIELD(status, 'aktif', 'draf', 'arsip'), id") as $p) {
+        $jualKelas[(int) $p['kelas_id']] = $jualKelas[(int) $p['kelas_id']] ?? $p;
+    }
+}
+
 $berkasTerbit = rtrim((string) konfig('situs_data'), '/') . '/kelas.json';
 $terbitPada   = is_file($berkasTerbit) ? date('Y-m-d H:i:s', (int) filemtime($berkasTerbit)) : null;
 $perluTerbit  = false;
@@ -83,7 +93,7 @@ require __DIR__ . '/inc/kepala.php';
 <div class="tabel-bungkus">
   <table class="tabel">
     <thead>
-      <tr><th>Kelas</th><th>Kategori</th><th>Isi</th><th>Harga</th><th>Status</th></tr>
+      <tr><th>Kelas</th><th>Kategori</th><th>Isi</th><th>Harga</th><th>Status</th><?php if ($siapJual): ?><th>Dijual &amp; affiliate</th><?php endif; ?></tr>
     </thead>
     <tbody>
       <?php foreach ($daftar as $k): ?>
@@ -96,6 +106,17 @@ require __DIR__ . '/inc/kepala.php';
           <td class="tabel-tipis"><?= (int) $k['jml_modul'] ?> modul · <?= (int) $k['jml_materi'] ?> materi</td>
           <td><?= e($k['harga']) ?></td>
           <td><span class="tanda tanda-<?= e(strtolower($k['status'])) ?>"><?= e($k['status']) ?></span></td>
+          <?php if ($siapJual): ?>
+            <td>
+              <?php $pj = $jualKelas[(int) $k['id']] ?? null; ?>
+              <?php if (!$pj): ?>
+                <a class="tautan-lain" href="<?= tautan('produk-affiliate') ?>#k<?= (int) $k['id'] ?>">Belum dijual &mdash; jual</a>
+              <?php else: ?>
+                <a class="tautan-lain" href="<?= tautan('produk-affiliate') ?>#p<?= (int) $pj['id'] ?>"><?= e(STATUS_PRODUK[$pj['status']]) ?> · <?= e(teksHargaProduk($pj)) ?></a>
+                <span class="tabel-sub"><?= (int) $pj['affiliate_aktif'] ? 'Komisi ' . e(teksFee($pj['fee_jenis'], $pj['fee_nilai'])) : 'Affiliate tidak dibuka' ?></span>
+              <?php endif; ?>
+            </td>
+          <?php endif; ?>
         </tr>
       <?php endforeach; ?>
     </tbody>

@@ -376,6 +376,14 @@ $berkasTerbit = rtrim((string) konfig('situs_data'), '/') . '/course-' . $kelas[
 $terbitPada   = is_file($berkasTerbit) ? (int) filemtime($berkasTerbit) : 0;
 $perluTerbit  = strtotime($kelas['diperbarui_pada']) > $terbitPada;
 
+// Status penjualan kelas ini (produk yang ditautkan), kalau fitur penjualan sudah aktif.
+$siapJual = penjualanSiap();
+$produkKelas = null;
+if ($siapJual) {
+    require_once __DIR__ . '/inc/produk.php';
+    $produkKelas = produkUntukKelas($id);
+}
+
 $judul = 'Kelas · ' . $kelas['judul'];
 $menu  = 'kelas';
 require __DIR__ . '/inc/kepala.php';
@@ -385,6 +393,54 @@ require __DIR__ . '/inc/kepala.php';
   <a href="<?= tautan('kelas') ?>">&larr; Semua kelas</a>
   <a class="tautan-lain" href="https://invishar.com/course.html?k=<?= e($kelas['slug']) ?>" target="_blank" rel="noopener">Lihat di situs &nearr;</a>
 </p>
+
+<?php if ($siapJual): ?>
+  <!-- ============ Penjualan & affiliate ============ -->
+  <section class="kotak jual-kelas">
+    <div class="kotak-kepala">
+      <h2>Penjualan &amp; affiliate</h2>
+      <?php if ($produkKelas): ?>
+        <span class="tanda tanda-<?= $produkKelas['status'] === 'aktif' ? 'tayang' : e($produkKelas['status']) ?>"><?= e(STATUS_PRODUK[$produkKelas['status']]) ?></span>
+      <?php else: ?>
+        <span class="tanda tanda-draf">Belum dijual</span>
+      <?php endif; ?>
+    </div>
+    <?php if ($produkKelas): ?>
+      <?php $dilihat = (int) $produkKelas['affiliate_aktif'] && $produkKelas['status'] === 'aktif'; ?>
+      <dl class="keadaan">
+        <dt>Harga jual</dt>
+        <dd><?= e(teksHargaProduk($produkKelas)) ?>
+          <?php $hg = hargaDariTeksKelas((string) $kelas['harga']); if ($hg !== null && $hg !== (int) $produkKelas['harga']): ?>
+            <span class="petunjuk petunjuk-awas" style="display:block">Berbeda dengan harga di galeri kelas (<?= e($kelas['harga']) ?>). Samakan supaya pengunjung tidak bingung.</span>
+          <?php endif; ?>
+        </dd>
+        <dt>Affiliate</dt>
+        <dd>
+          <?php if ((int) $produkKelas['affiliate_aktif']): ?>
+            Komisi <?= e(teksKomisiProduk($produkKelas)) ?>
+            <span class="petunjuk" style="display:block"><?= $dilihat ? 'Tampil di dashboard mitra.' : 'Belum tayang, jadi mitra belum melihatnya.' ?></span>
+          <?php else: ?>
+            Tidak dibuka &mdash; mitra tidak bisa mempromosikannya.
+          <?php endif; ?>
+        </dd>
+        <?php if ($produkKelas['status'] === 'aktif'): ?>
+          <dt>Landing page</dt>
+          <dd><a href="<?= e(urlSitus() . '/p/' . $produkKelas['slug']) ?>" target="_blank" rel="noopener"><?= e(preg_replace('#^https?://#', '', urlSitus()) . '/p/' . $produkKelas['slug']) ?> ↗</a></dd>
+        <?php endif; ?>
+      </dl>
+      <div class="aksi-kisi">
+        <a class="tbl tbl-kecil tbl-utama" href="<?= tautan('produk-affiliate') ?>#p<?= (int) $produkKelas['id'] ?>">Atur komisi affiliate</a>
+        <a class="tbl tbl-kecil" href="<?= tautan('produk/' . (int) $produkKelas['id']) ?>">Sunting harga &amp; landing page</a>
+      </div>
+    <?php else: ?>
+      <p class="teks-kecil" style="margin:0 0 12px">Kelas ini belum bisa dibeli dan belum bisa dipromosikan mitra affiliate.
+        Jadikan produk untuk membuka checkout, landing page, dan link affiliate-nya.</p>
+      <div class="aksi-kisi">
+        <a class="tbl tbl-kecil tbl-utama" href="<?= tautan('produk-affiliate') ?>#k<?= (int) $id ?>">Jual &amp; buka untuk affiliate</a>
+      </div>
+    <?php endif; ?>
+  </section>
+<?php endif; ?>
 
 <form method="post" class="form-panel" id="form-kelas" data-jaga enctype="multipart/form-data">
   <?= csrfInput() ?>
