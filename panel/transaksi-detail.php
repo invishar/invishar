@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/inc/awal.php';
-require_once __DIR__ . '/inc/gerbang.php';
+require_once __DIR__ . '/inc/order.php';
 wajibMasuk();
 wajibPenjualanSiap();
 
@@ -36,6 +36,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             pesan('Transaksi ' . $t['kode_order'] . ' sekarang ' . strtolower(STATUS_TRANSAKSI[$statusBaru]) . '.');
         } else {
             pesan('Status tidak berubah: dari "' . STATUS_TRANSAKSI[$t['status']] . '" tidak bisa menjadi "' . STATUS_TRANSAKSI[$statusBaru] . '".', 'peringatan');
+        }
+    }
+    if ($aksi === 'proses') {
+        $galat = ubahProsesTransaksi($id, masukan('ke'), $catatan);
+        if ($galat) {
+            pesan($galat, 'buruk');
+        } else {
+            pesan('Status pesanan sekarang ' . (STATUS_PROSES[masukan('ke')] ?? masukan('ke')) . '.');
         }
     }
     if ($aksi === 'catatan') {
@@ -82,7 +90,7 @@ function alasanTanpaKomisi(array $t, ?array $produk, ?array $aff): string
 
 $sumberLabel = ['checkout' => 'Checkout', 'uji' => 'Simulasi uji', 'midtrans' => 'Midtrans', 'admin' => 'Admin'];
 
-$judul = 'Transaksi ' . $t['kode_order'];
+$judul = 'Pesanan ' . $t['kode_order'];
 $menu  = 'transaksi';
 require __DIR__ . '/inc/kepala.php';
 ?>
@@ -120,6 +128,70 @@ require __DIR__ . '/inc/kepala.php';
         <dt>Dibuat</dt><dd><?= e(waktuIndo($t['dibuat_pada'])) ?></dd>
         <?php if ($t['dibayar_pada']): ?><dt>Dibayar</dt><dd><?= e(waktuIndo($t['dibayar_pada'])) ?></dd><?php endif; ?>
       </dl>
+    </section>
+
+    <!-- ============ Status proses ============ -->
+    <?php $proses = $t['status_proses']; ?>
+    <section class="kotak">
+      <div class="kotak-kepala">
+        <h2>Status pesanan</h2>
+        <span class="tanda tanda-proses-<?= e($proses) ?>"><?= e(STATUS_PROSES[$proses]) ?></span>
+      </div>
+      <ol class="alur-proses" aria-label="Tahap pesanan">
+        <?php foreach (['baru' => 'Baru masuk', 'diproses' => 'Diproses', 'selesai' => 'Selesai'] as $kunci => $label): ?>
+          <?php $urut = array_search($kunci, ['baru', 'diproses', 'selesai'], true); $kini = array_search($proses, ['baru', 'diproses', 'selesai'], true); ?>
+          <li class="<?= $proses === 'batal' ? '' : ($kunci === $proses ? 'is-kini' : ($kini !== false && $urut < $kini ? 'is-lewat' : '')) ?>"><?= e($label) ?></li>
+        <?php endforeach; ?>
+      </ol>
+
+      <?php if ($t['status'] === 'menunggu'): ?>
+        <p class="bagian-sub" style="margin:0">Pesanan diproses setelah pembayarannya lunas.</p>
+      <?php elseif ($t['status'] === 'lunas' && $proses !== 'batal'): ?>
+        <form method="post" class="aksi-kisi">
+          <?= csrfInput() ?>
+          <input type="hidden" name="id" value="<?= $id ?>">
+          <input type="hidden" name="aksi" value="proses">
+          <?php if ($proses === 'baru'): ?>
+            <button class="tbl tbl-utama" type="submit" name="ke" value="diproses">Mulai proses</button>
+            <button class="tbl" type="submit" name="ke" value="selesai">Langsung selesai</button>
+          <?php elseif ($proses === 'diproses'): ?>
+            <button class="tbl tbl-utama" type="submit" name="ke" value="selesai">Tandai selesai</button>
+          <?php else: ?>
+            <button class="tbl tbl-kecil" type="submit" name="ke" value="diproses">Buka lagi (diproses)</button>
+          <?php endif; ?>
+        </form>
+        <p class="petunjuk"><?= $produk && ($produk['kategori'] ?? '') === 'kelas'
+            ? 'Untuk kelas: kirim akses ke WhatsApp pembeli, lalu tandai selesai.'
+            : 'Selesai = pesanan sudah diserahkan ke pembeli.' ?></p>
+        <?php if ($proses !== 'selesai'): ?>
+          <button class="tbl tbl-kecil tbl-bahaya" type="button" data-buka="#form-batal" style="margin-top:12px">Batalkan pesanan…</button>
+          <div class="lipatan-aksi" id="form-batal" hidden>
+            <p class="bagian-sub">Pesanan ini sudah dibayar. Kalau dananya dikembalikan, pakai <strong>Kembalikan dana (refund)</strong> di bawah —
+              komisi affiliate ikut dibatalkan. Kalau tidak ada dana yang dikembalikan, batalkan saja di sini.</p>
+            <form method="post" class="form-panel">
+              <?= csrfInput() ?>
+              <input type="hidden" name="id" value="<?= $id ?>">
+              <input type="hidden" name="aksi" value="proses">
+              <div class="bidang">
+                <label for="alasan-batal">Alasan</label>
+                <input id="alasan-batal" name="catatan" type="text" placeholder="Mis. pembeli minta ganti ke produk lain">
+              </div>
+              <div><button class="tbl tbl-bahaya" type="submit" name="ke" value="batal"
+                           data-pastikan="Batalkan pesanan tanpa mengembalikan dana? Komisi affiliate tetap berlaku.">Batalkan tanpa refund</button></div>
+            </form>
+          </div>
+        <?php endif; ?>
+      <?php elseif ($proses === 'batal'): ?>
+        <p class="bagian-sub" style="margin:0">Pesanan dibatalkan<?= $t['status'] !== 'lunas' ? ' (' . e(strtolower(STATUS_TRANSAKSI[$t['status']])) . ')' : '' ?>.</p>
+        <?php if ($t['status'] === 'lunas'): ?>
+          <form method="post" style="margin-top:10px">
+            <?= csrfInput() ?>
+            <input type="hidden" name="id" value="<?= $id ?>">
+            <input type="hidden" name="aksi" value="proses">
+            <button class="tbl tbl-kecil" type="submit" name="ke" value="baru">Buka lagi</button>
+          </form>
+        <?php endif; ?>
+      <?php endif; ?>
     </section>
 
     <!-- ============ Tindakan ============ -->
@@ -170,12 +242,20 @@ require __DIR__ . '/inc/kepala.php';
       <div class="kotak-kepala"><h2>Riwayat</h2></div>
       <ul class="garis-waktu">
         <?php foreach ($riwayat as $r): ?>
-          <li>
-            <span class="gw-judul">
-              <?= $r['status_lama'] && $r['status_lama'] !== $r['status_baru'] ? e(STATUS_TRANSAKSI[$r['status_lama']] ?? $r['status_lama']) . ' → ' : '' ?><?= e(STATUS_TRANSAKSI[$r['status_baru']] ?? $r['status_baru']) ?>
-            </span>
-            <span class="gw-sub"><?= e($sumberLabel[$r['sumber']] ?? $r['sumber']) ?> · <?= e(waktuIndo($r['dibuat_pada'])) ?><?= $r['catatan'] ? ' · ' . e($r['catatan']) : '' ?></span>
-          </li>
+          <?php if (str_starts_with((string) $r['catatan'], 'Proses: ')): /* perubahan status proses, bukan pembayaran */ ?>
+            <?php [$judulProses, $ketProses] = array_pad(explode(' · ', substr((string) $r['catatan'], 8), 2), 2, ''); ?>
+            <li>
+              <span class="gw-judul"><?= e($judulProses) ?></span>
+              <span class="gw-sub">Status pesanan · <?= e(waktuIndo($r['dibuat_pada'])) ?><?= $ketProses !== '' ? ' · ' . e($ketProses) : '' ?></span>
+            </li>
+          <?php else: ?>
+            <li>
+              <span class="gw-judul">
+                <?= $r['status_lama'] && $r['status_lama'] !== $r['status_baru'] ? e(STATUS_TRANSAKSI[$r['status_lama']] ?? $r['status_lama']) . ' → ' : '' ?><?= e(STATUS_TRANSAKSI[$r['status_baru']] ?? $r['status_baru']) ?>
+              </span>
+              <span class="gw-sub"><?= e($sumberLabel[$r['sumber']] ?? $r['sumber']) ?> · <?= e(waktuIndo($r['dibuat_pada'])) ?><?= $r['catatan'] ? ' · ' . e($r['catatan']) : '' ?></span>
+            </li>
+          <?php endif; ?>
         <?php endforeach; ?>
       </ul>
     </section>

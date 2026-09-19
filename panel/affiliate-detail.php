@@ -262,8 +262,8 @@ require __DIR__ . '/inc/kepala.php';
       <?php if ($penarikan): ?>
         <section class="kotak">
           <div class="kotak-kepala">
-            <h2>Penarikan</h2>
-            <a class="tautan-lain" href="<?= tautan('penarikan') ?>">Ke antrean penarikan &rarr;</a>
+            <h2>Withdraw</h2>
+            <a class="tautan-lain" href="<?= tautan('penarikan') ?>">Ke antrean withdraw &rarr;</a>
           </div>
           <ul class="daftar-ringkas">
             <?php foreach ($penarikan as $p): ?>

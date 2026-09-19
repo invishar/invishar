@@ -18,7 +18,10 @@ $berkasTerbit = rtrim((string) konfig('situs_data'), '/') . '/kelas.json';
 $terbitPada   = is_file($berkasTerbit) ? date('Y-m-d H:i:s', (int) filemtime($berkasTerbit)) : null;
 
 $jual = null;
+$perluDiproses = null;
 if (penjualanSiap()) {
+    require_once __DIR__ . '/inc/order.php';
+    $perluDiproses = jumlahPerluDiproses();
     $jual = [
         'rp'        => (int) ambilNilai("SELECT COALESCE(SUM(jumlah), 0) FROM transaksi WHERE status = 'lunas' AND dibayar_pada >= DATE_FORMAT(NOW(), '%Y-%m-01')"),
         'n'         => (int) ambilNilai("SELECT COUNT(*) FROM transaksi WHERE status = 'lunas' AND dibayar_pada >= DATE_FORMAT(NOW(), '%Y-%m-01')"),
@@ -36,28 +39,35 @@ require __DIR__ . '/inc/kepala.php';
 ?>
 
 <div class="angka-kisi">
-  <a class="angka" href="<?= tautan('order') ?>?status=baru">
-    <span class="angka-num"><?= $orderBaru ?></span>
-    <span class="angka-lbl">Order baru</span>
-  </a>
-  <a class="angka" href="<?= tautan('order') ?>">
+  <?php if ($perluDiproses !== null): ?>
+    <a class="angka<?= $perluDiproses > 0 ? ' angka-sorot' : '' ?>" href="<?= tautan('transaksi') ?>?proses=perlu">
+      <span class="angka-num"><?= $perluDiproses ?></span>
+      <span class="angka-lbl">Pesanan perlu diproses</span>
+    </a>
+  <?php else: ?>
+    <a class="angka" href="<?= tautan('transaksi') ?>">
+      <span class="angka-num"><?= $orderBaru ?></span>
+      <span class="angka-lbl">Permintaan baru</span>
+    </a>
+  <?php endif; ?>
+  <a class="angka" href="<?= tautan('transaksi') ?>?kategori=jasa&amp;proses=diproses">
     <span class="angka-num"><?= $orderJalan ?></span>
-    <span class="angka-lbl">Sedang berjalan</span>
+    <span class="angka-lbl">Permintaan jasa berjalan</span>
   </a>
-  <a class="angka" href="<?= tautan('kelas') ?>">
+  <a class="angka" href="<?= tautan('produk') ?>?kategori=kelas">
     <span class="angka-num"><?= $kelasTerbit ?>/<?= $kelasTotal ?></span>
     <span class="angka-lbl">Kelas dibuka</span>
   </a>
-  <a class="angka" href="<?= tautan('inventaris') ?>">
+  <a class="angka" href="<?= tautan('gadget') ?>">
     <span class="angka-num"><?= $asetTotal ?></span>
-    <span class="angka-lbl">Aset tercatat</span>
+    <span class="angka-lbl">Gadget tercatat</span>
   </a>
 </div>
 
 <?php if ($jual !== null): ?>
   <h2 class="sub-judul" style="margin-top:0">Penjualan &amp; affiliate</h2>
   <div class="angka-kisi">
-    <a class="angka" href="<?= tautan('transaksi') ?>?status=lunas">
+    <a class="angka" href="<?= tautan('transaksi') ?>?bayar=lunas&amp;periode=bulan">
       <span class="angka-num angka-rp"><?= e(rupiah($jual['rp'])) ?></span>
       <span class="angka-lbl">Lunas bulan ini · <?= $jual['n'] ?> transaksi</span>
     </a>
@@ -71,7 +81,7 @@ require __DIR__ . '/inc/kepala.php';
     </a>
     <a class="angka<?= $jual['tarik_n'] > 0 ? ' angka-sorot' : '' ?>" href="<?= tautan('penarikan') ?>">
       <span class="angka-num"><?= $jual['tarik_n'] ?></span>
-      <span class="angka-lbl">Penarikan perlu dibayar<?= $jual['tarik_n'] > 0 ? ' · ' . e(rupiah($jual['tarik_rp'])) : '' ?></span>
+      <span class="angka-lbl">Withdraw perlu ditransfer<?= $jual['tarik_n'] > 0 ? ' · ' . e(rupiah($jual['tarik_rp'])) : '' ?></span>
     </a>
   </div>
 <?php endif; ?>
@@ -80,12 +90,12 @@ require __DIR__ . '/inc/kepala.php';
 
   <section class="kotak">
     <div class="kotak-kepala">
-      <h2>Order terakhir</h2>
-      <a class="tautan-lain" href="<?= tautan('order') ?>">Semua &rarr;</a>
+      <h2>Permintaan jasa terakhir</h2>
+      <a class="tautan-lain" href="<?= tautan('transaksi') ?>?kategori=jasa">Semua &rarr;</a>
     </div>
 
     <?php if (!$orderTerakhir): ?>
-      <p class="kosong">Belum ada order masuk. Begitu form kontak di invishar.com disambungkan, pesan yang masuk muncul di sini.</p>
+      <p class="kosong">Belum ada permintaan masuk. Pesan dari form kontak dan formulir order jasa muncul di sini.</p>
     <?php else: ?>
       <ul class="daftar-ringkas">
         <?php foreach ($orderTerakhir as $o): ?>
@@ -110,14 +120,14 @@ require __DIR__ . '/inc/kepala.php';
       <dt>Materi kelas</dt>
       <dd><?= $materiTotal ?> materi di <?= $kelasTotal ?> kelas</dd>
 
-      <dt>Nilai order berjalan</dt>
+      <dt>Nilai jasa berjalan</dt>
       <dd><?= rupiah($nilaiJalan) ?></dd>
 
       <dt>Terbit terakhir ke situs</dt>
       <dd>
         <?= $terbitPada ? e(waktuIndo($terbitPada)) : 'Belum pernah' ?>
         <?php if (!$terbitPada): ?>
-          <br><span class="petunjuk">Tekan Terbitkan di halaman Kelas supaya situs memakai data panel.</span>
+          <br><span class="petunjuk">Tekan Terbitkan galeri kelas di menu Produk supaya situs memakai data panel.</span>
         <?php endif; ?>
       </dd>
     </dl>

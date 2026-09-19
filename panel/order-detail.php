@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/inc/awal.php';
-require_once __DIR__ . '/inc/gerbang.php';
+require_once __DIR__ . '/inc/order.php';
 wajibMasuk();
 
 $id = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
@@ -9,7 +9,7 @@ $order = ambilSatu('SELECT * FROM order_jasa WHERE id = ?', [$id]);
 
 if ($order === null) {
     pesan('Order tidak ditemukan.', 'buruk');
-    pergi(tautan('order'));
+    pergi(tautan('transaksi'));
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         q('DELETE FROM order_jasa WHERE id = ?', [$id]);
         catatLog('hapus order', $order['nama']);
         pesan('Order dari "' . $order['nama'] . '" dihapus.');
-        pergi(tautan('order'));
+        pergi(tautan('transaksi'));
     }
 
     $statusBaru = masukan('status', $order['status']);
@@ -57,11 +57,11 @@ if (penjualanSiap()) {
 }
 
 $judul = $order['nama'];
-$menu  = 'order';
+$menu  = 'transaksi';
 require __DIR__ . '/inc/kepala.php';
 ?>
 
-<p class="remah"><a href="<?= tautan('order') ?>">&larr; Semua order</a></p>
+<p class="remah"><a href="<?= tautan('transaksi') ?>">&larr; Semua transaksi</a></p>
 
 <div class="dua-kolom">
 

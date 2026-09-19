@@ -130,6 +130,7 @@ function terbitkanProduk(): ?string
             'nama'         => $p['nama'],
             'jenis'        => $p['jenis'],
             'jenis_label'  => JENIS_PRODUK[$p['jenis']]['label'] ?? '',
+            'kategori'     => $p['kategori'] ?? 'produk',
             'tagline'      => (string) $p['tagline'],
             'ringkas'      => (string) $p['ringkas'],
             'isi'          => paragrafTeks($p['isi']),
@@ -240,6 +241,9 @@ function bacaSetelanAffiliate(array $lama, string $jenis, ?int $harga, array &$g
     } else {
         if ($d['fee_nilai'] === '' || (int) $d['fee_nilai'] <= 0) {
             $galat[] = 'Isi besar komisi tetap dalam rupiah.';
+        } elseif ((int) $d['fee_nilai'] < 1000) {
+            // "15" dengan pilihan Rupiah tetap hampir pasti maksudnya 15%.
+            $galat[] = 'Komisi tetap Rp ' . (int) $d['fee_nilai'] . ' terlalu kecil. Kalau maksudnya persen, pilih "Persen"; kalau rupiah, minimal Rp 1.000.';
         } elseif ($harga !== null && (int) $d['fee_nilai'] > $harga) {
             $galat[] = 'Komisi tetap (' . rupiah((int) $d['fee_nilai']) . ') tidak boleh melebihi harga (' . rupiah($harga) . ').';
         }
@@ -301,7 +305,7 @@ function produkUntukKelas(int $kelasId): ?array
  * hasil belajar, tanya jawab, dan gambar sampulnya ikut tersalin sebagai isi
  * awal landing page. Mengembalikan id produk baru.
  */
-function buatProdukDariKelas(array $kelas, int $harga, string $status, array $affiliate): int
+function buatProdukDariKelas(array $kelas, ?int $harga, string $status = 'draf', array $affiliate = ['affiliate_aktif' => 0, 'fee_jenis' => 'persen', 'fee_nilai' => '0']): int
 {
     $detail = json_decode((string) ($kelas['detail'] ?? ''), true) ?: [];
     $hasil = array_values(array_filter(array_map('trim', (array) ($detail['ikhtisar']['hasil'] ?? []))));
@@ -320,10 +324,10 @@ function buatProdukDariKelas(array $kelas, int $harga, string $status, array $af
     }
 
     q(
-        'INSERT INTO produk (slug, nama, jenis, kelas_id, tagline, ringkas, isi, manfaat, tanya, gambar, harga,
+        'INSERT INTO produk (slug, nama, jenis, kategori, kelas_id, tagline, ringkas, isi, manfaat, tanya, gambar, harga,
                              url_eksternal, label_tombol, status, urutan, affiliate_aktif, fee_jenis, fee_nilai,
                              fee_bulan_berulang, dibuat_pada, diperbarui_pada)
-         VALUES (?, ?, \'sekali\', ?, NULL, ?, NULL, ?, ?, NULL, ?, NULL, NULL, ?, ?, ?, ?, ?, NULL, NOW(), NOW())',
+         VALUES (?, ?, \'sekali\', \'kelas\', ?, NULL, ?, NULL, ?, ?, NULL, ?, NULL, NULL, ?, ?, ?, ?, ?, NULL, NOW(), NOW())',
         [
             $slug, mb_substr((string) $kelas['judul'], 0, 160), (int) $kelas['id'],
             trim((string) $kelas['ringkas']) ?: null,
@@ -348,4 +352,55 @@ function buatProdukDariKelas(array $kelas, int $harga, string $status, array $af
         }
     }
     return $id;
+}
+
+/**
+ * Setiap kelas punya satu baris produk (kategori Kelas), supaya semua yang
+ * dijual tampil di satu daftar menu Produk. Kelas yang belum punya dibuatkan
+ * sebagai Draf — tidak ada yang tayang otomatis. Mengembalikan jumlah yang dibuat.
+ */
+function sinkronKelasProduk(): int
+{
+    $kelasBaru = ambilSemua('SELECT k.* FROM kelas k WHERE NOT EXISTS (SELECT 1 FROM produk p WHERE p.kelas_id = k.id)');
+    foreach ($kelasBaru as $k) {
+        $harga = hargaDariTeksKelas((string) $k['harga']);
+        buatProdukDariKelas($k, $harga, 'draf');
+    }
+    return count($kelasBaru);
+}
+
+/**
+ * Kenapa produk ini belum bisa ditayangkan, atau null kalau sudah bisa.
+ * Dipakai tombol Tayangkan di daftar produk dan saat menyimpan formulir.
+ */
+function alasanBelumTayang(array $p): ?string
+{
+    if (in_array($p['jenis'], ['sekali', 'langganan'], true) && (int) $p['harga'] <= 0) {
+        return 'harganya belum diisi';
+    }
+    if ($p['jenis'] === 'eksternal' && !preg_match('#^https?://[^\s]+\.[^\s]+#i', (string) $p['url_eksternal'])) {
+        return 'alamat aplikasinya belum diisi';
+    }
+    if (($p['lp_mode'] ?? 'bawaan') === 'custom' && empty($p['lp_berkas'])) {
+        return 'landing page custom dipilih tapi berkas HTML-nya belum diunggah';
+    }
+    return null;
+}
+
+/** Alamat formulir order produk — tujuan tombol {{ORDER}} di landing page custom. */
+function urlOrderProduk(array $p): string
+{
+    return '/order/' . rawurlencode($p['slug']);
+}
+
+/** Gambar untuk kartu di panel: gambar produk, atau sampul kelasnya. */
+function gambarKartuProduk(array $p): string
+{
+    if (!empty($p['gambar'])) {
+        return urlGambarProduk($p['gambar']);
+    }
+    if (!empty($p['kelas_gambar'])) {
+        return '/data/kelas/' . rawurlencode((string) $p['kelas_gambar']);
+    }
+    return '';
 }

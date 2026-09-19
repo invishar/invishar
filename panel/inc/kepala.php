@@ -6,39 +6,52 @@ $pengguna = wajibMasuk();
 $judul = $judul ?? 'Panel';
 $menu  = $menu ?? '';
 
-/* Menu dikelompokkan supaya letak tiap urusan mudah ditebak.
+/* Menu dikelompokkan supaya letak tiap urusan mudah ditebak. Urutannya
+   mengikuti alur kerja: pesanan masuk → produk → mitra → kantor → setelan.
    [grup => [kunci => [label, tautan]]]; grup '' tanpa judul. */
 $grupMenu = [
     '' => [
-        'ringkasan'  => ['Ringkasan',  tautan()],
+        'ringkasan'  => ['Ringkasan', tautan()],
     ],
     'Penjualan' => [
-        'order'      => ['Order jasa', tautan('order')],
-        'produk'     => ['Produk',     tautan('produk')],
-        'transaksi'  => ['Transaksi',  tautan('transaksi')],
+        'transaksi'  => ['Transaksi', tautan('transaksi')],
     ],
-    'Affiliate' => [
-        'produk-affiliate' => ['Produk affiliate', tautan('produk-affiliate')],
+    'Produk' => [
+        'produk'     => ['Produk', tautan('produk')],
+    ],
+    'Afiliasi' => [
+        'produk-affiliate' => ['Produk afiliasi', tautan('produk-affiliate')],
         'affiliate'  => ['Affiliator', tautan('affiliate')],
-        'penarikan'  => ['Penarikan',  tautan('penarikan')],
+        'penarikan'  => ['Withdraw', tautan('penarikan')],
     ],
-    'Konten' => [
-        'kelas'      => ['Kelas',      tautan('kelas')],
+    'Inventaris' => [
+        'akun'       => ['Akun', tautan('akun')],
+        'gadget'     => ['Gadget', tautan('gadget')],
     ],
-    'Kantor' => [
-        'inventaris' => ['Inventaris', tautan('inventaris')],
-        'aplikasi'   => ['Aplikasi',   tautan('aplikasi')],
+    'Setting' => [
+        'pengaturan' => ['General', tautan('pengaturan')],
+        'pembayaran' => ['Pembayaran', tautan('pembayaran')],
+        'aplikasi'   => ['Panel aplikasi', tautan('aplikasi')],
     ],
 ];
 
 /* Angka yang menunggu tindakan admin, tampil sebagai lencana di menu. */
-$lencanaMenu = [
-    'order' => (int) ambilNilai("SELECT COUNT(*) FROM order_jasa WHERE status = 'baru'"),
+$lencanaMenu = [];
+$judulLencana = [
+    'transaksi' => 'pesanan perlu diproses',
+    'affiliate' => 'pendaftar menunggu persetujuan',
+    'penarikan' => 'withdraw menunggu ditransfer',
+    'akun'      => 'akun jatuh tempo dalam 14 hari',
 ];
 $pembaruanTertunda = !penjualanSiap();
-if (!$pembaruanTertunda) {
+if ($pembaruanTertunda) {
+    $lencanaMenu['transaksi'] = (int) ambilNilai("SELECT COUNT(*) FROM order_jasa WHERE status = 'baru'");
+} else {
+    require_once __DIR__ . '/order.php';
+    $lencanaMenu['transaksi'] = jumlahPerluDiproses();
     $lencanaMenu['affiliate'] = (int) ambilNilai("SELECT COUNT(*) FROM affiliate WHERE status = 'menunggu'");
     $lencanaMenu['penarikan'] = (int) ambilNilai("SELECT COUNT(*) FROM penarikan WHERE status = 'diajukan'");
+    $lencanaMenu['akun']      = (int) ambilNilai('SELECT COUNT(*) FROM akun WHERE perpanjang_pada IS NOT NULL AND perpanjang_pada <= (CURDATE() + INTERVAL 14 DAY)');
 }
 ?>
 <!DOCTYPE html>
@@ -75,14 +88,12 @@ if (!$pembaruanTertunda) {
           <a href="<?= e($tautan) ?>"<?= $menu === $kunci ? ' class="is-on" aria-current="page"' : '' ?>>
             <?= e($label) ?>
             <?php if (($lencanaMenu[$kunci] ?? 0) > 0): ?>
-              <span class="lencana" title="Menunggu tindakan"><?= (int) $lencanaMenu[$kunci] ?></span>
+              <span class="lencana" title="<?= (int) $lencanaMenu[$kunci] ?> <?= e($judulLencana[$kunci] ?? 'menunggu tindakan') ?>"><?= (int) $lencanaMenu[$kunci] ?></span>
             <?php endif; ?>
           </a>
         <?php endforeach; ?>
       <?php endforeach; ?>
     </nav>
-
-    <a class="sisi-atur<?= $menu === 'pengaturan' ? ' is-on' : '' ?>" href="<?= tautan('pengaturan') ?>"<?= $menu === 'pengaturan' ? ' aria-current="page"' : '' ?>>Pengaturan</a>
 
     <div class="sisi-bawah">
       <p class="sisi-nama"><?= e($pengguna['nama']) ?></p>
@@ -105,7 +116,7 @@ if (!$pembaruanTertunda) {
     <main class="isi" id="isi">
       <?php if ($pembaruanTertunda && basename($_SERVER['SCRIPT_NAME'] ?? '') !== 'pembaruan.php'): ?>
         <div class="pita pita-peringatan">
-          <span><strong>Ada pembaruan basis data.</strong> Jalankan sekali supaya menu Produk, Transaksi, dan Affiliate bisa dipakai. Data yang ada tidak berubah.</span>
+          <span><strong>Ada pembaruan basis data.</strong> Jalankan sekali supaya menu Transaksi, Produk, Afiliasi, dan Inventaris bisa dipakai. Data yang ada tidak berubah.</span>
           <a class="tbl tbl-kecil tbl-utama" href="<?= tautan('pembaruan') ?>">Jalankan pembaruan</a>
         </div>
       <?php endif; ?>

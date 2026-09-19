@@ -27,6 +27,24 @@ const JENIS_PRODUK = [
     'eksternal' => ['label' => 'Aplikasi lain', 'sub' => 'Dijual di aplikasi terpisah (mis. amanafinance). Tombol mengarah ke sana.'],
 ];
 
+/* Kategori produk (menu Produk). Cara bayar (JENIS_PRODUK) yang boleh dipilih
+   bergantung kategorinya; yang pertama menjadi bawaan. */
+const KATEGORI_PRODUK = [
+    'produk' => 'Produk',
+    'jasa'   => 'Jasa',
+    'kelas'  => 'Kelas',
+];
+const KATEGORI_KETERANGAN = [
+    'produk' => 'Aplikasi atau produk jadi — dibeli sekali, berlangganan, atau di aplikasi lain.',
+    'jasa'   => 'Pekerjaan sesuai kebutuhan. Harga lewat penawaran, atau harga tetap.',
+    'kelas'  => 'Kelas online dengan modul & materi. Formulir kelas lengkap.',
+];
+const JENIS_PER_KATEGORI = [
+    'produk' => ['sekali', 'langganan', 'eksternal'],
+    'jasa'   => ['penawaran', 'sekali'],
+    'kelas'  => ['sekali'],
+];
+
 const STATUS_PRODUK = [
     'draf'  => 'Draf',
     'aktif' => 'Tayang',

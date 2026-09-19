@@ -1,6 +1,6 @@
 # ==========================================================================
 # Toko Invishar — halaman publik: link affiliate, checkout, status bayar,
-# dan webhook Midtrans.
+# formulir order, landing page produk, dan webhook Midtrans.
 # ==========================================================================
 
 DirectoryIndex disabled
@@ -16,5 +16,8 @@ Options -Indexes
 <IfModule mod_headers.c>
   Header set X-Content-Type-Options "nosniff"
   Header set X-Frame-Options "SAMEORIGIN"
-  Header set X-Robots-Tag "noindex, nofollow"
+  # Landing page produk (halaman.php, dibuka lewat /p/nama) boleh diindeks.
+  <FilesMatch "^(?!halaman\.php$)">
+    Header set X-Robots-Tag "noindex, nofollow"
+  </FilesMatch>
 </IfModule>

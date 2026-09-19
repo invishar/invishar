@@ -8,7 +8,7 @@ $kelas = ambilSatu('SELECT * FROM kelas WHERE id = ?', [$id]);
 
 if ($kelas === null) {
     pesan('Kelas tidak ditemukan.', 'buruk');
-    pergi(tautan('kelas'));
+    pergi(tautan('produk') . '?kategori=kelas');
 }
 
 /* Detail tambahan disimpan sebagai JSON supaya menambah bidang baru tidak
@@ -175,11 +175,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             pesan('Judul kelas tidak cocok — penghapusan dibatalkan.', 'buruk');
             pergi(tautan('kelas/' . $id));
         }
+        // Produk kelas ikut dihapus — kecuali sudah punya transaksi: diarsipkan
+        // supaya catatan uangnya tetap utuh.
+        $diarsip = 0;
+        if (penjualanSiap()) {
+            require_once __DIR__ . '/inc/halaman.php';
+            foreach (ambilSemua('SELECT * FROM produk WHERE kelas_id = ?', [$id]) as $pk) {
+                if ((int) ambilNilai('SELECT COUNT(*) FROM transaksi WHERE produk_id = ?', [$pk['id']]) > 0) {
+                    q("UPDATE produk SET status = 'arsip', affiliate_aktif = 0, diperbarui_pada = NOW() WHERE id = ?", [$pk['id']]);
+                    $diarsip++;
+                } else {
+                    q('DELETE FROM produk WHERE id = ?', [$pk['id']]);
+                    buangGambarProduk($pk['gambar']);
+                    hapusFolderLp($pk['lp_berkas']);
+                }
+            }
+            terbitkanProduk();
+        }
         buangGambar($kelas['gambar']);
         q('DELETE FROM kelas WHERE id = ?', [$id]);
         catatLog('hapus kelas', $kelas['judul']);
-        pesan('Kelas "' . $kelas['judul'] . '" dihapus.');
-        pergi(tautan('kelas'));
+        pesan('Kelas "' . $kelas['judul'] . '" dihapus' . ($diarsip ? '. Produknya sudah punya transaksi, jadi diarsipkan (bukan dihapus).' : ' beserta produknya.'));
+        pergi(tautan('produk') . '?kategori=kelas');
     }
 
     if ($aksi === 'hapus_gambar') {
@@ -240,6 +257,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]
         );
         catatLog('ubah kelas', masukan('judul'));
+        // Nama produk kelas selalu sama dengan judul kelasnya.
+        if (penjualanSiap() && masukan('judul') !== $kelas['judul']) {
+            require_once __DIR__ . '/inc/produk.php';
+            q('UPDATE produk SET nama = ?, diperbarui_pada = NOW() WHERE kelas_id = ?', [mb_substr(masukan('judul'), 0, 160), $id]);
+            terbitkanProduk();
+        }
         pesan('Kelas "' . masukan('judul') . '" tersimpan'
             . ($gambarBaru !== null ? ' berikut gambar sampulnya' : '')
             . '. Tekan Terbitkan supaya situs ikut berubah.');
@@ -382,64 +405,28 @@ $produkKelas = null;
 if ($siapJual) {
     require_once __DIR__ . '/inc/produk.php';
     $produkKelas = produkUntukKelas($id);
+    if (!$produkKelas) {
+        sinkronKelasProduk();
+        $produkKelas = produkUntukKelas($id);
+    }
 }
 
 $judul = 'Kelas · ' . $kelas['judul'];
-$menu  = 'kelas';
+$menu  = 'produk';
 require __DIR__ . '/inc/kepala.php';
 ?>
 
 <p class="remah">
-  <a href="<?= tautan('kelas') ?>">&larr; Semua kelas</a>
+  <a href="<?= tautan('produk') ?>?kategori=kelas">&larr; Semua produk</a>
   <a class="tautan-lain" href="https://invishar.com/course.html?k=<?= e($kelas['slug']) ?>" target="_blank" rel="noopener">Lihat di situs &nearr;</a>
 </p>
 
-<?php if ($siapJual): ?>
-  <!-- ============ Penjualan & affiliate ============ -->
-  <section class="kotak jual-kelas">
-    <div class="kotak-kepala">
-      <h2>Penjualan &amp; affiliate</h2>
-      <?php if ($produkKelas): ?>
-        <span class="tanda tanda-<?= $produkKelas['status'] === 'aktif' ? 'tayang' : e($produkKelas['status']) ?>"><?= e(STATUS_PRODUK[$produkKelas['status']]) ?></span>
-      <?php else: ?>
-        <span class="tanda tanda-draf">Belum dijual</span>
-      <?php endif; ?>
-    </div>
-    <?php if ($produkKelas): ?>
-      <?php $dilihat = (int) $produkKelas['affiliate_aktif'] && $produkKelas['status'] === 'aktif'; ?>
-      <dl class="keadaan">
-        <dt>Harga jual</dt>
-        <dd><?= e(teksHargaProduk($produkKelas)) ?>
-          <?php $hg = hargaDariTeksKelas((string) $kelas['harga']); if ($hg !== null && $hg !== (int) $produkKelas['harga']): ?>
-            <span class="petunjuk petunjuk-awas" style="display:block">Berbeda dengan harga di galeri kelas (<?= e($kelas['harga']) ?>). Samakan supaya pengunjung tidak bingung.</span>
-          <?php endif; ?>
-        </dd>
-        <dt>Affiliate</dt>
-        <dd>
-          <?php if ((int) $produkKelas['affiliate_aktif']): ?>
-            Komisi <?= e(teksKomisiProduk($produkKelas)) ?>
-            <span class="petunjuk" style="display:block"><?= $dilihat ? 'Tampil di dashboard mitra.' : 'Belum tayang, jadi mitra belum melihatnya.' ?></span>
-          <?php else: ?>
-            Tidak dibuka &mdash; mitra tidak bisa mempromosikannya.
-          <?php endif; ?>
-        </dd>
-        <?php if ($produkKelas['status'] === 'aktif'): ?>
-          <dt>Landing page</dt>
-          <dd><a href="<?= e(urlSitus() . '/p/' . $produkKelas['slug']) ?>" target="_blank" rel="noopener"><?= e(preg_replace('#^https?://#', '', urlSitus()) . '/p/' . $produkKelas['slug']) ?> ↗</a></dd>
-        <?php endif; ?>
-      </dl>
-      <div class="aksi-kisi">
-        <a class="tbl tbl-kecil tbl-utama" href="<?= tautan('produk-affiliate') ?>#p<?= (int) $produkKelas['id'] ?>">Atur komisi affiliate</a>
-        <a class="tbl tbl-kecil" href="<?= tautan('produk/' . (int) $produkKelas['id']) ?>">Sunting harga &amp; landing page</a>
-      </div>
-    <?php else: ?>
-      <p class="teks-kecil" style="margin:0 0 12px">Kelas ini belum bisa dibeli dan belum bisa dipromosikan mitra affiliate.
-        Jadikan produk untuk membuka checkout, landing page, dan link affiliate-nya.</p>
-      <div class="aksi-kisi">
-        <a class="tbl tbl-kecil tbl-utama" href="<?= tautan('produk-affiliate') ?>#k<?= (int) $id ?>">Jual &amp; buka untuk affiliate</a>
-      </div>
-    <?php endif; ?>
-  </section>
+<?php if ($produkKelas): ?>
+  <nav class="tab-produk" aria-label="Bagian kelas">
+    <a href="<?= tautan('produk/' . (int) $produkKelas['id']) ?>">Penjualan &amp; landing page
+      <span class="tanda tanda-<?= $produkKelas['status'] === 'aktif' ? 'tayang' : e($produkKelas['status']) ?>"><?= e(STATUS_PRODUK[$produkKelas['status']]) ?></span></a>
+    <a class="is-on" aria-current="page" href="<?= tautan('kelas/' . $id) ?>">Isi kelas <span class="teks-kecil">(identitas, galeri, modul &amp; materi)</span></a>
+  </nav>
 <?php endif; ?>
 
 <form method="post" class="form-panel" id="form-kelas" data-jaga enctype="multipart/form-data">
@@ -468,12 +455,13 @@ require __DIR__ . '/inc/kepala.php';
         <p class="petunjuk" id="slug-catatan">Terkunci. Mengubahnya memutus tautan yang sudah beredar.</p>
       </div>
       <div class="bidang">
-        <label for="f-status">Status</label>
+        <label for="f-status">Label di galeri kelas</label>
         <select id="f-status" name="status">
           <?php foreach (['Dibuka', 'Baru', 'Segera'] as $s): ?>
             <option value="<?= e($s) ?>"<?= $kelas['status'] === $s ? ' selected' : '' ?>><?= e($s) ?></option>
           <?php endforeach; ?>
         </select>
+        <p class="petunjuk">Hanya label di kartu kelas. Bisa dibeli atau tidak ditentukan status Tayang di tab Penjualan.</p>
       </div>
       <div class="bidang">
         <label for="f-kategori">Kategori</label>
@@ -548,10 +536,10 @@ require __DIR__ . '/inc/kepala.php';
 
         <div class="baris-form">
           <div class="bidang">
-            <label for="f-harga">Harga</label>
+            <label for="f-harga">Harga tertulis di galeri</label>
             <input id="f-harga" name="harga" type="text" value="<?= e($kelas['harga']) ?>"
                    placeholder="Gratis, Rp 249rb, atau apa pun" autocomplete="off">
-            <p class="petunjuk">Ditulis apa adanya di kartu galeri.</p>
+            <p class="petunjuk">Ditulis apa adanya di kartu galeri. Harga jual (checkout) diatur di tab Penjualan.</p>
           </div>
           <div class="bidang">
             <label for="f-level">Level</label>

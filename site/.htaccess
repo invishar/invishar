@@ -28,8 +28,14 @@ DirectoryIndex index.html
   RewriteRule ^r/([A-Za-z0-9]{4,16})(?:/([a-z0-9-]+))?/?$ toko/r.php?kode=$1&p=$2 [L,QSA]
 
   # --- Landing page produk ---------------------------------------------------
-  # /p/nama-produk → produk.html (isinya dimuat dari data/produk.json).
-  RewriteRule ^p/([a-z0-9-]+)/?$ produk.html [L]
+  # /p/nama-produk → toko/halaman.php: HTML custom unggahan admin (bersandbox),
+  # atau templat bawaan produk.html yang mengisi diri dari data/produk.json.
+  RewriteRule ^p/([a-z0-9-]+)/?$ toko/halaman.php?slug=$1 [L,QSA]
+
+  # --- Formulir order produk -------------------------------------------------
+  # /order/nama-produk → checkout, aplikasi tujuan, atau formulir permintaan.
+  # Tujuan tombol {{ORDER}} di landing page custom.
+  RewriteRule ^order/([a-z0-9-]+)/?$ toko/order.php?p=$1 [L,QSA]
 </IfModule>
 
 # --- Kompresi ------------------------------------------------------------

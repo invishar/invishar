@@ -38,13 +38,35 @@ if (isset($_GET['sunting'])) {
 }
 
 $daftar = ambilSemua('SELECT * FROM aplikasi ORDER BY urutan, nama');
+// Produk yang punya panel admin sendiri (diisi di formulir produk).
+$dariProduk = penjualanSiap()
+    ? ambilSemua("SELECT id, nama, tagline, url_admin, slug, status FROM produk WHERE url_admin IS NOT NULL AND url_admin <> '' AND status <> 'arsip' ORDER BY urutan, nama")
+    : [];
 
-$judul = 'Aplikasi';
+$judul = 'Panel aplikasi';
 $menu  = 'aplikasi';
 require __DIR__ . '/inc/kepala.php';
 ?>
 
-<p class="pengantar">Pintu masuk ke admin tiap produk Invishar. Panel ini tidak mengelola datanya &mdash; hanya menyimpan alamatnya supaya tidak perlu diingat satu per satu.</p>
+<p class="pengantar">Pintu masuk ke panel admin tiap aplikasi Invishar &mdash; tidak perlu diingat satu per satu.
+  Produk yang diisi <strong>Link panel admin</strong>-nya di menu Produk muncul otomatis. Aplikasi lain bisa ditambahkan manual di bawah.</p>
+
+<?php if ($dariProduk): ?>
+  <h2 class="sub-judul-bagian">Dari produk</h2>
+  <div class="kartu-kisi" style="margin-bottom:26px">
+    <?php foreach ($dariProduk as $pa): ?>
+      <article class="kartu-app kartu-app-produk">
+        <h2><?= e($pa['nama']) ?></h2>
+        <p><?= e((string) ($pa['tagline'] ?: preg_replace('#^https?://#', '', $pa['url_admin']))) ?></p>
+        <div class="kartu-app-kaki">
+          <a class="tbl tbl-kecil tbl-utama" href="<?= e($pa['url_admin']) ?>" target="_blank" rel="noopener">Buka admin ↗</a>
+          <a class="tautan-lain" href="<?= tautan('produk/' . (int) $pa['id']) ?>">Sunting produk</a>
+        </div>
+      </article>
+    <?php endforeach; ?>
+  </div>
+  <h2 class="sub-judul-bagian">Tambahan manual</h2>
+<?php endif; ?>
 
 <div class="kartu-kisi">
   <?php foreach ($daftar as $a): ?>
@@ -67,9 +89,9 @@ require __DIR__ . '/inc/kepala.php';
 
   <article class="kartu-app kartu-app-kelas">
     <h2>Kelas (course)</h2>
-    <p>Belum punya admin sendiri &mdash; dikelola langsung di panel ini.</p>
+    <p>Dikelola langsung di panel ini: Produk → kategori Kelas.</p>
     <div class="kartu-app-kaki">
-      <a class="tbl tbl-kecil tbl-utama" href="<?= tautan('kelas') ?>">Kelola kelas</a>
+      <a class="tbl tbl-kecil tbl-utama" href="<?= tautan('produk') ?>?kategori=kelas">Kelola kelas</a>
       <a class="tbl tbl-kecil" href="https://invishar.com/kelas.html" target="_blank" rel="noopener">Situs</a>
     </div>
   </article>

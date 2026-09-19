@@ -14,7 +14,7 @@ wajibMasuk();
 /* Kembali ke halaman asal, bukan selalu ke daftar kelas: tombol Terbitkan juga
    ada di halaman sunting, dan terlempar keluar dari sana setiap kali menerbitkan
    itu melelahkan. Hanya alamat di host yang sama yang diterima. */
-$kembali = tautan('kelas');
+$kembali = tautan('produk') . '?kategori=kelas';
 $asal = $_SERVER['HTTP_REFERER'] ?? '';
 if ($asal !== '' && parse_url($asal, PHP_URL_HOST) === ($_SERVER['HTTP_HOST'] ?? '')) {
     $jalur = (string) parse_url($asal, PHP_URL_PATH);
@@ -154,5 +154,5 @@ foreach (glob($tujuan . '/course-*.json') ?: [] as $berkas) {
 }
 
 catatLog('terbitkan kelas', $jumlahBerkas . ' kelas');
-pesan('Berhasil diterbitkan: ' . $jumlahBerkas . ' kelas sudah tayang di invishar.com/kelas.html. Muat ulang halaman situs untuk melihatnya.');
+pesan('Galeri kelas diterbitkan: ' . $jumlahBerkas . ' kelas sudah tampil di invishar.com/kelas.html. Muat ulang halaman situs untuk melihatnya.');
 pergi($kembali);

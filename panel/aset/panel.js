@@ -41,6 +41,16 @@
     });
   }
 
+  /* Tinggi bilah judul, supaya kepala tabel yang membeku berhenti tepat di bawahnya. */
+  var bilah = $(".bilah");
+  if (bilah) {
+    var catatTinggi = function () {
+      document.documentElement.style.setProperty("--tinggi-bilah", bilah.offsetHeight + "px");
+    };
+    catatTinggi();
+    window.addEventListener("resize", catatTinggi);
+  }
+
   /* --------------------------------------------- 2. Penegasan sebelum hapus */
   document.addEventListener("click", function (e) {
     var tombol = e.target.closest("[data-pastikan]");
@@ -87,6 +97,25 @@
     });
     tabel.classList.add("tabel-kartu");
   });
+
+  // Tabel yang lebih lebar dari wadahnya — di HP maupun tablet — tampil
+  // sebagai kartu, supaya tidak ada kolom yang tersembunyi di kanan.
+  var tabelKartu = $$("table.tabel-kartu");
+  var ukurTabel = function () {
+    tabelKartu.forEach(function (t) {
+      t.classList.remove("is-kartu");
+      if (t.offsetWidth > t.parentElement.clientWidth + 2) t.classList.add("is-kartu");
+    });
+  };
+  if (tabelKartu.length) {
+    var tungguUkur = null;
+    ukurTabel();
+    window.addEventListener("load", ukurTabel);   // setelah huruf web termuat
+    window.addEventListener("resize", function () {
+      if (tungguUkur) cancelAnimationFrame(tungguUkur);
+      tungguUkur = requestAnimationFrame(ukurTabel);
+    });
+  }
 
   /* ------------------------------------------- 4. Bagian yang bisa dilipat */
   document.addEventListener("click", function (e) {
@@ -267,32 +296,40 @@
     });
   });
 
-  /* ------------------------------------------ 9d. Gambar sampul terpilih */
-  var medanGambar = $("[data-gambar]");
-  if (medanGambar) {
-    medanGambar.addEventListener("change", function () {
-      var berkas = medanGambar.files && medanGambar.files[0];
-      var nama = $("#unggah-nama");
-
-      if (!berkas) {
-        if (nama) nama.textContent = "Belum ada gambar";
+  /* ------------------------------------------ 9d. Berkas yang dipilih */
+  /* Setiap <div class="unggah"> menampilkan nama (atau jumlah) berkas yang
+     dipilih. Input bertanda data-gambar juga dipratinjau di kartu galeri. */
+  var ukuranBerkas = function (b) {
+    return b >= 1048576 ? (b / 1048576).toFixed(1).replace(".", ",") + " MB" : Math.max(1, Math.round(b / 1024)) + " KB";
+  };
+  $$(".unggah input[type=file]").forEach(function (medan) {
+    var nama = $(".unggah-nama", medan.closest(".unggah"));
+    var teksAwal = nama ? nama.textContent : "";
+    medan.addEventListener("change", function () {
+      var daftar = Array.prototype.slice.call(medan.files || []);
+      if (!daftar.length) {
+        if (nama) nama.textContent = teksAwal;
         return;
       }
+      var total = daftar.reduce(function (n, b) { return n + b.size; }, 0);
       if (nama) {
-        nama.textContent = berkas.name + " · " + Math.round(berkas.size / 1024) + " KB"
-          + (berkas.size > 3 * 1024 * 1024 ? " — terlalu besar, maksimal 3 MB" : "");
+        nama.textContent = daftar.length === 1
+          ? daftar[0].name + " · " + ukuranBerkas(daftar[0].size)
+            + (medan.hasAttribute("data-gambar") && daftar[0].size > 3 * 1024 * 1024 ? " — terlalu besar, maksimal 3 MB" : "")
+          : daftar.length + " berkas · " + ukuranBerkas(total) + " — "
+            + daftar.slice(0, 3).map(function (b) { return b.name; }).join(", ") + (daftar.length > 3 ? ", …" : "");
       }
 
       // Pratinjau langsung dari berkas di komputer, tanpa menunggu unggahan.
       var gambar = $("#mini-gambar");
       var ikon = $("#mini-ikon");
-      if (gambar && berkas.size <= 3 * 1024 * 1024) {
-        gambar.src = URL.createObjectURL(berkas);
+      if (medan.hasAttribute("data-gambar") && gambar && daftar[0].size <= 3 * 1024 * 1024) {
+        gambar.src = URL.createObjectURL(daftar[0]);
         gambar.hidden = false;
         if (ikon) ikon.hidden = true;
       }
     });
-  }
+  });
 
   /* ------------------------------------------------- 10. Pratinjau kartu */
   var pratinjau = $("#pratinjau-kartu");
@@ -372,7 +409,8 @@
   var bergantung = $$("[data-tampil-jika]");
 
   function nilaiMedan(nama) {
-    var terpilih = $("[name='" + nama + "']:checked") || $("select[name='" + nama + "']");
+    var terpilih = $("[name='" + nama + "']:checked") || $("select[name='" + nama + "']")
+      || $("input[type=hidden][name='" + nama + "']");
     if (!terpilih) {
       var kotakCentang = $("input[type=checkbox][name='" + nama + "']");
       return kotakCentang ? (kotakCentang.checked ? "1" : "0") : "";

@@ -10,66 +10,91 @@ Disusun 19 September 2026
 
 ---
 
+## Susunan menu panel
+
+| Grup | Menu | Isinya |
+|---|---|---|
+| — | **Ringkasan** | Angka utama dan perubahan terakhir |
+| Penjualan | **Transaksi** | Semua pesanan (checkout + permintaan jasa), status proses & bayar, saringan, pencarian |
+| Produk | **Produk** | Produk, Jasa, dan Kelas: daftar/grid, tambah, sunting, tayang/turunkan, landing page custom |
+| Afiliasi | **Produk afiliasi** · **Affiliator** · **Withdraw** | Komisi per produk · pendaftar & mitra · antrean pencairan |
+| Inventaris | **Akun** · **Gadget** | Akun layanan (tanpa sandi) & jatuh temponya · perangkat kantor |
+| Setting | **General** · **Pembayaran** · **Panel aplikasi** | Akun admin & setelan afiliasi · gerbang pembayaran · pintasan admin aplikasi |
+
+Alur kerjanya satu garis: **Produk** (buat, tayangkan) → **Produk afiliasi** (atur
+komisi) → mitra membagikan link → pesanan masuk di **Transaksi**.
+
 ## Cara memasang di server (sekali)
 
 1. **Deploy** seperti biasa (`git push`). `.cpanel.yml` sudah menyalin `mitra/` dan
-   `toko/` ke `public_html`. Tidak ada isian baru di `konfig.php` yang wajib untuk
-   mode uji.
+   `toko/` ke `public_html`.
 2. **Masuk panel** → muncul pita kuning *"Ada pembaruan basis data"* → klik
-   **Jalankan pembaruan**. Empat langkah dijalankan (setelan, produk, affiliate,
-   transaksi). Hanya menambah tabel/kolom; data kelas, order, dan inventaris
-   tidak berubah. Sebelum langkah ini, panel lama tetap berjalan normal dan menu
-   baru mengarah ke halaman pembaruan.
-3. **Panel → Pengaturan → Affiliate**: periksa lama cookie (10 hari), masa tahan
-   (3 hari), minimal penarikan (Rp 100.000), bulan berulang (12), dan **ganti
+   **Jalankan pembaruan**. Hanya menambah tabel/kolom; data yang ada tidak
+   berubah. Sebelum langkah ini menu baru mengarah ke halaman pembaruan.
+3. **Setting → General → Afiliasi**: periksa lama cookie (10 hari), masa tahan
+   (3 hari), minimal withdraw (Rp 100.000), bulan berulang (12), dan **ganti
    teks syarat & ketentuan** dengan versi Invishar sendiri.
-4. **Panel → Produk → + Tambah produk** untuk setiap yang dijual. Status *Tayang*
-   langsung membuat landing page `invishar.com/p/nama-produk`.
-5. Bagikan `invishar.com/mitra/daftar` ke calon affiliator. Tautan "Jadi mitra
-   affiliate" juga sudah ada di footer situs.
+4. **Produk**: setiap kelas otomatis sudah punya baris produk berstatus *Draf*.
+   Periksa harganya, lalu **Tayangkan**. Produk & jasa lain lewat **+ Tambah produk**.
+5. **Produk afiliasi**: tekan **Atur afiliasi** pada produk yang boleh dipromosikan mitra.
+6. Bagikan `invishar.com/mitra/daftar` ke calon affiliator.
 
 ## Pemakaian sehari-hari (admin)
 
 | Kejadian | Yang dilakukan | Di mana |
 |---|---|---|
-| Ingin menjual kelas & membukanya untuk mitra | Di bagian *Kelas yang belum dijual*: isi harga + komisi → *Jual kelas ini* (nama, ringkasan, hasil belajar, tanya jawab, dan gambar ikut tersalin) | Produk affiliate (atau tombol *Jual & buka untuk affiliate* di halaman kelas) |
-| Buka/tutup affiliate atau ubah komisi produk | Saklar *Buka untuk affiliate*, pilih Persen/Rupiah tetap, isi besar → *Simpan* per baris. Mitra hanya melihat produk yang dibuka **dan** Tayang | Produk affiliate |
-| Ada pendaftar (lencana di menu Affiliator) | Baca rencana promosinya → *Setujui & aktifkan* (kode boleh diganti) atau *Tolak* | Affiliator |
-| Pembeli lunas lewat checkout | Kirim akses ke WhatsApp pembeli, tulis di catatan transaksi | Transaksi |
-| Pembayaran lewat transfer/WA | *+ Catat pembayaran manual* (pilih affiliate kalau ada) | Transaksi |
-| Order jasa dari link affiliate sudah dibayar | Buka order → *Catat pembayaran* (affiliate terisi otomatis) | Order jasa |
-| Langganan bulan berikutnya dibayar | Buka transaksi bulan sebelumnya → *Catat pembayaran bulan ke-n* | Transaksi |
-| Pembeli minta uang kembali | Kembalikan dana dulu, lalu *Kembalikan dana (refund)* + alasan | Transaksi |
+| Ada pesanan perlu diproses (angka di menu Transaksi) | Klik kartu *Perlu diproses* → tombol **→ Proses** / **→ Selesai** di barisnya, atau buka detailnya | Transaksi |
+| Pembeli kelas lunas lewat checkout | Kirim akses ke WhatsApp pembeli → **Tandai selesai** | Transaksi → detail |
+| Permintaan jasa masuk | Tombol **→ Dibalas / → Penawaran / → Dikerjakan / → Selesai** sesuai tahapnya | Transaksi |
+| Pembayaran lewat transfer/WA | **+ Catat pembayaran** (pilih affiliate kalau ada) | Transaksi |
+| Permintaan lewat WA/telepon | **+ Permintaan jasa** | Transaksi |
+| Jasa dari link affiliate sudah dibayar | Buka pesanannya → *Catat pembayaran* (affiliate terisi otomatis) | Transaksi → detail |
+| Langganan bulan berikutnya dibayar | Buka transaksi bulan sebelumnya → *Catat pembayaran bulan ke-n* | Transaksi → detail |
+| Pembeli minta uang kembali | Kembalikan dana dulu, lalu *Kembalikan dana (refund)* + alasan | Transaksi → detail |
+| Tambah kelas baru | **+ Tambah produk → Kelas** → isi judul → lengkapi modul & materi → tab *Penjualan* untuk harga & tayang | Produk |
+| Pakai desain landing page sendiri | Sunting produk → *Landing page* → **Desain sendiri** → unggah .zip atau HTML + gambar | Produk → sunting |
+| Buka/tutup produk untuk mitra, ubah komisi | **Atur afiliasi** / **Ubah** / **Tutup afiliasi** di barisnya | Produk afiliasi |
+| Ada pendaftar (angka di menu Affiliator) | *Setujui & aktifkan* (kode boleh diganti) atau *Tolak* | Affiliator |
 | Ingin komisi cair sebelum masa tahan | *Cairkan* per baris atau *Cairkan semua yang tertahan* | Affiliator → detail |
-| Ada pengajuan penarikan (lencana) | Transfer dari m-banking → isi no. referensi → *Tandai sudah ditransfer* | Penarikan |
-| Affiliator lupa kata sandi | *Atur ulang kata sandi* → kirim sandi sementara lewat WA | Affiliator → detail |
-| Affiliator curang | *Bekukan akun* (link berhenti mencatat, saldo tidak bisa ditarik) | Affiliator → detail |
+| Ada pengajuan withdraw (angka di menu) | Transfer dari m-banking → isi no. referensi → *Tandai sudah ditransfer* | Withdraw |
+| Akun layanan jatuh tempo (angka di menu Akun) | Bayar perpanjangannya → **Sudah dibayar** (tanggal maju satu siklus) | Akun |
+| Affiliator lupa kata sandi / curang | *Atur ulang kata sandi* / *Bekukan akun* | Affiliator → detail |
 
 **Penting soal kelas:** isi kelas di `materi.html` masih bisa ditonton siapa saja.
 Sampai materi berbayar dikunci, akses setelah lunas dikirim manual.
 
+## Landing page custom (desain sendiri)
+
+- Alamatnya tetap `invishar.com/p/nama-produk`; link affiliate `/r/KODE/nama-produk` ikut berlaku.
+- Unggah satu **.zip** (boleh terbungkus satu folder), atau satu **.html** plus
+  gambar/CSS/JS/font-nya sekaligus. Gambar cukup ditulis dengan nama berkasnya.
+- Tombol pesan di HTML diarahkan ke `{{ORDER}}` → menjadi `/order/nama-produk`:
+  checkout untuk produk berbayar, formulir permintaan untuk jasa, aplikasi tujuan
+  untuk produk "aplikasi lain". Penanda lain: `{{HARGA}}`, `{{NAMA}}`.
+- **Keamanan:** halaman disajikan dengan `Content-Security-Policy: sandbox` (tanpa
+  `allow-same-origin`), jadi skrip di dalamnya tidak bisa menyentuh panel atau cookie
+  login. HTML-nya tidak bisa dibuka langsung dari `/data/lp/` (ditolak `.htaccess`).
+  SVG berskrip dan nama berkas aneh (`../`) ditolak saat unggah.
+- Produk Draf bisa dilihat lewat tombol **Pratinjau** (tautan bertoken).
+- Contoh HTML siap pakai: tombol *Unduh contoh HTML* di formulir produk.
+
 ## Pindah dari mode uji ke Midtrans
 
-1. Daftar/masuk di dashboard.midtrans.com, ambil **Server Key** dan **Client Key**
-   dari *Settings → Access Keys* (mulai dari mode **Sandbox**).
-2. Di server, sunting `public_html/panel/inc/konfig.php` (lewat File Manager), tambahkan:
-   ```php
-   'gerbang' => 'midtrans',
-   'midtrans' => [
-       'server_key' => 'SB-Mid-server-…',
-       'client_key' => 'SB-Mid-client-…',
-       'produksi'   => false,   // true setelah uji sandbox beres & pakai kunci produksi
-   ],
-   ```
-3. Dashboard Midtrans → *Settings → Payment → Notification URL*:
-   `https://invishar.com/toko/midtrans.php`. *Finish Redirect URL* boleh kosong
-   (sudah dikirim otomatis per transaksi).
-4. Coba beli satu produk, bayar lewat simulator sandbox Midtrans. Transaksi harus
-   berubah **Lunas** dan komisi muncul. Panel → Pengaturan menampilkan "Midtrans sandbox".
-5. Setelah yakin: ganti ke kunci produksi dan `'produksi' => true`.
+Semuanya dari **Setting → Pembayaran** — tidak perlu menyunting `konfig.php`.
 
-Kembali ke mode uji kapan saja dengan `'gerbang' => 'uji'`. Transaksi Midtrans yang
-masih berjalan tetap diproses webhook-nya.
+1. Dashboard Midtrans → *Settings → Access Keys* (mulai dari **Sandbox**) → salin
+   **Server Key** dan **Client Key**.
+2. Setting → Pembayaran → pilih **Midtrans sandbox** → tempel kedua kunci → **Simpan**.
+   Kunci langsung dites ke Midtrans; kalau ditolak, setelan lama tetap berlaku.
+3. Salin *Payment notification URL* dan *Finish redirect URL* dari halaman itu ke
+   dashboard Midtrans → *Settings → Configuration*.
+4. Beli satu produk, bayar lewat simulator sandbox Midtrans. Transaksi harus jadi
+   **Lunas** dan komisi muncul.
+5. Setelah yakin: pilih **Midtrans produksi**, tempel kunci produksi, centang penegasan → Simpan.
+
+Kembali ke mode uji kapan saja dari halaman yang sama. Transaksi Midtrans yang masih
+berjalan tetap diproses webhook-nya. Setelan panel mengalahkan `konfig.php`; selama
+halaman Pembayaran belum pernah disimpan, `konfig.php` yang berlaku.
 
 ## Perbedaan dari rancangan awal
 

@@ -41,7 +41,9 @@ return [
     ],
 
     // --- Sistem affiliate & pembayaran (lihat AFFILIATE.md) ---------------
-    // Semua di bawah ini OPSIONAL. Tanpa isian, checkout memakai mode uji.
+    // Semua di bawah ini OPSIONAL. Gerbang & kunci Midtrans sekarang diatur di
+    // panel → Setting → Pembayaran; isian di sini hanya dipakai selama halaman
+    // itu belum pernah disimpan. Tanpa isian, checkout memakai mode uji.
 
     // 'uji'      : pembayaran simulasi, belum ada uang sungguhan.
     // 'midtrans' : Midtrans Snap — isi kunci di bawah dulu.

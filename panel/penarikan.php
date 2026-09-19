@@ -12,16 +12,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $aksi = masukan('aksi');
 
     if (!$p) {
-        pesan('Penarikan tidak ditemukan.', 'buruk');
+        pesan('Withdraw tidak ditemukan.', 'buruk');
     } elseif ($aksi === 'bayar') {
         $ref = masukan('referensi');
         if ($ref === '') {
             pesan('Isi nomor referensi transfer — affiliator melihatnya sebagai bukti.', 'buruk');
         } elseif (bayarPenarikan($id, $ref, masukan('catatan'))) {
             catatLog('bayar penarikan', $p['nama'] . ' · ' . rupiah((int) $p['jumlah']) . ' · ' . $ref);
-            pesan('Penarikan ' . rupiah((int) $p['jumlah']) . ' untuk ' . $p['nama'] . ' ditandai sudah ditransfer.');
+            pesan('Withdraw ' . rupiah((int) $p['jumlah']) . ' untuk ' . $p['nama'] . ' ditandai sudah ditransfer.');
         } else {
-            pesan('Penarikan ini sudah diproses sebelumnya.', 'peringatan');
+            pesan('Withdraw ini sudah diproses sebelumnya.', 'peringatan');
         }
     } elseif ($aksi === 'tolak') {
         $alasan = masukan('alasan');
@@ -29,9 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             pesan('Tulis alasan penolakan — affiliator melihatnya.', 'buruk');
         } elseif (tolakPenarikan($id, $alasan)) {
             catatLog('tolak penarikan', $p['nama'] . ' · ' . $alasan);
-            pesan('Penarikan ditolak. Saldo ' . rupiah((int) $p['jumlah']) . ' kembali ke ' . $p['nama'] . ' dan bisa diajukan lagi.');
+            pesan('Withdraw ditolak. Saldo ' . rupiah((int) $p['jumlah']) . ' kembali ke ' . $p['nama'] . ' dan bisa diajukan lagi.');
         } else {
-            pesan('Penarikan ini sudah diproses sebelumnya.', 'peringatan');
+            pesan('Withdraw ini sudah diproses sebelumnya.', 'peringatan');
         }
     }
     pergi(tautan('penarikan') . (masukan('kembali_ke') === 'detail' ? '/' . $id : ''));
@@ -57,7 +57,7 @@ $daftar = ambilSemua(
     $isi
 );
 
-$judul = 'Penarikan';
+$judul = 'Withdraw';
 $menu  = 'penarikan';
 require __DIR__ . '/inc/kepala.php';
 ?>
@@ -76,15 +76,15 @@ require __DIR__ . '/inc/kepala.php';
 
 <?php if (!$daftar): ?>
   <div class="kosong kosong-besar">
-    <h3><?= $saring === 'diajukan' ? 'Tidak ada yang perlu dibayar' : 'Tidak ada penarikan' ?></h3>
-    <p><?= $saring === 'diajukan' ? 'Semua pengajuan penarikan sudah diproses.' : 'Belum ada penarikan dengan status ini.' ?></p>
+    <h3><?= $saring === 'diajukan' ? 'Tidak ada yang perlu dibayar' : 'Tidak ada withdraw' ?></h3>
+    <p><?= $saring === 'diajukan' ? 'Semua pengajuan withdraw sudah diproses.' : 'Belum ada withdraw dengan status ini.' ?></p>
   </div>
 <?php else: ?>
   <?php if ($saring === 'diajukan' && ($hitung['diajukan']['n'] ?? 0) > 0): ?>
     <p class="teks-kecil" style="margin:-6px 0 14px">Total perlu ditransfer: <strong><?= e(rupiah($hitung['diajukan']['rp'])) ?></strong></p>
   <?php endif; ?>
 
-  <div class="kartu-kisi" style="grid-template-columns:repeat(auto-fill,minmax(340px,1fr))">
+  <div class="kartu-kisi" style="grid-template-columns:repeat(auto-fill,minmax(min(340px,100%),1fr))">
     <?php foreach ($daftar as $p): ?>
       <section class="kotak" style="margin:0<?= $p['status'] === 'diajukan' ? ';border-color:var(--green-300)' : '' ?>" id="tarik-<?= (int) $p['id'] ?>">
         <div class="kotak-kepala">

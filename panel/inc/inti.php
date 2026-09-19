@@ -51,6 +51,12 @@ function db(): PDO
         // Jam basis data disamakan dengan jam PHP, supaya NOW() dan date()
         // tidak berselisih — penting untuk masa tahan komisi.
         $pdo->exec("SET time_zone = '" . date('P') . "'");
+        // Kolasi koneksi disamakan dengan tabel (utf8mb4_unicode_ci). Tanpa ini,
+        // teks literal di kueri memakai kolasi bawaan server — di MariaDB 11
+        // berbeda — dan UNION/perbandingan dengan kolom tabel bisa ditolak.
+        if (($d['charset'] ?? 'utf8mb4') === 'utf8mb4') {
+            $pdo->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
+        }
     }
     return $pdo;
 }

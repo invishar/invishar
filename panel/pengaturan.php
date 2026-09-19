@@ -94,14 +94,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $jejak = ambilSemua('SELECT * FROM log_aktivitas ORDER BY dibuat_pada DESC LIMIT 40');
 $siapJual = penjualanSiap();
 
-$judul = 'Pengaturan';
+$judul = 'General';
 $menu  = 'pengaturan';
 require __DIR__ . '/inc/kepala.php';
 ?>
 
 <?php if ($siapJual): ?>
 <section class="kotak" id="affiliate">
-  <div class="kotak-kepala"><h2>Affiliate</h2></div>
+  <div class="kotak-kepala"><h2>Afiliasi</h2><a class="tautan-lain" href="<?= tautan('pembayaran') ?>">Setelan pembayaran &rarr;</a></div>
   <p class="bagian-sub">Berlaku untuk semua produk, kecuali produk yang punya setelan sendiri. Perubahan hanya berlaku ke depan —
     cookie yang sudah tertanam dan komisi yang sudah tercatat tidak berubah.</p>
 
@@ -155,15 +155,6 @@ require __DIR__ . '/inc/kepala.php';
     <div class="form-aksi"><button class="tbl tbl-utama" type="submit">Simpan setelan affiliate</button></div>
   </form>
 
-  <div class="kotak-kepala kotak-kepala-jarak"><h2>Gerbang pembayaran</h2></div>
-  <?php if (modeUji()): ?>
-    <p class="pita pita-peringatan" style="margin:0"><span><strong>Mode uji.</strong> Checkout memakai pembayaran simulasi, belum ada uang sungguhan.
-      Untuk pindah ke Midtrans, isi kunci Midtrans dan ubah <code>'gerbang' =&gt; 'midtrans'</code> di <code>panel/inc/konfig.php</code> di server.
-      Langkahnya ada di AFFILIATE.md.</span></p>
-  <?php else: ?>
-    <p class="pita pita-baik" style="margin:0"><span><strong>Midtrans <?= !empty(konfig('midtrans')['produksi']) ? 'produksi' : 'sandbox' ?>.</strong>
-      Notifikasi pembayaran diterima di <code><?= e(urlSitus()) ?>/toko/midtrans.php</code>.</span></p>
-  <?php endif; ?>
 </section>
 <?php endif; ?>
 

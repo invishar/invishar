@@ -9,8 +9,9 @@ declare(strict_types=1);
    dibuat di satu jalur, dan jalur uji yang dicoba sekarang adalah jalur yang
    sama persis dengan pembayaran sungguhan nanti.
 
-   Gerbang dipilih di konfig.php ('gerbang' => 'uji' | 'midtrans'), bukan dari
-   panel: pindah ke uang sungguhan tidak boleh sekadar satu klik.
+   Gerbang dipilih di panel → Setting → Pembayaran (lihat konfigPembayaran()).
+   Pindah ke Midtrans produksi (uang sungguhan) butuh kunci yang lolos tes
+   koneksi dan penegasan tertulis — tidak bisa sekadar satu klik.
    ============================================================================= */
 
 require_once __DIR__ . '/affiliate.php';
@@ -69,6 +70,11 @@ function buatTransaksi(array $d): array
         ]
     );
     $id = (int) db()->lastInsertId();
+    // Pembayaran order jasa dan perpanjangan langganan bukan pesanan baru yang
+    // perlu dikirim/dikerjakan — pesanannya sudah diurus di tempat lain.
+    if (!empty($d['order_jasa_id']) || (int) ($d['periode_ke'] ?? 1) > 1) {
+        q("UPDATE transaksi SET status_proses = 'selesai' WHERE id = ?", [$id]);
+    }
     q(
         'INSERT INTO transaksi_riwayat (transaksi_id, status_lama, status_baru, sumber, catatan, dibuat_pada)
          VALUES (?, NULL, \'menunggu\', ?, ?, NOW())',
@@ -126,6 +132,14 @@ function ubahStatusTransaksi(int $id, string $baru, string $sumber, string $cata
             q('UPDATE transaksi SET status = ?, diperbarui_pada = NOW() WHERE id = ?', [$baru, $id]);
         }
 
+        // Status proses mengikuti: pesanan yang tidak jadi dibayar otomatis batal,
+        // dan pesanan batal yang ternyata dibayar belakangan kembali perlu diproses.
+        if (in_array($baru, ['gagal', 'kedaluwarsa', 'refund'], true)) {
+            q("UPDATE transaksi SET status_proses = 'batal', proses_pada = NOW() WHERE id = ?", [$id]);
+        } elseif ($baru === 'lunas' && $trx['status_proses'] === 'batal') {
+            q("UPDATE transaksi SET status_proses = 'baru', proses_pada = NULL WHERE id = ?", [$id]);
+        }
+
         q(
             'INSERT INTO transaksi_riwayat (transaksi_id, status_lama, status_baru, sumber, catatan, payload, dibuat_pada)
              VALUES (?, ?, ?, ?, ?, ?, NOW())',
@@ -170,14 +184,55 @@ interface Gerbang
     public function mulai(array $trx, array $produk): string;
 }
 
+/**
+ * Setelan pembayaran yang berlaku.
+ *
+ * Diatur di panel → Setting → Pembayaran (tabel setelan). Selama halaman itu
+ * belum pernah disimpan, konfig.php yang berlaku — server yang sudah memakai
+ * konfig.php tidak berubah perilakunya. url_app/url_api (untuk uji lokal)
+ * hanya dibaca dari konfig.php.
+ *
+ * @return array{gerbang: string, midtrans: array, sumber: string}
+ */
+function konfigPembayaran(): array
+{
+    $k = (array) konfig('midtrans');
+    $dariPanel = setelan('pembayaran.gerbang') !== '';
+    if ($dariPanel) {
+        $gerbang = setelan('pembayaran.gerbang');
+        $midtrans = [
+            'server_key' => setelan('pembayaran.midtrans_server_key'),
+            'client_key' => setelan('pembayaran.midtrans_client_key'),
+            'produksi'   => setelan('pembayaran.midtrans_produksi') === '1',
+        ];
+    } else {
+        $gerbang = (string) (konfig('gerbang') ?: 'uji');
+        $midtrans = [
+            'server_key' => (string) ($k['server_key'] ?? ''),
+            'client_key' => (string) ($k['client_key'] ?? ''),
+            'produksi'   => !empty($k['produksi']),
+        ];
+    }
+    foreach (['url_app', 'url_api'] as $x) {
+        if (!empty($k[$x])) {
+            $midtrans[$x] = $k[$x];
+        }
+    }
+    return [
+        'gerbang'  => $gerbang === 'midtrans' ? 'midtrans' : 'uji',
+        'midtrans' => $midtrans,
+        'sumber'   => $dariPanel ? 'panel' : 'konfig',
+    ];
+}
+
 function gerbangAktif(): Gerbang
 {
-    return (konfig('gerbang') ?: 'uji') === 'midtrans' ? new GerbangMidtrans() : new GerbangUji();
+    return konfigPembayaran()['gerbang'] === 'midtrans' ? new GerbangMidtrans() : new GerbangUji();
 }
 
 function modeUji(): bool
 {
-    return (konfig('gerbang') ?: 'uji') !== 'midtrans';
+    return konfigPembayaran()['gerbang'] !== 'midtrans';
 }
 
 /**
@@ -217,9 +272,38 @@ final class GerbangMidtrans implements Gerbang
         return 'midtrans';
     }
 
+    /** @param array|null $konf setelan pengganti — dipakai tes kunci sebelum disimpan */
+    public function __construct(private ?array $konfTetap = null)
+    {
+    }
+
     private function konf(): array
     {
-        return (array) konfig('midtrans');
+        return $this->konfTetap ?? konfigPembayaran()['midtrans'];
+    }
+
+    /**
+     * Memeriksa server key dengan menanyakan status order yang pasti tidak ada.
+     * Kunci sah → Midtrans menjawab 404 "Transaction doesn't exist";
+     * kunci salah → 401.
+     * @return array{ok: bool, pesan: string}
+     */
+    public function tesKunci(): array
+    {
+        try {
+            [$kode, $json] = $this->panggil('GET', $this->urlApi() . '/v2/INVISHAR-CEK-' . bin2hex(random_bytes(4)) . '/status');
+        } catch (Throwable $e) {
+            return ['ok' => false, 'pesan' => $e->getMessage()];
+        }
+        $status = (string) ($json['status_code'] ?? $kode);
+        if ($status === '404' || $status === '200') {
+            return ['ok' => true, 'pesan' => 'Server key diterima Midtrans ' . ($this->produksi() ? 'produksi' : 'sandbox') . '.'];
+        }
+        if ($status === '401') {
+            return ['ok' => false, 'pesan' => 'Server key ditolak Midtrans ' . ($this->produksi() ? 'produksi' : 'sandbox')
+                . '. Pastikan kuncinya untuk lingkungan yang sama (kunci sandbox diawali "SB-").'];
+        }
+        return ['ok' => false, 'pesan' => 'Jawaban Midtrans tidak terduga (kode ' . $status . '): ' . (string) ($json['status_message'] ?? '')];
     }
 
     public function siap(): bool
@@ -248,7 +332,7 @@ final class GerbangMidtrans implements Gerbang
     {
         $kunci = trim((string) ($this->konf()['server_key'] ?? ''));
         if ($kunci === '') {
-            throw new RuntimeException('Server key Midtrans belum diisi di konfig.php.');
+            throw new RuntimeException('Server key Midtrans belum diisi (panel → Setting → Pembayaran).');
         }
         return $kunci;
     }
