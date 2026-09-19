@@ -20,6 +20,16 @@ DirectoryIndex index.html
   RewriteEngine On
   RewriteCond %{HTTPS} !=on
   RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # --- Link affiliate --------------------------------------------------------
+  # /r/KODE            → beranda
+  # /r/KODE/produk     → landing page produk
+  # Ditangani toko/r.php: mencatat klik, menanam cookie, lalu mengalihkan.
+  RewriteRule ^r/([A-Za-z0-9]{4,16})(?:/([a-z0-9-]+))?/?$ toko/r.php?kode=$1&p=$2 [L,QSA]
+
+  # --- Landing page produk ---------------------------------------------------
+  # /p/nama-produk → produk.html (isinya dimuat dari data/produk.json).
+  RewriteRule ^p/([a-z0-9-]+)/?$ produk.html [L]
 </IfModule>
 
 # --- Kompresi ------------------------------------------------------------

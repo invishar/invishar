@@ -37,6 +37,16 @@ deployment:
     - /bin/mkdir -p ~/public_html/panel
     - /bin/cp -R panel/. ~/public_html/panel/
 
+    # --- Sistem affiliate ---------------------------------------------------
+    # mitra/  portal affiliator      → https://invishar.com/mitra/
+    # toko/   link /r/, checkout, status bayar, webhook Midtrans
+    # Keduanya memakai pustaka di public_html/panel/inc (termasuk konfig.php
+    # yang sudah ada di server), jadi tidak ada konfigurasi tambahan.
+    - /bin/mkdir -p ~/public_html/mitra
+    - /bin/cp -R mitra/. ~/public_html/mitra/
+    - /bin/mkdir -p ~/public_html/toko
+    - /bin/cp -R toko/. ~/public_html/toko/
+
     # Catat waktu deploy terakhir, berguna untuk memastikan deploy benar jalan.
     # Cek kapan saja di: https://invishar.com/deploy-terakhir.txt
     #

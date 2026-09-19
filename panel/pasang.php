@@ -40,16 +40,9 @@ if ($sudahAda) {
     } elseif ($sandi !== $ulang) {
         $galat = 'Ulangan kata sandi tidak sama.';
     } else {
-        // --- tabel ---
-        $sql = file_get_contents(__DIR__ . '/skema.sql');
-        foreach (preg_split('/;\s*[\r\n]+/', (string) $sql) as $perintah) {
-            // Baris komentar dibuang dulu — kalau tidak, potongan yang diawali
-            // komentar ikut terbuang beserta perintah CREATE TABLE di bawahnya.
-            $perintah = trim((string) preg_replace('/^\s*--.*$/m', '', $perintah));
-            if ($perintah !== '') {
-                db()->exec($perintah);
-            }
-        }
+        // --- tabel: skema dasar, lalu semua pembaruan di panel/migrasi ---
+        jalankanSql((string) file_get_contents(__DIR__ . '/skema.sql'));
+        jalankanMigrasi();
 
         // --- akun pertama ---
         q(

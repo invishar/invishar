@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/inc/awal.php';
+require_once __DIR__ . '/inc/gerbang.php';
 $pengguna = wajibMasuk();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -38,15 +39,133 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    if (masukan('aksi') === 'affiliate' && penjualanSiap()) {
+        /* [kunci => [label, min, max, satuan]] — batas yang diterima tiap setelan angka. */
+        $aturan = [
+            'affiliate.cookie_hari'     => ['Lama cookie', 1, 90, 'hari'],
+            'affiliate.masa_tahan_hari' => ['Masa tahan', 0, 60, 'hari'],
+            'affiliate.bulan_berulang'  => ['Bulan berulang', 1, 60, 'bulan'],
+            'affiliate.min_tarik'       => ['Minimal penarikan', 0, 1000000000, 'rupiah'],
+        ];
+        $baru = [];
+        $salah = [];
+        foreach ($aturan as $kunci => [$label, $min, $maks, $satuan]) {
+            $mentah = masukan(str_replace('.', '_', $kunci));
+            $n = $satuan === 'rupiah' ? angkaRupiah($mentah) : (preg_match('/^\d+$/', $mentah) ? (int) $mentah : null);
+            if ($n === null || $n < $min || $n > $maks) {
+                $salah[] = $label . ' harus ' . ($satuan === 'rupiah' ? 'berupa angka rupiah' : $min . '–' . $maks . ' ' . $satuan) . '.';
+            } else {
+                $baru[$kunci] = (string) $n;
+            }
+        }
+        $syarat = trim(str_replace("\r\n", "\n", masukan('affiliate_syarat')));
+        if ($syarat === '') {
+            $salah[] = 'Syarat & ketentuan tidak boleh kosong.';
+        } else {
+            $baru['affiliate.syarat'] = $syarat;
+        }
+
+        if ($salah) {
+            pesan(implode(' ', $salah), 'buruk');
+        } else {
+            $berubah = [];
+            foreach ($baru as $kunci => $nilai) {
+                $lama = setelan($kunci);
+                if ($lama !== $nilai) {
+                    simpanSetelan($kunci, $nilai);
+                    $berubah[] = $kunci === 'affiliate.syarat'
+                        ? 'syarat & ketentuan'
+                        : ($aturan[$kunci][0] . ': ' . $lama . ' → ' . $nilai);
+                }
+            }
+            if ($berubah) {
+                catatLog('ubah setelan affiliate', implode('; ', $berubah));
+                pesan('Setelan affiliate disimpan: ' . implode('; ', $berubah) . '.');
+            } else {
+                pesan('Tidak ada yang berubah.');
+            }
+        }
+        pergi(tautan('pengaturan') . '#affiliate');
+    }
+
     pergi(tautan('pengaturan'));
 }
 
 $jejak = ambilSemua('SELECT * FROM log_aktivitas ORDER BY dibuat_pada DESC LIMIT 40');
+$siapJual = penjualanSiap();
 
 $judul = 'Pengaturan';
 $menu  = 'pengaturan';
 require __DIR__ . '/inc/kepala.php';
 ?>
+
+<?php if ($siapJual): ?>
+<section class="kotak" id="affiliate">
+  <div class="kotak-kepala"><h2>Affiliate</h2></div>
+  <p class="bagian-sub">Berlaku untuk semua produk, kecuali produk yang punya setelan sendiri. Perubahan hanya berlaku ke depan —
+    cookie yang sudah tertanam dan komisi yang sudah tercatat tidak berubah.</p>
+
+  <form method="post" class="form-panel">
+    <?= csrfInput() ?>
+    <input type="hidden" name="aksi" value="affiliate">
+
+    <div class="baris-form">
+      <div class="bidang">
+        <label for="s-cookie">Lama link berlaku</label>
+        <div class="isian-imbuh">
+          <input id="s-cookie" name="affiliate_cookie_hari" type="number" min="1" max="90" value="<?= setelanAngka('affiliate.cookie_hari') ?>" required>
+          <span class="imbuh imbuh-akhir">hari</span>
+        </div>
+        <p class="petunjuk">Berapa lama pengunjung dari link affiliate tetap ditandai. 1–90 hari.</p>
+      </div>
+      <div class="bidang">
+        <label for="s-tahan">Masa tahan komisi</label>
+        <div class="isian-imbuh">
+          <input id="s-tahan" name="affiliate_masa_tahan_hari" type="number" min="0" max="60" value="<?= setelanAngka('affiliate.masa_tahan_hari') ?>" required>
+          <span class="imbuh imbuh-akhir">hari</span>
+        </div>
+        <p class="petunjuk">Jeda sebelum komisi bisa ditarik; ruang untuk refund. 0 = langsung. Anda tetap bisa mencairkan lebih awal per affiliator.</p>
+      </div>
+    </div>
+
+    <div class="baris-form">
+      <div class="bidang">
+        <label for="s-min">Minimal penarikan</label>
+        <div class="isian-imbuh">
+          <span class="imbuh imbuh-awal">Rp</span>
+          <input id="s-min" name="affiliate_min_tarik" type="text" inputmode="numeric" value="<?= e(number_format(setelanAngka('affiliate.min_tarik'), 0, ',', '.')) ?>" required>
+        </div>
+      </div>
+      <div class="bidang">
+        <label for="s-bulan">Komisi langganan berulang</label>
+        <div class="isian-imbuh">
+          <input id="s-bulan" name="affiliate_bulan_berulang" type="number" min="1" max="60" value="<?= setelanAngka('affiliate.bulan_berulang') ?>" required>
+          <span class="imbuh imbuh-akhir">bulan</span>
+        </div>
+        <p class="petunjuk">Bawaan untuk produk langganan yang tidak punya setelan sendiri.</p>
+      </div>
+    </div>
+
+    <div class="bidang">
+      <label for="s-syarat">Syarat &amp; ketentuan mitra</label>
+      <textarea id="s-syarat" name="affiliate_syarat" rows="7" required><?= e(setelan('affiliate.syarat')) ?></textarea>
+      <p class="petunjuk">Tampil di halaman daftar dan halaman <a href="<?= e(urlSitus() . '/mitra/syarat') ?>" target="_blank" rel="noopener">/mitra/syarat</a>.</p>
+    </div>
+
+    <div class="form-aksi"><button class="tbl tbl-utama" type="submit">Simpan setelan affiliate</button></div>
+  </form>
+
+  <div class="kotak-kepala kotak-kepala-jarak"><h2>Gerbang pembayaran</h2></div>
+  <?php if (modeUji()): ?>
+    <p class="pita pita-peringatan" style="margin:0"><span><strong>Mode uji.</strong> Checkout memakai pembayaran simulasi, belum ada uang sungguhan.
+      Untuk pindah ke Midtrans, isi kunci Midtrans dan ubah <code>'gerbang' =&gt; 'midtrans'</code> di <code>panel/inc/konfig.php</code> di server.
+      Langkahnya ada di AFFILIATE.md.</span></p>
+  <?php else: ?>
+    <p class="pita pita-baik" style="margin:0"><span><strong>Midtrans <?= !empty(konfig('midtrans')['produksi']) ? 'produksi' : 'sandbox' ?>.</strong>
+      Notifikasi pembayaran diterima di <code><?= e(urlSitus()) ?>/toko/midtrans.php</code>.</span></p>
+  <?php endif; ?>
+</section>
+<?php endif; ?>
 
 <div class="dua-kolom">
 

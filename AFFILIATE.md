@@ -1,10 +1,94 @@
-# Rencana Sistem Affiliate Invishar
+# Sistem Affiliate Invishar
 
-Dokumen rencana dan rujukan untuk sistem affiliate invishar.com.
+Rujukan sistem affiliate invishar.com: cara memasang, cara memakai sehari-hari,
+cara pindah ke Midtrans, lalu rancangan lengkapnya.
 
-Status: **rencana disetujui, belum dikerjakan.** Urutan pengerjaan ada di bagian *Tahapan*.
+Status: **tahap 0–6 selesai dan teruji** (gerbang pembayaran masih mode uji).
+Tahap 7 (opsional) belum.
 
 Disusun 19 September 2026
+
+---
+
+## Cara memasang di server (sekali)
+
+1. **Deploy** seperti biasa (`git push`). `.cpanel.yml` sudah menyalin `mitra/` dan
+   `toko/` ke `public_html`. Tidak ada isian baru di `konfig.php` yang wajib untuk
+   mode uji.
+2. **Masuk panel** → muncul pita kuning *"Ada pembaruan basis data"* → klik
+   **Jalankan pembaruan**. Empat langkah dijalankan (setelan, produk, affiliate,
+   transaksi). Hanya menambah tabel/kolom; data kelas, order, dan inventaris
+   tidak berubah. Sebelum langkah ini, panel lama tetap berjalan normal dan menu
+   baru mengarah ke halaman pembaruan.
+3. **Panel → Pengaturan → Affiliate**: periksa lama cookie (10 hari), masa tahan
+   (3 hari), minimal penarikan (Rp 100.000), bulan berulang (12), dan **ganti
+   teks syarat & ketentuan** dengan versi Invishar sendiri.
+4. **Panel → Produk → + Tambah produk** untuk setiap yang dijual. Status *Tayang*
+   langsung membuat landing page `invishar.com/p/nama-produk`.
+5. Bagikan `invishar.com/mitra/daftar` ke calon affiliator. Tautan "Jadi mitra
+   affiliate" juga sudah ada di footer situs.
+
+## Pemakaian sehari-hari (admin)
+
+| Kejadian | Yang dilakukan | Di mana |
+|---|---|---|
+| Ada pendaftar (lencana di menu Affiliator) | Baca rencana promosinya → *Setujui & aktifkan* (kode boleh diganti) atau *Tolak* | Affiliator |
+| Pembeli lunas lewat checkout | Kirim akses ke WhatsApp pembeli, tulis di catatan transaksi | Transaksi |
+| Pembayaran lewat transfer/WA | *+ Catat pembayaran manual* (pilih affiliate kalau ada) | Transaksi |
+| Order jasa dari link affiliate sudah dibayar | Buka order → *Catat pembayaran* (affiliate terisi otomatis) | Order jasa |
+| Langganan bulan berikutnya dibayar | Buka transaksi bulan sebelumnya → *Catat pembayaran bulan ke-n* | Transaksi |
+| Pembeli minta uang kembali | Kembalikan dana dulu, lalu *Kembalikan dana (refund)* + alasan | Transaksi |
+| Ingin komisi cair sebelum masa tahan | *Cairkan* per baris atau *Cairkan semua yang tertahan* | Affiliator → detail |
+| Ada pengajuan penarikan (lencana) | Transfer dari m-banking → isi no. referensi → *Tandai sudah ditransfer* | Penarikan |
+| Affiliator lupa kata sandi | *Atur ulang kata sandi* → kirim sandi sementara lewat WA | Affiliator → detail |
+| Affiliator curang | *Bekukan akun* (link berhenti mencatat, saldo tidak bisa ditarik) | Affiliator → detail |
+
+**Penting soal kelas:** isi kelas di `materi.html` masih bisa ditonton siapa saja.
+Sampai materi berbayar dikunci, akses setelah lunas dikirim manual.
+
+## Pindah dari mode uji ke Midtrans
+
+1. Daftar/masuk di dashboard.midtrans.com, ambil **Server Key** dan **Client Key**
+   dari *Settings → Access Keys* (mulai dari mode **Sandbox**).
+2. Di server, sunting `public_html/panel/inc/konfig.php` (lewat File Manager), tambahkan:
+   ```php
+   'gerbang' => 'midtrans',
+   'midtrans' => [
+       'server_key' => 'SB-Mid-server-…',
+       'client_key' => 'SB-Mid-client-…',
+       'produksi'   => false,   // true setelah uji sandbox beres & pakai kunci produksi
+   ],
+   ```
+3. Dashboard Midtrans → *Settings → Payment → Notification URL*:
+   `https://invishar.com/toko/midtrans.php`. *Finish Redirect URL* boleh kosong
+   (sudah dikirim otomatis per transaksi).
+4. Coba beli satu produk, bayar lewat simulator sandbox Midtrans. Transaksi harus
+   berubah **Lunas** dan komisi muncul. Panel → Pengaturan menampilkan "Midtrans sandbox".
+5. Setelah yakin: ganti ke kunci produksi dan `'produksi' => true`.
+
+Kembali ke mode uji kapan saja dengan `'gerbang' => 'uji'`. Transaksi Midtrans yang
+masih berjalan tetap diproses webhook-nya.
+
+## Perbedaan dari rancangan awal
+
+Beberapa hal berubah saat dikerjakan supaya lebih aman dan tidak membingungkan:
+
+- Halaman pembaruan basis data bernama **`/panel/pembaruan`**, bukan `migrasi.php` —
+  nama `migrasi` bentrok dengan foldernya dan akan berujung 403 di Apache.
+- Login mitra memakai tabel sendiri (`mitra_login_gagal`), bukan kolom tambahan di
+  `login_gagal` — supaya login admin tidak pernah bergantung pada pembaruan basis data.
+- Landing page produk **terbit otomatis** saat produk disimpan; tidak ada tombol Terbitkan.
+- Kunci tanda tangan cookie dibuat otomatis dan disimpan di basis data
+  (`setelan.sistem.rahasia`) — tidak perlu `rahasia_ref` di `konfig.php`.
+  Domain cookie juga otomatis (`invishar.com`, berlaku untuk www).
+- Status komisi di basis data hanya `berlaku` / `batal`; *Tertahan*, *Siap ditarik*,
+  *Sedang diproses*, *Dicairkan* diturunkan dari tanggal cair dan penarikan.
+- `data/produk.json` dimuat dengan penanda waktu 30 detik, karena server Domainesia
+  menyimpan salinan (cache) berkas JSON dan tidak menghiraukan kepala `no-cache`.
+  Perubahan produk tampil di landing page paling lama ±30 detik.
+  (Catatan: `data/kelas.json` punya masalah cache yang sama — belum diubah.)
+- Batas percobaan: checkout 10 transaksi/jam per IP, pendaftaran mitra 5/jam per IP,
+  login mitra 8 gagal/15 menit.
 
 
 ## Latar belakang
@@ -16,7 +100,7 @@ Kondisi ekosistem sekarang yang membentuk rencana ini:
 - **invishar.com** statis (`site/`), dan **panel admin PHP + MySQL** di `panel/` (sudah hidup di `invishar.com/panel/`). Deploy lewat `git push` → `.cpanel.yml` menyalin `site/` dan `panel/` ke `public_html`.
 - **Belum ada pembayaran sama sekali.** Kelas punya harga tapi tanpa checkout (`kelas.harga` bahkan berupa teks `"Rp 249rb"`), Portal Sekolah/Ponpes lewat "Minta demo", jasa lewat form kontak. Jadi sistem affiliate harus membawa **checkout + transaksi** sendiri — tanpa itu tidak ada momen "terjual" untuk memicu komisi.
 - Pondasi yang dipakai ulang: `panel/inc/awal.php` (PDO `q()/ambilSatu()/ambilSemua()`, CSRF, `catatLog()`, `rupiah()`), pola endpoint publik aman di `panel/api-pesan.php` (allowlist asal, honeypot, batas per IP), pola terbit-ke-JSON di `panel/terbitkan.php` (`tulisJson()` atomik), pembatas login `login_gagal`.
-- Tidak ada PHP di komputer lokal; server punya PHP dan kita punya akses SSH.
+- Server memakai PHP 8.4 + MariaDB 11.4. Pengujian lokal memakai PHP 8.4 portabel (versi yang sama) dan MariaDB dari XAMPP.
 
 **Keputusan yang sudah diambil:** gerbang pembayaran **Midtrans**, tapi sekarang pakai **gerbang uji (dummy)** dengan jalur kode yang sama; **semua produk** diatur admin di menu Produk baru, lengkap dengan setelan affiliate per produk; komisi langganan **berulang maksimal 12 bulan**; pendaftaran affiliate **terbuka tapi harus disetujui admin**.
 
@@ -221,16 +305,16 @@ Sesi terpisah (`session_name('mitrainvishar')`), tabel pengguna terpisah (`affil
 
 ## Tahapan (tiap tahap bisa di-deploy sendiri)
 
-| Tahap | Isi | Hasil yang bisa dicoba |
+| Tahap | Isi | Keadaan |
 |---|---|---|
-| 0 | Pecah `inti.php`, pelari migrasi, tabel `setelan` | Panel lama tetap jalan normal |
-| 1 | Menu **Produk** + landing page `/p/{slug}` | Tiap produk punya halaman sendiri |
-| 2 | Pendaftaran + persetujuan + portal mitra (link, profil) | Affiliator daftar, disetujui, melihat link-nya |
-| 3 | `/r/…` + cookie + atribusi di form penawaran | Klik tercatat; order dari link membawa affiliate |
-| 4 | Transaksi + checkout + **gerbang uji** + komisi + halaman penghasilan | Beli simulasi → komisi muncul di dashboard |
-| 5 | Penarikan (mitra + panel) | Ajukan → admin bayar → saldo kembali nol |
-| 6 | **Midtrans** Snap + webhook, uji di sandbox, lalu produksi | Pembayaran sungguhan |
-| 7 | Opsional: API konversi amanafinance, notifikasi surel, lupa sandi mitra | — |
+| 0 | Pecah `inti.php`, pelari migrasi, tabel `setelan` | **Selesai** |
+| 1 | Menu **Produk** + landing page `/p/{slug}` | **Selesai** |
+| 2 | Pendaftaran + persetujuan + portal mitra (link, profil) | **Selesai** |
+| 3 | `/r/…` + cookie + atribusi di form penawaran | **Selesai** |
+| 4 | Transaksi + checkout + **gerbang uji** + komisi + halaman penghasilan | **Selesai** |
+| 5 | Penarikan (mitra + panel) | **Selesai** |
+| 6 | **Midtrans** Snap + webhook | **Kode selesai & teruji dengan Midtrans tiruan**; tinggal diisi kunci sandbox |
+| 7 | Opsional: API konversi amanafinance, notifikasi surel, lupa sandi mitra mandiri | Belum |
 
 ---
 
@@ -246,14 +330,28 @@ Sesi terpisah (`session_name('mitrainvishar')`), tabel pengguna terpisah (`affil
 
 ## Verifikasi
 
-Tidak ada PHP lokal, jadi pemeriksaan sintaks dilakukan di server setelah deploy:
+### Yang sudah diuji sebelum dirilis (19 September 2026)
+
+Di lingkungan lokal yang meniru server: **PHP 8.4.25** (versi yang sama dengan
+server), MariaDB, dan *router* yang meniru semua aturan `.htaccess`.
+
+| Uji | Hasil |
+|---|---|
+| Sintaks seluruh PHP | 55 berkas, 0 galat |
+| Logika uang langsung (atribusi, komisi, saldo, penarikan, refund, langganan, beli-sendiri, dibekukan, pembukuan) | 71/71 |
+| Ujung-ke-ujung lewat HTTP (daftar → setujui → klik → beli → cair → tarik → bayar → jasa → langganan → refund → beku → tolak → atur ulang sandi) | 31/31 |
+| Midtrans tiruan (redirect, webhook, tanda tangan palsu, notifikasi ganda, jumlah dipalsukan, kedaluwarsa, sinkron di halaman selesai, Midtrans mati, batas checkout) | 22/22 |
+| Semua halaman panel, mitra, toko, situs — tanpa galat/peringatan/deprecated | lulus |
+| Tampilan di peramban (desktop & HP 390 px): tanpa gulir horizontal, tanpa galat JS | lulus |
+
+Pemeriksaan sintaks ulang di server setelah deploy:
 ```bash
 ssh -i ~/.ssh/invishar_deploy -p 64000 invishar@girona.id.rapidplex.com \
   'for f in $(find ~/public_html/panel ~/public_html/mitra ~/public_html/toko -name "*.php"); do php -l "$f" | grep -v "No syntax errors"; done'
 ```
 
 **Skenario ujung-ke-ujung (gerbang `uji`, di produksi):**
-1. Panel → Migrasi → jalankan; semua tabel baru ada.
+1. Panel → pita kuning → **Jalankan pembaruan** (/panel/pembaruan); semua tabel baru ada.
 2. Buat produk `kelas-dashboard` (sekali, Rp 249.000, affiliate 20%) dan `ponpes-manager` (langganan, Rp 500.000/bln, tetap Rp 100.000, 12 bulan). Terbitkan → `/p/kelas-dashboard` tampil.
 3. Daftar di `/mitra/daftar` → login ditolak "menunggu" → setujui di panel dengan kode `UJI01` → login berhasil, `tautan.php` menampilkan 2 link.
 4. Jendela penyamaran: buka `/r/UJI01/kelas-dashboard` → dialihkan ke `/p/kelas-dashboard`, cookie `inv_ref` ada (DevTools, HttpOnly, 10 hari), `affiliate_klik` +1.

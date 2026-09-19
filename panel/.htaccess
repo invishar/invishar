@@ -37,6 +37,23 @@ DirectoryIndex index.php
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule ^aplikasi/([0-9]+)/?$ aplikasi.php?sunting=$1 [L,QSA]
 
+  # Penjualan & affiliate
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^produk/([0-9]+)/?$ produk-edit.php?id=$1 [L,QSA]
+
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^transaksi/([0-9]+)/?$ transaksi-detail.php?id=$1 [L,QSA]
+
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^affiliate/([0-9]+)/?$ affiliate-detail.php?id=$1 [L,QSA]
+
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^penarikan/([0-9]+)/?$ penarikan.php?id=$1 [L,QSA]
+
   # Sisanya: /panel/kelas -> kelas.php, /panel/masuk -> masuk.php, dan
   # seterusnya. Nama berkas asli tetap bisa dipakai.
   RewriteCond %{REQUEST_FILENAME} !-f

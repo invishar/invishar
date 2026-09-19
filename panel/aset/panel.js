@@ -127,7 +127,7 @@
         return;
       }
       var lanjut = window.confirm(
-        "Perubahan pada keterangan kelas belum disimpan dan akan hilang. Lanjutkan?"
+        "Ada perubahan di formulir yang belum disimpan dan akan hilang. Lanjutkan?"
       );
       if (!lanjut) {
         e.preventDefault();
@@ -293,6 +293,145 @@
       });
     });
   }
+
+  /* Bagian 12–15 sengaja ditaruh SEBELUM bagian AI: bagian AI berhenti lebih
+     awal (return) di halaman tanpa tombol AI, jadi apa pun sesudahnya tidak
+     akan pernah jalan di halaman lain. */
+
+  /* ================================================= 12. Salin ke papan klip */
+  /* <button data-salin="teks yang disalin">Salin</button> */
+  function salinTeks(teks) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(teks);
+    }
+    return new Promise(function (berhasil, gagal) {
+      var t = document.createElement("textarea");
+      t.value = teks;
+      t.setAttribute("readonly", "");
+      t.style.position = "fixed";
+      t.style.opacity = "0";
+      document.body.appendChild(t);
+      t.select();
+      try { document.execCommand("copy") ? berhasil() : gagal(); } catch (e) { gagal(e); }
+      document.body.removeChild(t);
+    });
+  }
+
+  document.addEventListener("click", function (e) {
+    var tombol = e.target.closest("[data-salin]");
+    if (!tombol) return;
+    e.preventDefault();
+    var asli = tombol.dataset.teksAsli || tombol.textContent;
+    tombol.dataset.teksAsli = asli;
+    salinTeks(tombol.dataset.salin).then(function () {
+      tombol.textContent = "Tersalin ✓";
+      tombol.classList.add("is-disalin");
+    }, function () {
+      tombol.textContent = "Salin manual";
+    });
+    setTimeout(function () {
+      tombol.textContent = asli;
+      tombol.classList.remove("is-disalin");
+    }, 1800);
+  });
+
+  /* =================================== 13. Bagian yang bergantung pada pilihan */
+  /* <div data-tampil-jika="jenis=sekali,langganan"> tampil hanya kalau radio/
+     select bernama "jenis" bernilai salah satunya. Isian di dalam bagian yang
+     tersembunyi ikut dinonaktifkan supaya tidak ikut divalidasi. */
+  var bergantung = $$("[data-tampil-jika]");
+
+  function nilaiMedan(nama) {
+    var terpilih = $("[name='" + nama + "']:checked") || $("select[name='" + nama + "']");
+    if (!terpilih) {
+      var kotakCentang = $("input[type=checkbox][name='" + nama + "']");
+      return kotakCentang ? (kotakCentang.checked ? "1" : "0") : "";
+    }
+    return terpilih.value;
+  }
+
+  function segarkanBergantung() {
+    bergantung.forEach(function (bagian) {
+      var aturan = bagian.dataset.tampilJika.split("=");
+      var cocok = aturan[1].split(",").indexOf(nilaiMedan(aturan[0])) !== -1;
+      bagian.hidden = !cocok;
+      $$("input, select, textarea", bagian).forEach(function (m) { m.disabled = !cocok; });
+    });
+  }
+
+  if (bergantung.length) {
+    document.addEventListener("change", segarkanBergantung);
+    segarkanBergantung();
+  }
+
+  /* ============================================ 14. Contoh perhitungan komisi */
+  var contoh = $("[data-contoh-komisi]");
+  if (contoh) {
+    var angka = function (teks) {
+      var bersih = String(teks || "").replace(/,\d{1,2}$/, "").replace(/\D/g, "");
+      return bersih ? parseInt(bersih, 10) : 0;
+    };
+    var desimal = function (teks) {
+      var n = parseFloat(String(teks || "").replace(/\./g, "").replace(",", "."));
+      return isNaN(n) ? 0 : n;
+    };
+    var rp = function (n) { return "Rp " + Math.max(0, n).toLocaleString("id-ID"); };
+
+    var hitung = function () {
+      var harga = angka(($("#f-harga") || {}).value);
+      var jenisFee = nilaiMedan("fee_jenis");
+      var nilai = ($("#f-fee-nilai") || {}).value;
+      var komisi = jenisFee === "tetap"
+        ? Math.min(harga || angka(nilai), angka(nilai))
+        : Math.floor(harga * Math.round(desimal(nilai) * 100) / 10000);
+      var akhiran = $("#f-fee-akhiran");
+      if (akhiran) akhiran.textContent = jenisFee === "tetap" ? "Rp" : "%";
+
+      var teks = contoh.querySelector("[data-teks]");
+      if (!harga) {
+        teks.innerHTML = jenisFee === "tetap"
+          ? "Affiliator mendapat <strong>" + rp(angka(nilai)) + "</strong> dari setiap penjualan."
+          : "Isi harga untuk melihat contoh komisi.";
+        return;
+      }
+      var langganan = nilaiMedan("jenis") === "langganan";
+      teks.innerHTML = "Penjualan " + rp(harga) + (langganan ? " per bulan" : "") +
+        " &rarr; affiliator mendapat <strong>" + rp(komisi) + "</strong>" + (langganan ? " per bulan" : "");
+    };
+
+    document.addEventListener("input", hitung);
+    document.addEventListener("change", hitung);
+    hitung();
+  }
+
+  /* ======================================== 15. Slug otomatis & kunci slug */
+  /* <input data-slug-dari="#f-nama">: terisi dari nama selama belum diketik
+     sendiri. <button data-buka-kunci="#f-slug" data-pesan="…">: membuka isian
+     terkunci setelah ditegaskan. */
+  $$("[data-slug-dari]").forEach(function (medan) {
+    var sumber = $(medan.dataset.slugDari);
+    if (!sumber) return;
+    var disentuh = medan.value !== "";
+    var jadikanSlug = function (t) {
+      return t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
+        .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
+    };
+    medan.addEventListener("input", function () { disentuh = medan.value !== ""; });
+    sumber.addEventListener("input", function () {
+      if (!disentuh) medan.value = jadikanSlug(sumber.value);
+    });
+  });
+
+  document.addEventListener("click", function (e) {
+    var tombol = e.target.closest("[data-buka-kunci]");
+    if (!tombol) return;
+    if (!window.confirm(tombol.dataset.pesan)) return;
+    var medan = $(tombol.dataset.bukaKunci);
+    medan.removeAttribute("readonly");
+    medan.focus();
+    medan.select();
+    tombol.remove();
+  });
 
   /* ============================================================ 11. AI */
   var tombolAI = $$("[data-ai]");
@@ -504,4 +643,5 @@
         });
     });
   });
+
 })();

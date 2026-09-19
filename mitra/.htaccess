@@ -1,0 +1,26 @@
+# ==========================================================================
+# Portal mitra Invishar — invishar.com/mitra/
+# ==========================================================================
+
+DirectoryIndex index.php
+Options -Indexes
+
+# --- Paksa HTTPS: halaman ini memakai kata sandi dan kuki sesi -------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # Alamat rapi: /mitra/penghasilan → penghasilan.php. Berkas asli tetap bisa
+  # dibuka; aturan ini hanya untuk alamat yang TIDAK menunjuk berkas nyata.
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^([a-z][a-z-]*)/?$ $1.php [L,QSA]
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set Referrer-Policy "same-origin"
+  Header set X-Robots-Tag "noindex, nofollow"
+</IfModule>

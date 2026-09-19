@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Produk &mdash; Invishar</title>
+<meta name="description" content="Produk digital Invishar untuk keluarga, sekolah, dan pesantren.">
+<meta name="theme-color" content="#eef4ea">
+<link rel="icon" href="/assets/invishar-logo.png">
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="id_ID">
+<meta property="og:site_name" content="Invishar">
+<meta property="og:title" content="Produk — Invishar">
+<meta property="og:image" content="https://invishar.com/assets/invishar-logo.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400..600;1,9..40,400&display=swap" rel="stylesheet">
+<!-- Jalur aset sengaja ABSOLUT (/css/…): halaman ini dibuka di /p/nama-produk. -->
+<link rel="stylesheet" href="/css/style.css?v=20260918b">
+<link rel="stylesheet" href="/css/course.css?v=20260918b">
+<link rel="stylesheet" href="/css/produk.css?v=20260919">
+<script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+
+<a class="skip" href="#isi">Lompat ke konten</a>
+
+<!-- ============ NAV ============ -->
+<header class="nav">
+  <div class="nav-inner wrap">
+    <a class="brand" href="/">
+      <img src="/assets/invishar-logo.png" alt="" width="30" height="30">
+      <span>invishar</span>
+    </a>
+
+    <nav class="nav-links" id="nav-links" aria-label="Navigasi utama">
+      <a href="/#katalog">Katalog</a>
+      <a href="/#jasa">Jasa</a>
+      <a href="/kelas.html">Kelas</a>
+      <a href="/#tanya">Tanya jawab</a>
+      <a class="btn btn-solid btn-sm" href="/#kontak">Ngobrol dulu</a>
+    </nav>
+
+    <button class="burger" type="button" id="burger" aria-label="Buka menu" aria-expanded="false" aria-controls="nav-links">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main id="isi">
+
+  <!-- Sedang memuat -->
+  <section class="wrap produk-muat" id="p-muat" aria-live="polite">
+    <div class="muat-garis lebar"></div>
+    <div class="muat-garis"></div>
+    <div class="muat-garis pendek"></div>
+  </section>
+
+  <!-- Tidak ditemukan -->
+  <section class="wrap produk-hilang" id="p-hilang" hidden>
+    <p class="kicker">Produk</p>
+    <h1>Produk ini tidak ditemukan</h1>
+    <p class="lead">Mungkin alamatnya berubah atau produknya sudah tidak dijual. Lihat semua yang tersedia di katalog.</p>
+    <a class="btn btn-solid" href="/#katalog">Lihat katalog</a>
+  </section>
+
+  <noscript>
+    <section class="wrap produk-hilang">
+      <h1>Nyalakan JavaScript</h1>
+      <p class="lead">Halaman produk dimuat dengan JavaScript. Atau hubungi kami langsung lewat <a href="/#kontak">form kontak</a>.</p>
+    </section>
+  </noscript>
+
+  <div id="p-isi" hidden>
+
+    <!-- ============ HERO ============ -->
+    <section class="wrap produk-hero">
+      <nav class="crumb" aria-label="Remah roti">
+        <a href="/">Beranda</a>
+        <span aria-hidden="true">/</span>
+        <a href="/#katalog">Produk</a>
+        <span aria-hidden="true">/</span>
+        <span id="p-crumb"></span>
+      </nav>
+
+      <div class="produk-hero-grid">
+        <div class="produk-hero-copy">
+          <p class="kicker" id="p-jenis"></p>
+          <h1 id="p-nama"></h1>
+          <p class="produk-tagline" id="p-tagline" hidden></p>
+          <p class="lead" id="p-ringkas" hidden></p>
+          <a class="link-more" id="p-kelas" href="#" hidden>Lihat silabus kelas &rarr;</a>
+        </div>
+
+        <aside class="beli-kartu" aria-labelledby="p-harga">
+          <p class="beli-label" id="p-harga-label">Harga</p>
+          <p class="beli-harga" id="p-harga"></p>
+          <p class="beli-sub" id="p-harga-sub"></p>
+          <a class="btn btn-solid btn-block" id="p-tombol" href="#"></a>
+          <ul class="beli-janji" id="p-janji"></ul>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ============ GAMBAR ============ -->
+    <section class="wrap produk-gambar" id="p-gambar-wadah" hidden>
+      <img id="p-gambar" alt="" loading="lazy">
+    </section>
+
+    <!-- ============ ISI ============ -->
+    <section class="wrap produk-bagian" id="p-bagian-isi" hidden>
+      <div class="produk-isi-grid">
+        <div id="p-manfaat-wadah" hidden>
+          <h2>Yang Anda dapat</h2>
+          <ul class="ceklis" id="p-manfaat"></ul>
+        </div>
+        <div class="produk-teks" id="p-teks" hidden></div>
+      </div>
+    </section>
+
+    <!-- ============ FORM PENAWARAN ============ -->
+    <section class="wrap produk-bagian" id="penawaran" hidden>
+      <div class="penawaran-grid">
+        <div>
+          <p class="kicker">Mulai dari percakapan</p>
+          <h2>Ceritakan kebutuhan Anda</h2>
+          <p class="lead">Kami balas dalam 1&ndash;2 hari kerja dengan perkiraan lingkup, waktu, dan biaya. Gratis dan tanpa kewajiban.</p>
+        </div>
+        <form class="form" id="p-form" novalidate>
+          <input type="hidden" name="produk" id="p-form-produk">
+          <!-- Perangkap robot: manusia tidak melihat dan tidak mengisinya. -->
+          <div class="perangkap" aria-hidden="true">
+            <label for="p-alamat">Alamat</label>
+            <input id="p-alamat" name="alamat" type="text" tabindex="-1" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="p-f-nama">Nama</label>
+            <input id="p-f-nama" name="nama" type="text" autocomplete="name" placeholder="Nama atau lembaga" required>
+          </div>
+          <div class="field">
+            <label for="p-f-wa">WhatsApp</label>
+            <input id="p-f-wa" name="whatsapp" type="tel" autocomplete="tel" placeholder="0812…" required>
+          </div>
+          <div class="field">
+            <label for="p-f-surel">Surel <span class="opsional">(opsional)</span></label>
+            <input id="p-f-surel" name="surel" type="email" autocomplete="email" placeholder="nama@domain.id">
+          </div>
+          <div class="field">
+            <label for="p-f-pesan">Yang ingin dibereskan</label>
+            <textarea id="p-f-pesan" name="pesan" rows="4" placeholder="Mis. data santri dan uang saku masih di buku tulis…" required></textarea>
+          </div>
+          <button class="btn btn-solid btn-block" type="submit" id="p-form-tombol">Kirim permintaan</button>
+          <p class="form-note" id="p-form-catatan" role="status">Dibalas dalam 1&ndash;2 hari kerja.</p>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============ TANYA JAWAB ============ -->
+    <section class="wrap produk-bagian" id="p-bagian-tanya" hidden>
+      <div class="faq-grid">
+        <div>
+          <h2>Tanya jawab</h2>
+          <p class="sec-sub narrow">Yang paling sering ditanyakan sebelum memutuskan.</p>
+        </div>
+        <div class="faq" id="p-tanya"></div>
+      </div>
+    </section>
+
+    <!-- ============ AJAKAN ============ -->
+    <section class="wrap ajakan">
+      <div class="panel-dark ajakan-panel">
+        <div>
+          <p class="kicker light">Masih ragu?</p>
+          <h2 class="h2-dark">Tanya dulu, gratis.</h2>
+          <p class="panel-lead">Kalau ternyata produk ini belum yang Anda butuhkan, kami bilang apa adanya.</p>
+          <a class="btn btn-light" href="/#kontak">Tanya dulu</a>
+        </div>
+        <div class="ajakan-meta">
+          <p class="harga-besar" id="p-harga-2"></p>
+          <a class="btn btn-light" id="p-tombol-2" href="#"></a>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- Bilah beli di layar kecil -->
+<div class="bilah-beli" id="p-bilah" hidden>
+  <div class="bilah-beli-isi">
+    <span class="bilah-beli-harga" id="p-harga-3"></span>
+    <a class="btn btn-solid btn-sm" id="p-tombol-3" href="#"></a>
+  </div>
+</div>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <img src="/assets/invishar-logo.png" alt="" width="26" height="26">
+    <span class="footer-brand">invishar</span>
+    <span class="footer-tag">Produk, jasa, dan kelas digital &mdash; Indonesia.</span>
+    <span class="footer-copy"><a href="/mitra/daftar">Jadi mitra affiliate</a> &middot; &copy; 2026 Invishar</span>
+  </div>
+</footer>
+
+<script src="/js/main.js?v=20260918b" defer></script>
+<script src="/js/produk.js?v=20260919" defer></script>
+</body>
+</html>

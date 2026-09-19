@@ -73,14 +73,42 @@ $surel     = mb_substr($surel, 0, 160);
 $whatsapp  = mb_substr($whatsapp, 0, 40);
 $kebutuhan = mb_substr($kebutuhan, 0, 5000);
 
-q(
-    'INSERT INTO order_jasa (nama, surel, whatsapp, kebutuhan, sumber, ip, status, dibuat_pada, diperbarui_pada)
-     VALUES (?, ?, ?, ?, \'form\', ?, \'baru\', NOW(), NOW())',
-    [$nama, $surel, $whatsapp, $kebutuhan, $ip]
-);
+/* Setelah pembaruan basis data: catat produk yang ditanyakan (form di landing
+   page produk) dan affiliate yang membawa pengunjung (cookie link affiliate).
+   Sebelum pembaruan, form tetap jalan persis seperti dulu. */
+$produkId = null;
+$affiliateId = null;
+$catatanMasuk = 'Masuk dari form invishar.com';
+if (penjualanSiap()) {
+    require_once __DIR__ . '/inc/affiliate.php';
+    $slug = strtolower(trim((string) ($_POST['produk'] ?? '')));
+    if (preg_match('/^[a-z0-9-]{1,80}$/', $slug)) {
+        $p = ambilSatu('SELECT id, nama FROM produk WHERE slug = ?', [$slug]);
+        if ($p) {
+            $produkId = (int) $p['id'];
+            $catatanMasuk = 'Masuk dari halaman produk ' . $p['nama'];
+        }
+    }
+    $aff = affiliateDariCookie();
+    if ($aff) {
+        $affiliateId = (int) $aff['id'];
+        $catatanMasuk .= ' · lewat link affiliate ' . $aff['kode'];
+    }
+    q(
+        'INSERT INTO order_jasa (nama, surel, whatsapp, kebutuhan, sumber, produk_id, affiliate_id, ip, status, dibuat_pada, diperbarui_pada)
+         VALUES (?, ?, ?, ?, \'form\', ?, ?, ?, \'baru\', NOW(), NOW())',
+        [$nama, $surel, $whatsapp, $kebutuhan, $produkId, $affiliateId, $ip]
+    );
+} else {
+    q(
+        'INSERT INTO order_jasa (nama, surel, whatsapp, kebutuhan, sumber, ip, status, dibuat_pada, diperbarui_pada)
+         VALUES (?, ?, ?, ?, \'form\', ?, \'baru\', NOW(), NOW())',
+        [$nama, $surel, $whatsapp, $kebutuhan, $ip]
+    );
+}
 $id = (int) db()->lastInsertId();
 
 q('INSERT INTO order_riwayat (order_id, status_baru, catatan, dibuat_pada) VALUES (?, \'baru\', ?, NOW())',
-    [$id, 'Masuk dari form invishar.com']);
+    [$id, $catatanMasuk]);
 
 jawab(201, ['baik' => true]);

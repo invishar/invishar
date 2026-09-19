@@ -1,0 +1,20 @@
+# ==========================================================================
+# Toko Invishar — halaman publik: link affiliate, checkout, status bayar,
+# dan webhook Midtrans.
+# ==========================================================================
+
+DirectoryIndex disabled
+Options -Indexes
+
+# Paksa HTTPS: halaman ini menerima data pembeli.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set X-Robots-Tag "noindex, nofollow"
+</IfModule>

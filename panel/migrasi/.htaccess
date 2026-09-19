@@ -1,0 +1,8 @@
+# Berkas migrasi basis data — tidak untuk dibuka lewat peramban.
+<IfModule mod_authz_core.c>
+  Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+  Order allow,deny
+  Deny from all
+</IfModule>

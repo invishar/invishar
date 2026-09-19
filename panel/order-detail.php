@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/inc/awal.php';
+require_once __DIR__ . '/inc/gerbang.php';
 wajibMasuk();
 
 $id = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
@@ -46,6 +47,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $riwayat = ambilSemua('SELECT * FROM order_riwayat WHERE order_id = ? ORDER BY dibuat_pada DESC', [$id]);
 
+// Produk, affiliate, dan pembayaran yang terkait — ada setelah pembaruan basis data.
+$orderProduk = $orderAffiliate = null;
+$orderBayar = [];
+if (penjualanSiap()) {
+    $orderProduk    = !empty($order['produk_id']) ? ambilSatu('SELECT id, nama FROM produk WHERE id = ?', [$order['produk_id']]) : null;
+    $orderAffiliate = !empty($order['affiliate_id']) ? ambilSatu('SELECT id, nama, kode FROM affiliate WHERE id = ?', [$order['affiliate_id']]) : null;
+    $orderBayar     = ambilSemua('SELECT id, kode_order, jumlah, status FROM transaksi WHERE order_jasa_id = ? ORDER BY id DESC', [$id]);
+}
+
 $judul = $order['nama'];
 $menu  = 'order';
 require __DIR__ . '/inc/kepala.php';
@@ -72,8 +82,37 @@ require __DIR__ . '/inc/kepala.php';
         <dd><a href="https://wa.me/<?= e(preg_replace('/\D/', '', $order['whatsapp'])) ?>" target="_blank" rel="noopener"><?= e($order['whatsapp']) ?></a></dd>
       <?php endif; ?>
       <dt>Sumber</dt><dd><?= e($order['sumber']) ?></dd>
+      <?php if ($orderProduk): ?>
+        <dt>Produk</dt><dd><a href="<?= tautan('produk/' . (int) $orderProduk['id']) ?>"><?= e($orderProduk['nama']) ?></a></dd>
+      <?php endif; ?>
+      <?php if ($orderAffiliate): ?>
+        <dt>Dibawa affiliate</dt>
+        <dd><a href="<?= tautan('affiliate/' . (int) $orderAffiliate['id']) ?>"><?= e($orderAffiliate['nama']) ?></a>
+          <span class="tabel-kode">· <?= e((string) $orderAffiliate['kode']) ?></span></dd>
+      <?php endif; ?>
       <dt>Masuk</dt><dd><?= e(waktuIndo($order['dibuat_pada'])) ?></dd>
     </dl>
+
+    <?php if (penjualanSiap()): ?>
+      <h3 class="sub-judul">Pembayaran</h3>
+      <?php if ($orderBayar): ?>
+        <ul class="daftar-ringkas">
+          <?php foreach ($orderBayar as $b): ?>
+            <li>
+              <a href="<?= tautan('transaksi/' . (int) $b['id']) ?>">
+                <span class="dr-judul"><?= e(rupiah((int) $b['jumlah'])) ?></span>
+                <span class="dr-sub"><?= e($b['kode_order']) ?></span>
+              </a>
+              <span class="tanda tanda-<?= e($b['status']) ?>"><?= e(STATUS_TRANSAKSI[$b['status']] ?? $b['status']) ?></span>
+            </li>
+          <?php endforeach; ?>
+        </ul>
+      <?php endif; ?>
+      <p style="margin:10px 0 0">
+        <a class="tbl tbl-kecil<?= $orderBayar ? '' : ' tbl-utama' ?>" href="<?= tautan('transaksi-catat') ?>?order=<?= (int) $order['id'] ?>">Catat pembayaran</a>
+      </p>
+      <p class="petunjuk">Saat pembeli sudah membayar (DP atau lunas).<?= $orderAffiliate ? ' Komisi untuk ' . e($orderAffiliate['nama']) . ' ikut dihitung.' : '' ?></p>
+    <?php endif; ?>
 
     <h3 class="sub-judul">Yang ingin dibereskan</h3>
     <p class="kutipan"><?= nl2br(e($order['kebutuhan'])) ?></p>

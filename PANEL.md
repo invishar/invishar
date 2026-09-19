@@ -2,6 +2,8 @@
 
 Dokumen rencana dan rujukan untuk **panel.invishar.com**.
 
+Sistem affiliate, produk, dan transaksi: lihat **AFFILIATE.md** (menu Penjualan & Affiliate).
+
 Status: **tahap 0–3 sudah ditulis**, menunggu subdomain dan basis data dibuat
 di cPanel. Cara memasangnya ada di bagian 9.
 

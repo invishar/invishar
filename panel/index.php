@@ -17,6 +17,18 @@ $nilaiJalan   = (int) ambilNilai("SELECT COALESCE(SUM(nilai),0) FROM order_jasa 
 $berkasTerbit = rtrim((string) konfig('situs_data'), '/') . '/kelas.json';
 $terbitPada   = is_file($berkasTerbit) ? date('Y-m-d H:i:s', (int) filemtime($berkasTerbit)) : null;
 
+$jual = null;
+if (penjualanSiap()) {
+    $jual = [
+        'rp'        => (int) ambilNilai("SELECT COALESCE(SUM(jumlah), 0) FROM transaksi WHERE status = 'lunas' AND dibayar_pada >= DATE_FORMAT(NOW(), '%Y-%m-01')"),
+        'n'         => (int) ambilNilai("SELECT COUNT(*) FROM transaksi WHERE status = 'lunas' AND dibayar_pada >= DATE_FORMAT(NOW(), '%Y-%m-01')"),
+        'menunggu'  => (int) ambilNilai("SELECT COUNT(*) FROM affiliate WHERE status = 'menunggu'"),
+        'tarik_n'   => (int) ambilNilai("SELECT COUNT(*) FROM penarikan WHERE status = 'diajukan'"),
+        'tarik_rp'  => (int) ambilNilai("SELECT COALESCE(SUM(jumlah), 0) FROM penarikan WHERE status = 'diajukan'"),
+        'komisi'    => (int) ambilNilai("SELECT COALESCE(SUM(jumlah), 0) FROM komisi WHERE jenis = 'komisi' AND status = 'berlaku' AND dibuat_pada >= DATE_FORMAT(NOW(), '%Y-%m-01')"),
+    ];
+}
+
 $orderTerakhir = ambilSemua('SELECT * FROM order_jasa ORDER BY dibuat_pada DESC LIMIT 6');
 $jejak         = ambilSemua('SELECT * FROM log_aktivitas ORDER BY dibuat_pada DESC LIMIT 8');
 
@@ -41,6 +53,28 @@ require __DIR__ . '/inc/kepala.php';
     <span class="angka-lbl">Aset tercatat</span>
   </a>
 </div>
+
+<?php if ($jual !== null): ?>
+  <h2 class="sub-judul" style="margin-top:0">Penjualan &amp; affiliate</h2>
+  <div class="angka-kisi">
+    <a class="angka" href="<?= tautan('transaksi') ?>?status=lunas">
+      <span class="angka-num angka-rp"><?= e(rupiah($jual['rp'])) ?></span>
+      <span class="angka-lbl">Lunas bulan ini · <?= $jual['n'] ?> transaksi</span>
+    </a>
+    <a class="angka" href="<?= tautan('transaksi') ?>">
+      <span class="angka-num angka-rp"><?= e(rupiah($jual['komisi'])) ?></span>
+      <span class="angka-lbl">Komisi affiliate bulan ini</span>
+    </a>
+    <a class="angka<?= $jual['menunggu'] > 0 ? ' angka-sorot' : '' ?>" href="<?= tautan('affiliate') ?>?status=menunggu">
+      <span class="angka-num"><?= $jual['menunggu'] ?></span>
+      <span class="angka-lbl">Pendaftar menunggu persetujuan</span>
+    </a>
+    <a class="angka<?= $jual['tarik_n'] > 0 ? ' angka-sorot' : '' ?>" href="<?= tautan('penarikan') ?>">
+      <span class="angka-num"><?= $jual['tarik_n'] ?></span>
+      <span class="angka-lbl">Penarikan perlu dibayar<?= $jual['tarik_n'] > 0 ? ' · ' . e(rupiah($jual['tarik_rp'])) : '' ?></span>
+    </a>
+  </div>
+<?php endif; ?>
 
 <div class="dua-kolom">
 

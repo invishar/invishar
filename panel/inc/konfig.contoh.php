@@ -39,4 +39,20 @@ return [
         'model'     => 'amana',
         'batas_detik' => 90,
     ],
+
+    // --- Sistem affiliate & pembayaran (lihat AFFILIATE.md) ---------------
+    // Semua di bawah ini OPSIONAL. Tanpa isian, checkout memakai mode uji.
+
+    // 'uji'      : pembayaran simulasi, belum ada uang sungguhan.
+    // 'midtrans' : Midtrans Snap — isi kunci di bawah dulu.
+    'gerbang' => 'uji',
+
+    'midtrans' => [
+        'server_key' => '',      // Settings → Access Keys di dashboard Midtrans
+        'client_key' => '',
+        'produksi'   => false,   // true hanya setelah uji sandbox beres
+    ],
+
+    // Alamat situs untuk link affiliate dan tujuan balik dari Midtrans.
+    // 'situs_url' => 'https://invishar.com',
 ];

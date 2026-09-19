@@ -6,16 +6,39 @@ $pengguna = wajibMasuk();
 $judul = $judul ?? 'Panel';
 $menu  = $menu ?? '';
 
-$daftarMenu = [
-    'ringkasan'  => ['Ringkasan',  tautan()],
-    'order'      => ['Order jasa', tautan('order')],
-    'kelas'      => ['Kelas',      tautan('kelas')],
-    'inventaris' => ['Inventaris', tautan('inventaris')],
-    'aplikasi'   => ['Aplikasi',   tautan('aplikasi')],
-    'pengaturan' => ['Pengaturan', tautan('pengaturan')],
+/* Menu dikelompokkan supaya letak tiap urusan mudah ditebak.
+   [grup => [kunci => [label, tautan]]]; grup '' tanpa judul. */
+$grupMenu = [
+    '' => [
+        'ringkasan'  => ['Ringkasan',  tautan()],
+    ],
+    'Penjualan' => [
+        'order'      => ['Order jasa', tautan('order')],
+        'produk'     => ['Produk',     tautan('produk')],
+        'transaksi'  => ['Transaksi',  tautan('transaksi')],
+    ],
+    'Affiliate' => [
+        'affiliate'  => ['Affiliator', tautan('affiliate')],
+        'penarikan'  => ['Penarikan',  tautan('penarikan')],
+    ],
+    'Konten' => [
+        'kelas'      => ['Kelas',      tautan('kelas')],
+    ],
+    'Kantor' => [
+        'inventaris' => ['Inventaris', tautan('inventaris')],
+        'aplikasi'   => ['Aplikasi',   tautan('aplikasi')],
+    ],
 ];
 
-$orderBaru = (int) ambilNilai("SELECT COUNT(*) FROM order_jasa WHERE status = 'baru'");
+/* Angka yang menunggu tindakan admin, tampil sebagai lencana di menu. */
+$lencanaMenu = [
+    'order' => (int) ambilNilai("SELECT COUNT(*) FROM order_jasa WHERE status = 'baru'"),
+];
+$pembaruanTertunda = !penjualanSiap();
+if (!$pembaruanTertunda) {
+    $lencanaMenu['affiliate'] = (int) ambilNilai("SELECT COUNT(*) FROM affiliate WHERE status = 'menunggu'");
+    $lencanaMenu['penarikan'] = (int) ambilNilai("SELECT COUNT(*) FROM penarikan WHERE status = 'diajukan'");
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -45,15 +68,20 @@ $orderBaru = (int) ambilNilai("SELECT COUNT(*) FROM order_jasa WHERE status = 'b
     </div>
 
     <nav class="sisi-menu" aria-label="Menu panel">
-      <?php foreach ($daftarMenu as $kunci => [$label, $tautan]): ?>
-        <a href="<?= e($tautan) ?>"<?= $menu === $kunci ? ' class="is-on" aria-current="page"' : '' ?>>
-          <?= e($label) ?>
-          <?php if ($kunci === 'order' && $orderBaru > 0): ?>
-            <span class="lencana"><?= $orderBaru ?></span>
-          <?php endif; ?>
-        </a>
+      <?php foreach ($grupMenu as $grup => $isiGrup): ?>
+        <?php if ($grup !== ''): ?><p class="sisi-grup"><?= e($grup) ?></p><?php endif; ?>
+        <?php foreach ($isiGrup as $kunci => [$label, $tautan]): ?>
+          <a href="<?= e($tautan) ?>"<?= $menu === $kunci ? ' class="is-on" aria-current="page"' : '' ?>>
+            <?= e($label) ?>
+            <?php if (($lencanaMenu[$kunci] ?? 0) > 0): ?>
+              <span class="lencana" title="Menunggu tindakan"><?= (int) $lencanaMenu[$kunci] ?></span>
+            <?php endif; ?>
+          </a>
+        <?php endforeach; ?>
       <?php endforeach; ?>
     </nav>
+
+    <a class="sisi-atur<?= $menu === 'pengaturan' ? ' is-on' : '' ?>" href="<?= tautan('pengaturan') ?>"<?= $menu === 'pengaturan' ? ' aria-current="page"' : '' ?>>Pengaturan</a>
 
     <div class="sisi-bawah">
       <p class="sisi-nama"><?= e($pengguna['nama']) ?></p>
@@ -74,6 +102,12 @@ $orderBaru = (int) ambilNilai("SELECT COUNT(*) FROM order_jasa WHERE status = 'b
     </header>
 
     <main class="isi" id="isi">
+      <?php if ($pembaruanTertunda && basename($_SERVER['SCRIPT_NAME'] ?? '') !== 'pembaruan.php'): ?>
+        <div class="pita pita-peringatan">
+          <span><strong>Ada pembaruan basis data.</strong> Jalankan sekali supaya menu Produk, Transaksi, dan Affiliate bisa dipakai. Data yang ada tidak berubah.</span>
+          <a class="tbl tbl-kecil tbl-utama" href="<?= tautan('pembaruan') ?>">Jalankan pembaruan</a>
+        </div>
+      <?php endif; ?>
       <?php $kabar = ambilPesan(); ?>
       <?php if ($kabar): ?>
         <?php /* Melayang, bukan menempel di puncak halaman: setelah menyimpan,
