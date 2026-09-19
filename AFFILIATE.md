@@ -57,14 +57,14 @@ Affiliator bagikan  invishar.com/r/ANDI7K/ponpes-manager
 
 ### Link & cookie ("cache link")
 - Format link: `https://invishar.com/r/{KODE}/{slug}` (per produk) dan `https://invishar.com/r/{KODE}` (ke beranda). Pendek, mudah ditempel di WhatsApp.
-- `toko/r.php` men-set cookie **dari server**: `inv_ref = KODE.waktu.hmac`, `Domain=invishar.com; Path=/; Secure; HttpOnly; SameSite=Lax`, umur = setelan `cookie_hari` (bawaan 10). Dari server, bukan JavaScript, supaya tidak kena batas 7 hari Safari untuk cookie buatan JS. Ditandatangani HMAC (`rahasia_ref` di `konfig.php`) supaya tidak bisa dipalsukan isinya.
+- `toko/r.php` men-set cookie **dari server**: `inv_ref = KODE.kedaluwarsa.hmac` (tanggal kedaluwarsa ikut ditandatangani, jadi mengubah setelan tidak mengubah umur cookie yang sudah tertanam), `Domain=invishar.com; Path=/; Secure; HttpOnly; SameSite=Lax`, umur = setelan `cookie_hari` (bawaan 10). Dari server, bukan JavaScript, supaya tidak kena batas 7 hari Safari untuk cookie buatan JS. Ditandatangani HMAC (`rahasia_ref` di `konfig.php`) supaya tidak bisa dipalsukan isinya.
 - **Last-click:** klik baru menimpa cookie lama.
 - `/p/{slug}?ref=KODE` juga diterima: `produk.js` mengalihkan sekali ke `/r/KODE/slug`, jadi semua pencatatan tetap lewat server.
 - Klik dicatat dengan IP yang di-hash (sha256 + garam), bukan IP mentah. Klik berulang dari IP+produk yang sama dalam 24 jam dihitung satu untuk statistik.
 
 ### Atribusi (siapa dapat komisi)
 Fungsi tunggal `atribusi(produk, pembeli)` di `panel/inc/affiliate.php`:
-1. Ambil kode dari cookie `inv_ref` yang tanda tangannya sah dan masih dalam jendela waktu; kalau tidak ada, dari parameter `ref`.
+1. Ambil kode dari cookie `inv_ref` yang tanda tangannya sah dan belum melewati tanggal kedaluwarsa di dalamnya; kalau tidak ada, dari parameter `ref`.
 2. Sah hanya jika affiliate berstatus `aktif` **dan** produk `affiliate_aktif = 1`.
 3. **Tolak beli-sendiri:** surel atau WhatsApp pembeli (dinormalkan) sama dengan milik affiliate → tanpa komisi, ditandai di transaksi.
 4. Hasilnya **dikunci di transaksi/order saat dibuat** — perubahan cookie setelahnya tidak berpengaruh.
@@ -82,6 +82,26 @@ Fungsi tunggal `atribusi(produk, pembeli)` di `panel/inc/affiliate.php`:
 - Affiliator menarik **seluruh saldo siap** sekaligus, minimal `min_tarik` (bawaan Rp 100.000), satu pengajuan terbuka pada satu waktu.
 - Saat diajukan, baris komisi yang ikut **dikunci** (`penarikan_id` diisi) supaya tidak terhitung dua kali. Ditolak → kuncinya dilepas, saldo kembali.
 - Admin mentransfer manual, lalu menandai `dibayar` + nomor referensi / bukti. Data rekening **disalin** ke penarikan saat diajukan.
+
+### Setelan yang diatur dari panel
+Semua angka di bawah **tidak ditulis di kode**. Nilainya disimpan di tabel `setelan` dan diubah lewat **Panel → Pengaturan → Affiliate**. Angka di kolom *Bawaan* hanya isi awal saat migrasi dijalankan.
+
+| Kolom di halaman Pengaturan | Kunci | Bawaan | Batas yang diterima |
+|---|---|---|---|
+| Lama cookie link affiliate | `affiliate.cookie_hari` | 10 hari | 1–90 hari |
+| Masa tahan komisi | `affiliate.masa_tahan_hari` | 3 hari | 0–60 hari (0 = langsung siap ditarik) |
+| Minimal penarikan | `affiliate.min_tarik` | Rp 100.000 | Rp 0 ke atas |
+| Bulan komisi berulang (langganan) | `affiliate.bulan_berulang` | 12 bulan | 1–60 bulan |
+| Syarat & ketentuan affiliate | `affiliate.syarat` | teks contoh | teks bebas, tampil di form daftar |
+
+Aturan kapan perubahan berlaku, supaya tidak mengejutkan affiliator:
+
+- **Lama cookie** berlaku untuk **klik berikutnya**. Cookie yang sudah tertanam di peramban pembeli tetap memakai umur saat ditanam: tanggal kedaluwarsa ada di dalam cookie itu sendiri dan dilindungi tanda tangan.
+- **Masa tahan** berlaku untuk **komisi baru**. `cair_pada` komisi lama tidak dihitung ulang. Kalau ingin mempercepat komisi lama, pakai tombol *Cairkan sekarang*.
+- **Minimal penarikan** langsung berlaku untuk pengajuan berikutnya. Pengajuan yang sudah masuk tidak terpengaruh.
+- **Bulan berulang** di sini hanya bawaan. Produk yang punya nilai sendiri (`fee_bulan_berulang`) tetap memakai nilainya. Langganan yang sudah berjalan mengikuti nilai yang berlaku saat komisi periodenya dibuat.
+
+Setiap penyimpanan dicatat di `log_aktivitas` beserta nilai lama → baru, misalnya "Masa tahan: 3 → 7 hari".
 
 ### Gerbang pembayaran
 Antarmuka `Gerbang` di `panel/inc/gerbang.php` dengan dua pengemudi, dipilih oleh `konfig('gerbang')` (bukan setelan di panel — pindah ke uang sungguhan tidak boleh sekadar satu klik):
@@ -167,7 +187,7 @@ Kode affiliate: 6 karakter dari huruf/angka tanpa yang mirip (`ABCDEFGHJKMNPQRST
 - **Affiliate** — `affiliate.php` (saring per status, jumlah menunggu di menu), `affiliate-detail.php` (setujui + tetapkan kode, tolak, bekukan, reset sandi, statistik, daftar komisi & penarikan, tombol *Cairkan sekarang* per komisi atau untuk semua komisi tertahan).
 - **Transaksi** — `transaksi.php`, `transaksi-detail.php`: daftar, riwayat status, **catat pembayaran manual** (termasuk perpanjangan langganan bulan ke-n), tandai refund. `order-detail.php` dapat tombol *Catat pembayaran* yang mengisi produk & affiliate dari order.
 - **Penarikan** — `penarikan.php`: antrean diajukan → tandai dibayar (referensi transfer) / tolak (alasan).
-- `pengaturan.php` — bagian *Affiliate*: cookie hari, minimal tarik, masa tahan, bulan berulang bawaan, syarat & ketentuan.
+- `pengaturan.php` — bagian *Affiliate*: kolom-kolom di tabel *Setelan yang diatur dari panel*, dengan validasi batas dan jejak nilai lama → baru.
 - `index.php` (Ringkasan) — kartu: affiliate menunggu, penarikan diajukan, penjualan & komisi bulan ini.
 - `api-pesan.php` — baca cookie `inv_ref` + `produk`, isi `order_jasa.produk_id/affiliate_id`.
 
