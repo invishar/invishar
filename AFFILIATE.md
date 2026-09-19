@@ -42,7 +42,7 @@ invishar.com/
 ```
 Affiliator bagikan  invishar.com/r/ANDI7K/ponpes-manager
         │
-        ▼  toko/r.php: catat klik, set cookie inv_ref (30 hari), 302 →
+        ▼  toko/r.php: catat klik, set cookie inv_ref (10 hari), 302 →
    /p/ponpes-manager  (landing page statis)
         │
         ├─ produk berharga  → "Beli" → toko/checkout.php → transaksi (menunggu, affiliate terkunci)
@@ -57,7 +57,7 @@ Affiliator bagikan  invishar.com/r/ANDI7K/ponpes-manager
 
 ### Link & cookie ("cache link")
 - Format link: `https://invishar.com/r/{KODE}/{slug}` (per produk) dan `https://invishar.com/r/{KODE}` (ke beranda). Pendek, mudah ditempel di WhatsApp.
-- `toko/r.php` men-set cookie **dari server**: `inv_ref = KODE.waktu.hmac`, `Domain=invishar.com; Path=/; Secure; HttpOnly; SameSite=Lax`, umur = setelan `cookie_hari` (bawaan 30). Dari server, bukan JavaScript, supaya tidak kena batas 7 hari Safari untuk cookie buatan JS. Ditandatangani HMAC (`rahasia_ref` di `konfig.php`) supaya tidak bisa dipalsukan isinya.
+- `toko/r.php` men-set cookie **dari server**: `inv_ref = KODE.waktu.hmac`, `Domain=invishar.com; Path=/; Secure; HttpOnly; SameSite=Lax`, umur = setelan `cookie_hari` (bawaan 10). Dari server, bukan JavaScript, supaya tidak kena batas 7 hari Safari untuk cookie buatan JS. Ditandatangani HMAC (`rahasia_ref` di `konfig.php`) supaya tidak bisa dipalsukan isinya.
 - **Last-click:** klik baru menimpa cookie lama.
 - `/p/{slug}?ref=KODE` juga diterima: `produk.js` mengalihkan sekali ke `/r/KODE/slug`, jadi semua pencatatan tetap lewat server.
 - Klik dicatat dengan IP yang di-hash (sha256 + garam), bukan IP mentah. Klik berulang dari IP+produk yang sama dalam 24 jam dihitung satu untuk statistik.
@@ -74,7 +74,8 @@ Fungsi tunggal `atribusi(produk, pembeli)` di `panel/inc/affiliate.php`:
 - Setelan fee **disalin (snapshot)** ke baris komisi: `dasar`, `fee_jenis`, `fee_nilai`. Mengubah fee produk nanti tidak mengubah komisi lama.
 - `persen` → `floor(jumlah × nilai / 100)`; `tetap` → `nilai` rupiah.
 - **Langganan:** komisi hanya untuk `periode_ke ≤ bulan_berulang` (setelan produk, bawaan global 12). Affiliate terkunci di `langganan` sejak pembayaran pertama; perpanjangan mewarisi affiliate-nya.
-- **Masa tahan** (bawaan 14 hari) sebelum bisa ditarik — ruang untuk refund. Status "siap" dihitung dari tanggal (`cair_pada <= NOW()`), **tanpa cron**.
+- **Masa tahan** (bawaan 3 hari) sebelum bisa ditarik — ruang untuk refund. Status "siap" dihitung dari tanggal (`cair_pada <= NOW()`), **tanpa cron**.
+- **Pencairan lebih awal oleh admin:** admin boleh mencairkan komisi yang masih tertahan kapan saja — per baris komisi, atau sekaligus semua komisi tertahan milik satu affiliate — lewat tombol *Cairkan sekarang* di `affiliate-detail.php`. Caranya cukup mengisi `cair_pada = NOW()`, lalu dicatat di `log_aktivitas` beserta siapa dan kapan. Komisi itu langsung masuk saldo siap dan bisa ditarik seperti biasa.
 - **Refund:** komisi yang belum ditarik → `dibatalkan`; yang sudah ditarik → baris penyesuaian **negatif** yang memotong saldo berikutnya.
 
 ### Penarikan
@@ -105,7 +106,7 @@ Uang disimpan sebagai `BIGINT` rupiah bulat. Semua lewat berkas migrasi.
 
 ```
 setelan          kunci PK · nilai · diperbarui_pada
-                 (affiliate.cookie_hari=30, .min_tarik=100000, .masa_tahan_hari=14,
+                 (affiliate.cookie_hari=10, .min_tarik=100000, .masa_tahan_hari=3,
                   .bulan_berulang=12, .syarat=teks S&K)
 
 produk           id · slug UNIQUE · nama · jenis · kelas_id NULL · tagline · ringkas
@@ -163,7 +164,7 @@ Kode affiliate: 6 karakter dari huruf/angka tanpa yang mirip (`ABCDEFGHJKMNPQRST
 
 ### Panel admin (menu baru di `panel/inc/kepala.php`)
 - **Produk** — `produk.php`, `produk-edit.php`: isi landing page, harga, jenis, tautan ke kelas, dan kotak *Setelan affiliate* (aktif, persen/tetap, nilai, bulan berulang). `terbitkan.php` ditambah menulis `data/produk.json`.
-- **Affiliate** — `affiliate.php` (saring per status, jumlah menunggu di menu), `affiliate-detail.php` (setujui + tetapkan kode, tolak, bekukan, reset sandi, statistik, daftar komisi & penarikan).
+- **Affiliate** — `affiliate.php` (saring per status, jumlah menunggu di menu), `affiliate-detail.php` (setujui + tetapkan kode, tolak, bekukan, reset sandi, statistik, daftar komisi & penarikan, tombol *Cairkan sekarang* per komisi atau untuk semua komisi tertahan).
 - **Transaksi** — `transaksi.php`, `transaksi-detail.php`: daftar, riwayat status, **catat pembayaran manual** (termasuk perpanjangan langganan bulan ke-n), tandai refund. `order-detail.php` dapat tombol *Catat pembayaran* yang mengisi produk & affiliate dari order.
 - **Penarikan** — `penarikan.php`: antrean diajukan → tandai dibayar (referensi transfer) / tolak (alasan).
 - `pengaturan.php` — bagian *Affiliate*: cookie hari, minimal tarik, masa tahan, bulan berulang bawaan, syarat & ketentuan.
@@ -235,10 +236,10 @@ ssh -i ~/.ssh/invishar_deploy -p 64000 invishar@girona.id.rapidplex.com \
 1. Panel → Migrasi → jalankan; semua tabel baru ada.
 2. Buat produk `kelas-dashboard` (sekali, Rp 249.000, affiliate 20%) dan `ponpes-manager` (langganan, Rp 500.000/bln, tetap Rp 100.000, 12 bulan). Terbitkan → `/p/kelas-dashboard` tampil.
 3. Daftar di `/mitra/daftar` → login ditolak "menunggu" → setujui di panel dengan kode `UJI01` → login berhasil, `tautan.php` menampilkan 2 link.
-4. Jendela penyamaran: buka `/r/UJI01/kelas-dashboard` → dialihkan ke `/p/kelas-dashboard`, cookie `inv_ref` ada (DevTools, HttpOnly, 30 hari), `affiliate_klik` +1.
+4. Jendela penyamaran: buka `/r/UJI01/kelas-dashboard` → dialihkan ke `/p/kelas-dashboard`, cookie `inv_ref` ada (DevTools, HttpOnly, 10 hari), `affiliate_klik` +1.
 5. Beli → `bayar-uji` → *Simulasikan lunas* → transaksi `lunas` dengan affiliate `UJI01`; komisi Rp 49.800 berstatus tertahan, tampil di `penghasilan.php`.
 6. Muat ulang `bayar-uji` dan kirim *lunas* lagi → **tetap satu** komisi.
-7. Setel masa tahan = 0 → saldo siap Rp 49.800; setel min tarik Rp 10.000 → ajukan → panel tandai dibayar → saldo 0, riwayat benar.
+7. Komisi masih tertahan (3 hari) → di panel tekan *Cairkan sekarang* → saldo siap Rp 49.800 saat itu juga, tercatat di jejak perubahan; setel min tarik Rp 10.000 → ajukan → panel tandai dibayar → saldo 0, riwayat benar.
 8. **Beli-sendiri:** beli dengan surel milik affiliate → transaksi lunas, **tanpa** komisi, `beli_sendiri=1`.
 9. **Langganan:** checkout Ponpes → catat manual periode 2…13 di panel → komisi hanya 12 baris (periode 13 tidak).
 10. **Refund** transaksi yang komisinya sudah ditarik → muncul penyesuaian −Rp 49.800, saldo negatif terbawa ke berikutnya.
