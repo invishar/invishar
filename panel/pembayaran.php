@@ -8,55 +8,61 @@ wajibPenjualanSiap();
 /* =============================================================================
    Setting → Pembayaran: gerbang yang dipakai checkout.
 
-     Uji               simulasi, tidak ada uang berpindah
-     Midtrans sandbox  Midtrans sungguhan dengan uang pura-pura
-     Midtrans produksi uang sungguhan
+     Uji             simulasi, tidak ada uang berpindah
+     Duitku sandbox  Duitku sungguhan dengan uang pura-pura
+     Duitku produksi uang sungguhan
 
-   Pengaman: kunci Midtrans selalu dites ke Midtrans sebelum disimpan, dan
-   pindah ke produksi butuh centang penegasan. Server key tidak pernah
-   ditampilkan utuh lagi setelah disimpan.
+   Pengaman: kredensial selalu dites ke Duitku sebelum disimpan, dan pindah ke
+   produksi butuh centang penegasan. API Key tidak pernah ditampilkan utuh lagi
+   setelah disimpan.
+
+   Berbeda dari Midtrans, kredensial Duitku tidak punya penanda lingkungan
+   seperti awalan "SB-". Kunci produksi bisa tertempel di mode sandbox atau
+   sebaliknya tanpa bisa dideteksi dari bentuknya — jadi tes koneksi wajib di
+   bawah ini adalah satu-satunya pengaman salah tempel. Jangan dilonggarkan.
    ============================================================================= */
 
 const MODE_BAYAR = [
     'uji'      => ['Mode uji (simulasi)', 'Tidak ada uang berpindah. Pembeli diarahkan ke halaman simulasi — untuk mencoba alur checkout dan komisi.'],
-    'sandbox'  => ['Midtrans sandbox', 'Midtrans sungguhan dengan uang pura-pura. Butuh kunci sandbox (diawali "SB-Mid-").'],
-    'produksi' => ['Midtrans produksi', 'Uang sungguhan masuk ke akun Midtrans Anda. Pakai setelah sandbox berhasil.'],
+    'sandbox'  => ['Duitku sandbox', 'Duitku sungguhan dengan uang pura-pura. Butuh Merchant Code dan API Key dari dashboard sandbox.'],
+    'produksi' => ['Duitku produksi', 'Uang sungguhan masuk ke akun Duitku Anda. Pakai setelah sandbox berhasil.'],
 ];
 
-/** Server key disamarkan: "SB-Mid-server-…a1b2". */
+/** API Key disamarkan supaya tidak pernah dikirim utuh ke peramban. */
 function samarkanKunci(string $k): string
 {
-    return $k === '' ? '' : (strlen($k) > 12 ? substr($k, 0, 14) . '…' . substr($k, -4) : '••••');
+    return $k === '' ? '' : (strlen($k) > 12 ? substr($k, 0, 6) . '…' . substr($k, -4) : '••••');
 }
 
 $konf = konfigPembayaran();
-$modeKini = $konf['gerbang'] === 'uji' ? 'uji' : (!empty($konf['midtrans']['produksi']) ? 'produksi' : 'sandbox');
-$kunciKini = (string) ($konf['midtrans']['server_key'] ?? '');
-$klienKini = (string) ($konf['midtrans']['client_key'] ?? '');
+$modeKini = $konf['gerbang'] === 'duitku' ? (!empty($konf['duitku']['produksi']) ? 'produksi' : 'sandbox') : 'uji';
+$kunciKini = (string) ($konf['duitku']['api_key'] ?? '');
+$kodeKini  = (string) ($konf['duitku']['merchant_code'] ?? '');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     periksaCsrf();
     $mode = isset(MODE_BAYAR[masukan('mode')]) ? masukan('mode') : 'uji';
-    $kunciBaru = trim(masukan('server_key'));
-    $klienBaru = trim(masukan('client_key'));
+    $kunciBaru = trim(masukan('api_key'));
+    $kodeBaru  = trim(masukan('merchant_code'));
     $kunci = $kunciBaru !== '' ? $kunciBaru : $kunciKini;
-    $klien = $klienBaru !== '' ? $klienBaru : $klienKini;
+    $kode  = $kodeBaru !== '' ? $kodeBaru : $kodeKini;
     $produksi = $mode === 'produksi';
     $aksi = masukan('aksi', 'simpan');
 
     $salah = null;
     if ($mode !== 'uji' || $aksi === 'tes') {
-        if ($kunci === '') {
-            $salah = 'Isi server key Midtrans dulu (Settings → Access Keys di dashboard Midtrans).';
-        } elseif ($produksi && str_starts_with($kunci, 'SB-')) {
-            $salah = 'Kunci ini kunci sandbox (diawali "SB-"). Untuk produksi, pakai kunci dari dashboard Midtrans produksi.';
-        } elseif (!$produksi && !str_starts_with($kunci, 'SB-')) {
-            $salah = 'Untuk sandbox, pakai kunci sandbox (diawali "SB-Mid-server-").';
+        if ($kode === '') {
+            $salah = 'Isi Merchant Code dulu — ada di dashboard Duitku, halaman Project.';
+        } elseif ($kunci === '') {
+            $salah = 'Isi API Key dulu — ada di dashboard Duitku, halaman Project.';
         }
     }
     if (!$salah && ($mode !== 'uji' || $aksi === 'tes')) {
-        $tes = (new GerbangMidtrans(['server_key' => $kunci, 'client_key' => $klien, 'produksi' => $produksi]
-            + array_intersect_key($konf['midtrans'], ['url_app' => 1, 'url_api' => 1])))->tesKunci();
+        /* Duitku tidak menandai lingkungan pada kredensialnya, jadi kunci salah
+           lingkungan hanya ketahuan dari jawaban Duitku sendiri. Karena itu tes
+           ini wajib lolos sebelum apa pun disimpan. */
+        $tes = (new GerbangDuitku(['merchant_code' => $kode, 'api_key' => $kunci, 'produksi' => $produksi]
+            + array_intersect_key($konf['duitku'], ['url_pop' => 1, 'url_api' => 1])))->tesKunci();
         if (!$tes['ok']) {
             $salah = 'Tes koneksi gagal: ' . $tes['pesan'];
         } elseif ($aksi === 'tes') {
@@ -73,23 +79,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         pergi(tautan('pembayaran'));
     }
 
-    simpanSetelan('pembayaran.gerbang', $mode === 'uji' ? 'uji' : 'midtrans');
-    simpanSetelan('pembayaran.midtrans_produksi', $produksi ? '1' : '0');
+    simpanSetelan('pembayaran.gerbang', $mode === 'uji' ? 'uji' : 'duitku');
+    simpanSetelan('pembayaran.duitku_produksi', $produksi ? '1' : '0');
+    if ($kodeBaru !== '') {
+        simpanSetelan('pembayaran.duitku_merchant_code', $kodeBaru);
+    }
     if ($kunciBaru !== '') {
-        simpanSetelan('pembayaran.midtrans_server_key', $kunciBaru);
-    } elseif ($konf['sumber'] === 'konfig' && $kunciKini !== '') {
-        // Pertama kali disimpan dari panel: bawa kunci lama dari konfig.php.
-        simpanSetelan('pembayaran.midtrans_server_key', $kunciKini);
+        simpanSetelan('pembayaran.duitku_api_key', $kunciBaru);
     }
-    if ($klienBaru !== '' || ($konf['sumber'] === 'konfig' && $klienKini !== '')) {
-        simpanSetelan('pembayaran.midtrans_client_key', $klienBaru !== '' ? $klienBaru : $klienKini);
-    }
-    catatLog('ubah pembayaran', MODE_BAYAR[$mode][0] . ($kunciBaru !== '' ? ' · server key diganti' : ''));
-    pesan('Pembayaran sekarang memakai ' . MODE_BAYAR[$mode][0] . '.' . ($mode === 'uji' ? ' Checkout berikutnya berupa simulasi.' : ' Checkout berikutnya lewat Midtrans.'));
+    // Sisa setelan Midtrans tidak dibaca siapa pun lagi; menyimpannya hanya
+    // membingungkan orang yang membuka tabel setelan suatu hari nanti.
+    q("DELETE FROM setelan WHERE kunci LIKE 'pembayaran.midtrans\\_%'");
+
+    catatLog('ubah pembayaran', MODE_BAYAR[$mode][0] . ($kunciBaru !== '' ? ' · API key diganti' : ''));
+    pesan('Pembayaran sekarang memakai ' . MODE_BAYAR[$mode][0] . '.' . ($mode === 'uji' ? ' Checkout berikutnya berupa simulasi.' : ' Checkout berikutnya lewat Duitku.'));
     pergi(tautan('pembayaran'));
 }
 
-$urlNotifikasi = urlSitus() . '/toko/midtrans.php';
+$urlNotifikasi = urlSitus() . '/toko/duitku.php';
 $urlSelesai = urlSitus() . '/toko/selesai.php';
 
 $judul = 'Pembayaran';
@@ -97,12 +104,17 @@ $menu  = 'pembayaran';
 require __DIR__ . '/inc/kepala.php';
 ?>
 
-<?php if ($modeKini === 'uji'): ?>
+<?php if (!$konf['dikenal']): ?>
+  <div class="pita pita-buruk"><span><strong>Gerbang tersimpan tidak dikenal:
+    <code><?= e($konf['gerbang']) ?></code>.</strong> Checkout sedang menolak pesanan dengan
+    503 — itu memang disengaja, supaya tidak ada yang diam-diam jatuh ke halaman simulasi.
+    Pilih salah satu di bawah lalu simpan.</span></div>
+<?php elseif ($modeKini === 'uji'): ?>
   <div class="pita pita-peringatan"><span><strong>Mode uji aktif.</strong> Belum ada uang sungguhan — checkout berakhir di halaman simulasi.</span></div>
 <?php elseif ($modeKini === 'sandbox'): ?>
-  <div class="pita pita-info"><span><strong>Midtrans sandbox.</strong> Pembayaran lewat Midtrans, tapi uangnya pura-pura. Cocok untuk uji terakhir sebelum produksi.</span></div>
+  <div class="pita pita-info"><span><strong>Duitku sandbox.</strong> Pembayaran lewat Duitku, tapi uangnya pura-pura. Cocok untuk uji terakhir sebelum produksi.</span></div>
 <?php else: ?>
-  <div class="pita pita-baik"><span><strong>Midtrans produksi.</strong> Pembayaran sungguhan diterima.</span></div>
+  <div class="pita pita-baik"><span><strong>Duitku produksi.</strong> Pembayaran sungguhan diterima.</span></div>
 <?php endif; ?>
 
 <div class="dua-kolom-lebar">
@@ -122,14 +134,16 @@ require __DIR__ . '/inc/kepala.php';
 
     <div class="form-panel" data-tampil-jika="mode=sandbox,produksi">
       <div class="bidang">
-        <label for="server_key">Server key</label>
-        <input id="server_key" name="server_key" type="password" autocomplete="new-password" spellcheck="false"
-               placeholder="<?= $kunciKini !== '' ? 'Tersimpan: ' . e(samarkanKunci($kunciKini)) . ' — kosongkan kalau tidak diganti' : 'SB-Mid-server-…' ?>">
-        <p class="petunjuk">Dashboard Midtrans → Settings → Access Keys. Rahasia — hanya dipakai server, tidak pernah dikirim ke peramban.</p>
+        <label for="merchant_code">Merchant Code</label>
+        <input id="merchant_code" name="merchant_code" type="text" spellcheck="false"
+               value="<?= e($kodeKini) ?>" placeholder="DXXXX">
+        <p class="petunjuk">Dashboard Duitku → Project. Kode sandbox dan produksi berbeda.</p>
       </div>
       <div class="bidang">
-        <label for="client_key">Client key</label>
-        <input id="client_key" name="client_key" type="text" spellcheck="false" value="<?= e($klienKini) ?>" placeholder="SB-Mid-client-…">
+        <label for="api_key">API Key</label>
+        <input id="api_key" name="api_key" type="password" autocomplete="new-password" spellcheck="false"
+               placeholder="<?= $kunciKini !== '' ? 'Tersimpan: ' . e(samarkanKunci($kunciKini)) . ' — kosongkan kalau tidak diganti' : 'Salin dari dashboard Duitku' ?>">
+        <p class="petunjuk">Rahasia — hanya dipakai server, tidak pernah dikirim ke peramban.</p>
       </div>
 
       <?php if ($modeKini !== 'produksi'): ?>
@@ -140,7 +154,7 @@ require __DIR__ . '/inc/kepala.php';
       </label>
       <?php endif; ?>
 
-      <p class="petunjuk">Kunci dites langsung ke Midtrans saat disimpan. Kalau ditolak, setelan lama tetap berlaku.</p>
+      <p class="petunjuk">Kredensial dites langsung ke Duitku saat disimpan. Kalau ditolak, setelan lama tetap berlaku.</p>
     </div>
 
     <div class="form-aksi">
@@ -154,12 +168,12 @@ require __DIR__ . '/inc/kepala.php';
 
   <aside>
     <section class="kotak">
-      <div class="kotak-kepala"><h2>Isi di dashboard Midtrans</h2></div>
-      <p class="bagian-sub">Settings → Configuration. Tanpa ini status pembayaran tidak sampai ke panel.</p>
+      <div class="kotak-kepala"><h2>Isi di dashboard Duitku</h2></div>
+      <p class="bagian-sub">Project → Setting. Tanpa ini status pembayaran tidak sampai ke panel.</p>
       <dl class="keadaan">
-        <dt>Payment notification URL</dt>
+        <dt>Callback URL</dt>
         <dd><div class="salin-baris"><code><?= e($urlNotifikasi) ?></code><button class="tbl-salin" type="button" data-salin="<?= e($urlNotifikasi) ?>">Salin</button></div></dd>
-        <dt>Finish redirect URL</dt>
+        <dt>Return URL</dt>
         <dd><div class="salin-baris"><code><?= e($urlSelesai) ?></code><button class="tbl-salin" type="button" data-salin="<?= e($urlSelesai) ?>">Salin</button></div></dd>
       </dl>
     </section>
@@ -167,7 +181,7 @@ require __DIR__ . '/inc/kepala.php';
       <div class="kotak-kepala"><h2>Urutan yang aman</h2></div>
       <ol class="titik-daftar">
         <li>Coba alur lengkap di <strong>mode uji</strong>.</li>
-        <li>Pindah ke <strong>sandbox</strong>, bayar lewat simulator Midtrans, pastikan transaksi jadi Lunas.</li>
+        <li>Pindah ke <strong>sandbox</strong>, bayar lewat simulator Duitku, pastikan transaksi jadi Lunas.</li>
         <li>Baru pindah ke <strong>produksi</strong> dengan kunci produksi.</li>
       </ol>
     </section>

@@ -50,6 +50,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         q('UPDATE transaksi SET catatan = ?, diperbarui_pada = NOW() WHERE id = ?', [$catatan, $id]);
         pesan('Catatan disimpan.');
     }
+    /* Penyedia tidak selalu mengabari transaksi yang hangus, dan tidak ada cron
+       di proyek ini. Tanpa tombol ini, satu-satunya jalan transaksi keluar dari
+       "menunggu" adalah pembeli kebetulan membuka halaman selesai lagi. */
+    if ($aksi === 'cek-gerbang') {
+        $g = gerbangUntuk((string) $t['gerbang']);
+        if (!($g instanceof GerbangDicek) || !$g->siap()) {
+            pesan('Gerbang "' . $t['gerbang'] . '" tidak bisa ditanyai statusnya.', 'buruk');
+            pergi($kembali);
+        }
+        try {
+            $s = $g->status($t['kode_order']);
+        } catch (Throwable $e) {
+            error_log('[invishar panel] cek gerbang: ' . $e->getMessage());
+            $s = null;
+        }
+        if (!$s) {
+            pesan('Penyedia tidak mengenali pesanan ini atau sedang tidak bisa dihubungi. Status dibiarkan apa adanya.', 'peringatan');
+        } else {
+            $hasil = $g->terapkan($t, $s, 'admin', json_encode($s, JSON_UNESCAPED_UNICODE));
+            $baru = ambilNilai('SELECT status FROM transaksi WHERE id = ?', [$id]);
+            catatLog('periksa status gerbang', $t['kode_order']);
+            pesan($baru !== $t['status']
+                ? 'Status diperbarui dari penyedia: sekarang ' . strtolower(STATUS_TRANSAKSI[$baru] ?? $baru) . '.'
+                : 'Sudah diperiksa ke penyedia — statusnya memang belum berubah. (' . $hasil['pesan'] . ')');
+        }
+    }
     pergi($kembali);
 }
 
@@ -88,7 +114,7 @@ function alasanTanpaKomisi(array $t, ?array $produk, ?array $aff): string
     return 'Tidak ada komisi.';
 }
 
-$sumberLabel = ['checkout' => 'Checkout', 'uji' => 'Simulasi uji', 'midtrans' => 'Midtrans', 'admin' => 'Admin'];
+$sumberLabel = ['checkout' => 'Checkout', 'uji' => 'Simulasi uji', 'duitku' => 'Duitku', 'admin' => 'Admin'];
 
 $judul = 'Pesanan ' . $t['kode_order'];
 $menu  = 'transaksi';
@@ -121,9 +147,9 @@ require __DIR__ . '/inc/kepala.php';
         </dd>
         <dt>Pembayaran</dt>
         <dd>
-          <?= e(['uji' => 'Simulasi (mode uji)', 'midtrans' => 'Midtrans', 'manual' => 'Dicatat manual'][$t['gerbang']] ?? $t['gerbang']) ?>
+          <?= e(['uji' => 'Simulasi (mode uji)', 'duitku' => 'Duitku', 'manual' => 'Dicatat manual'][$t['gerbang']] ?? $t['gerbang']) ?>
           <?= $t['metode'] ? ' · ' . e($t['metode']) : '' ?>
-          <?= $t['gerbang_ref'] && $t['gerbang'] === 'midtrans' ? '<br><span class="teks-kecil">ID Midtrans: ' . e($t['gerbang_ref']) . '</span>' : '' ?>
+          <?= $t['gerbang_ref'] && $t['gerbang'] !== 'manual' ? '<br><span class="teks-kecil">Ref penyedia: ' . e($t['gerbang_ref']) . '</span>' : '' ?>
         </dd>
         <dt>Dibuat</dt><dd><?= e(waktuIndo($t['dibuat_pada'])) ?></dd>
         <?php if ($t['dibayar_pada']): ?><dt>Dibayar</dt><dd><?= e(waktuIndo($t['dibayar_pada'])) ?></dd><?php endif; ?>
@@ -213,6 +239,15 @@ require __DIR__ . '/inc/kepala.php';
           <button class="tbl tbl-bahaya" type="submit" name="aksi" value="batal"
                   data-pastikan="Batalkan transaksi ini? Pembeli harus checkout ulang kalau ingin membeli.">Batalkan</button>
         </form>
+
+        <?php if (gerbangUntuk((string) $t['gerbang']) instanceof GerbangDicek): ?>
+          <form method="post" class="form-sebaris" style="margin-top:14px">
+            <?= csrfInput() ?>
+            <input type="hidden" name="id" value="<?= $id ?>">
+            <button class="tbl" type="submit" name="aksi" value="cek-gerbang">Periksa status ke penyedia</button>
+            <span class="petunjuk">Menanyakan langsung ke penyedia pembayaran. Berguna kalau pembeli mengaku sudah bayar, atau batas waktunya sudah lewat tapi statusnya masih menggantung.</span>
+          </form>
+        <?php endif; ?>
       </section>
     <?php elseif ($t['status'] === 'lunas'): ?>
       <section class="kotak">

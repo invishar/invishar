@@ -150,7 +150,7 @@ require __DIR__ . '/inc/kepala.php';
         <button class="btn btn-solid btn-block" type="submit" id="tombol-bayar">
           Lanjut ke pembayaran &middot; <?= e(rupiah((int) $produk['harga'])) ?>
         </button>
-        <p class="form-note">Anda akan diarahkan ke halaman pembayaran<?= modeUji() ? ' (simulasi)' : ' Midtrans' ?>.</p>
+        <p class="form-note">Anda akan diarahkan ke halaman pembayaran<?= modeUji() ? ' (simulasi)' : ' Duitku' ?>.</p>
       </form>
     </div>
 

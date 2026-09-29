@@ -5,7 +5,7 @@ declare(strict_types=1);
    Simulasi pembayaran — HANYA hidup saat konfig 'gerbang' => 'uji'.
 
    Tombol di sini memanggil ubahStatusTransaksi(), jalur yang sama persis
-   dengan webhook Midtrans. Jadi yang dicoba sekarang (komisi, langganan,
+   dengan webhook Duitku. Jadi yang dicoba sekarang (komisi, langganan,
    saldo affiliate) adalah perilaku yang akan terjadi dengan uang sungguhan.
    ============================================================================= */
 
@@ -63,7 +63,7 @@ require __DIR__ . '/inc/kepala.php';
     </dl>
 
     <?php if ($trx['status'] === 'menunggu'): ?>
-      <p class="toko-sub">Pilih hasil pembayaran yang ingin dicoba. Di mode sungguhan, bagian ini diganti halaman Midtrans.</p>
+      <p class="toko-sub">Pilih hasil pembayaran yang ingin dicoba. Di mode sungguhan, bagian ini diganti halaman pembayaran Duitku.</p>
       <form method="post" class="aksi-uji">
         <input type="hidden" name="o" value="<?= e($trx['kode_order']) ?>">
         <input type="hidden" name="token" value="<?= e(GerbangUji::token($trx['kode_order'])) ?>">

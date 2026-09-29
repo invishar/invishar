@@ -3,10 +3,10 @@ declare(strict_types=1);
 
 /* =============================================================================
    Pintu masuk area toko (publik, tanpa login): link affiliate, checkout,
-   halaman bayar uji, halaman selesai, dan webhook Midtrans.
+   halaman bayar uji, halaman selesai, dan webhook Duitku.
 
    Tidak memakai sesi. Keamanan tiap halaman berdiri sendiri: batas per IP,
-   perangkap robot, token bertanda tangan, dan tanda tangan Midtrans.
+   perangkap robot, token bertanda tangan, dan tanda tangan Duitku.
    ============================================================================= */
 
 require_once dirname(__DIR__, 2) . '/panel/inc/inti.php';

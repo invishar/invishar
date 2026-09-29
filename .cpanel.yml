@@ -39,13 +39,19 @@ deployment:
 
     # --- Sistem affiliate ---------------------------------------------------
     # mitra/  portal affiliator      → https://invishar.com/mitra/
-    # toko/   link /r/, checkout, status bayar, webhook Midtrans
+    # toko/   link /r/, checkout, status bayar, webhook Duitku
     # Keduanya memakai pustaka di public_html/panel/inc (termasuk konfig.php
     # yang sudah ada di server), jadi tidak ada konfigurasi tambahan.
     - /bin/mkdir -p ~/public_html/mitra
     - /bin/cp -R mitra/. ~/public_html/mitra/
     - /bin/mkdir -p ~/public_html/toko
     - /bin/cp -R toko/. ~/public_html/toko/
+
+    # Webhook Midtrans diganti toko/duitku.php. Deploy memakai cp -R yang tidak
+    # menghapus apa pun, jadi berkas lamanya harus disapu eksplisit — kalau
+    # dibiarkan ia tetap jadi endpoint publik yang memanggil kelas yang sudah
+    # tidak ada, dan membalas HTTP 500 pada setiap hit selamanya.
+    - /bin/rm -f ~/public_html/toko/midtrans.php
 
     # Catat waktu deploy terakhir, berguna untuk memastikan deploy benar jalan.
     # Cek kapan saja di: https://invishar.com/deploy-terakhir.txt

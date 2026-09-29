@@ -41,20 +41,25 @@ return [
     ],
 
     // --- Sistem affiliate & pembayaran (lihat AFFILIATE.md) ---------------
-    // Semua di bawah ini OPSIONAL. Gerbang & kunci Midtrans sekarang diatur di
-    // panel → Setting → Pembayaran; isian di sini hanya dipakai selama halaman
-    // itu belum pernah disimpan. Tanpa isian, checkout memakai mode uji.
+    // Semua di bawah ini OPSIONAL. Gerbang & kredensial Duitku sekarang diatur
+    // di panel → Setting → Pembayaran; isian di sini hanya dipakai selama
+    // halaman itu belum pernah disimpan. Tanpa isian, checkout memakai mode uji.
 
-    // 'uji'      : pembayaran simulasi, belum ada uang sungguhan.
-    // 'midtrans' : Midtrans Snap — isi kunci di bawah dulu.
+    // 'uji'    : pembayaran simulasi, belum ada uang sungguhan.
+    // 'duitku' : halaman pembayaran Duitku — isi kredensial di bawah dulu.
     'gerbang' => 'uji',
 
-    'midtrans' => [
-        'server_key' => '',      // Settings → Access Keys di dashboard Midtrans
-        'client_key' => '',
-        'produksi'   => false,   // true hanya setelah uji sandbox beres
+    'duitku' => [
+        'merchant_code' => '',   // Dashboard Duitku → Project
+        'api_key'       => '',
+        'produksi'      => false, // true hanya setelah uji sandbox beres
+
+        // Hanya untuk uji lokal dengan Duitku tiruan. Kalau diisi, keduanya
+        // menggantikan alamat sungguhan — jangan pernah terisi di server.
+        // 'url_pop' => 'http://localhost:8081',
+        // 'url_api' => 'http://localhost:8081',
     ],
 
-    // Alamat situs untuk link affiliate dan tujuan balik dari Midtrans.
+    // Alamat situs untuk link affiliate dan tujuan balik dari Duitku.
     // 'situs_url' => 'https://invishar.com',
 ];

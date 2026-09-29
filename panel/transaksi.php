@@ -285,7 +285,7 @@ require __DIR__ . '/inc/kepala.php';
             <tr onclick="location='<?= e($url) ?>'"<?= $perluIni ? ' class="baris-perlu"' : '' ?>>
               <td>
                 <a class="tabel-utama tabel-kode" href="<?= e($url) ?>"><?= e($o['kode']) ?></a>
-                <span class="tabel-sub"><?= e(waktuIndo($o['dibuat_pada'])) ?> · <?= $jasa ? 'permintaan' : e(['manual' => 'manual', 'uji' => 'checkout uji', 'midtrans' => 'checkout'][$o['gerbang']] ?? $o['gerbang']) ?></span>
+                <span class="tabel-sub"><?= e(waktuIndo($o['dibuat_pada'])) ?> · <?= $jasa ? 'permintaan' : e(['manual' => 'manual', 'uji' => 'checkout uji', 'duitku' => 'checkout'][$o['gerbang']] ?? $o['gerbang']) ?></span>
               </td>
               <td><?= e($o['nama']) ?><?php if ($o['whatsapp']): ?><span class="tabel-sub"><?= e($o['whatsapp']) ?></span><?php endif; ?></td>
               <td>

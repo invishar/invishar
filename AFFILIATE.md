@@ -1,7 +1,7 @@
 # Sistem Affiliate Invishar
 
 Rujukan sistem affiliate invishar.com: cara memasang, cara memakai sehari-hari,
-cara pindah ke Midtrans, lalu rancangan lengkapnya.
+cara pindah ke Duitku, lalu rancangan lengkapnya.
 
 Status: **tahap 0–6 selesai dan teruji** (gerbang pembayaran masih mode uji).
 Tahap 7 (opsional) belum.
@@ -78,21 +78,21 @@ Sampai materi berbayar dikunci, akses setelah lunas dikirim manual.
 - Produk Draf bisa dilihat lewat tombol **Pratinjau** (tautan bertoken).
 - Contoh HTML siap pakai: tombol *Unduh contoh HTML* di formulir produk.
 
-## Pindah dari mode uji ke Midtrans
+## Pindah dari mode uji ke Duitku
 
 Semuanya dari **Setting → Pembayaran** — tidak perlu menyunting `konfig.php`.
 
-1. Dashboard Midtrans → *Settings → Access Keys* (mulai dari **Sandbox**) → salin
+1. Dashboard Duitku sandbox → *Project* → salin
    **Server Key** dan **Client Key**.
-2. Setting → Pembayaran → pilih **Midtrans sandbox** → tempel kedua kunci → **Simpan**.
-   Kunci langsung dites ke Midtrans; kalau ditolak, setelan lama tetap berlaku.
+2. Setting → Pembayaran → pilih **Duitku sandbox** → tempel Merchant Code & API Key → **Simpan**.
+   Kredensial langsung dites ke Duitku; kalau ditolak, setelan lama tetap berlaku.
 3. Salin *Payment notification URL* dan *Finish redirect URL* dari halaman itu ke
-   dashboard Midtrans → *Settings → Configuration*.
-4. Beli satu produk, bayar lewat simulator sandbox Midtrans. Transaksi harus jadi
+   dashboard Duitku → *Project → Setting*.
+4. Beli satu produk, bayar lewat simulator sandbox Duitku. Transaksi harus jadi
    **Lunas** dan komisi muncul.
-5. Setelah yakin: pilih **Midtrans produksi**, tempel kunci produksi, centang penegasan → Simpan.
+5. Setelah yakin: pilih **Duitku produksi**, tempel kredensial produksi (project terpisah!), centang penegasan → Simpan.
 
-Kembali ke mode uji kapan saja dari halaman yang sama. Transaksi Midtrans yang masih
+Kembali ke mode uji kapan saja dari halaman yang sama. Transaksi Duitku yang masih
 berjalan tetap diproses webhook-nya. Setelan panel mengalahkan `konfig.php`; selama
 halaman Pembayaran belum pernah disimpan, `konfig.php` yang berlaku.
 
@@ -129,7 +129,7 @@ Kondisi ekosistem sekarang yang membentuk rencana ini:
 - Pondasi yang dipakai ulang: `panel/inc/awal.php` (PDO `q()/ambilSatu()/ambilSemua()`, CSRF, `catatLog()`, `rupiah()`), pola endpoint publik aman di `panel/api-pesan.php` (allowlist asal, honeypot, batas per IP), pola terbit-ke-JSON di `panel/terbitkan.php` (`tulisJson()` atomik), pembatas login `login_gagal`.
 - Server memakai PHP 8.4 + MariaDB 11.4. Pengujian lokal memakai PHP 8.4 portabel (versi yang sama) dan MariaDB dari XAMPP.
 
-**Keputusan yang sudah diambil:** gerbang pembayaran **Midtrans**, tapi sekarang pakai **gerbang uji (dummy)** dengan jalur kode yang sama; **semua produk** diatur admin di menu Produk baru, lengkap dengan setelan affiliate per produk; komisi langganan **berulang maksimal 12 bulan**; pendaftaran affiliate **terbuka tapi harus disetujui admin**.
+**Keputusan yang sudah diambil:** gerbang pembayaran **Duitku**, tapi sekarang pakai **gerbang uji (dummy)** dengan jalur kode yang sama; **semua produk** diatur admin di menu Produk baru, lengkap dengan setelan affiliate per produk; komisi langganan **berulang maksimal 12 bulan**; pendaftaran affiliate **terbuka tapi harus disetujui admin**.
 
 ---
 
@@ -141,7 +141,7 @@ Tiga area PHP berbagi satu basis data dan satu pustaka logika uang:
 invishar.com/
 ├── p/{slug}            landing page produk (statis, baca data/produk.json)
 ├── r/{KODE}/{slug}     link affiliate → catat klik, tanam cookie, alihkan ke /p/{slug}
-├── toko/               publik tanpa login: r.php, checkout, bayar-uji, webhook Midtrans
+├── toko/               publik tanpa login: r.php, checkout, bayar-uji, webhook Duitku
 ├── mitra/              portal affiliator (login sendiri)
 └── panel/              admin (sudah ada) + menu baru
 ```
@@ -157,7 +157,7 @@ Affiliator bagikan  invishar.com/r/ANDI7K/ponpes-manager
    /p/ponpes-manager  (landing page statis)
         │
         ├─ produk berharga  → "Beli" → toko/checkout.php → transaksi (menunggu, affiliate terkunci)
-        │                          → gerbang (uji / Midtrans) → lunas → komisi dibuat
+        │                          → gerbang (uji / Duitku) → lunas → komisi dibuat
         └─ produk penawaran → form "Minta demo" → order_jasa (affiliate terkunci)
                                    → admin catat pembayaran manual → lunas → komisi dibuat
 ```
@@ -181,7 +181,7 @@ Fungsi tunggal `atribusi(produk, pembeli)` di `panel/inc/affiliate.php`:
 4. Hasilnya **dikunci di transaksi/order saat dibuat** — perubahan cookie setelahnya tidak berpengaruh.
 
 ### Komisi
-- Dibuat oleh satu fungsi `buatKomisi(transaksi_id)` saat transaksi berubah jadi `lunas` — dari gerbang uji, webhook Midtrans, atau pencatatan manual admin. **Idempoten**: kolom `komisi.transaksi_id` UNIQUE, jadi notifikasi ganda tidak menggandakan komisi.
+- Dibuat oleh satu fungsi `buatKomisi(transaksi_id)` saat transaksi berubah jadi `lunas` — dari gerbang uji, webhook Duitku, atau pencatatan manual admin. **Idempoten**: kolom `komisi.transaksi_id` UNIQUE, jadi notifikasi ganda tidak menggandakan komisi.
 - Setelan fee **disalin (snapshot)** ke baris komisi: `dasar`, `fee_jenis`, `fee_nilai`. Mengubah fee produk nanti tidak mengubah komisi lama.
 - `persen` → `floor(jumlah × nilai / 100)`; `tetap` → `nilai` rupiah.
 - **Langganan:** komisi hanya untuk `periode_ke ≤ bulan_berulang` (setelan produk, bawaan global 12). Affiliate terkunci di `langganan` sejak pembayaran pertama; perpanjangan mewarisi affiliate-nya.
@@ -215,10 +215,14 @@ Aturan kapan perubahan berlaku, supaya tidak mengejutkan affiliator:
 Setiap penyimpanan dicatat di `log_aktivitas` beserta nilai lama → baru, misalnya "Masa tahan: 3 → 7 hari".
 
 ### Gerbang pembayaran
-Antarmuka `Gerbang` di `panel/inc/gerbang.php` dengan dua pengemudi, dipilih oleh `konfig('gerbang')` (bukan setelan di panel — pindah ke uang sungguhan tidak boleh sekadar satu klik):
+Dua antarmuka di `panel/inc/gerbang.php`. `Gerbang` (`nama`, `siap`, `mulai`) dipakai semua gerbang; `GerbangDicek` (`status`, `terapkan`) hanya oleh gerbang yang statusnya bisa ditanyakan balik ke penyedia — gerbang uji sengaja tidak punya, karena method yang selalu mengembalikan `null` adalah method bohong.
 
-- **`GerbangUji`** (sekarang): mengarahkan ke `toko/bayar-uji.php?o={kode_order}` berisi tombol *Simulasikan lunas / gagal / kedaluwarsa*, yang memanggil `ubahStatusTransaksi()` — jalur yang **sama persis** dengan webhook Midtrans. Halaman ini 404 bila gerbang bukan `uji`, dan menampilkan pita "MODE UJI".
-- **`GerbangMidtrans`** (tahap 6): Snap API — `POST {app}/snap/v1/transactions` (Basic auth server key) → `redirect_url`. Webhook `toko/midtrans.php`: verifikasi `signature_key = sha512(order_id + status_code + gross_amount + server_key)`, lalu **konfirmasi ulang** lewat `GET {api}/v2/{order_id}/status`, cocokkan `gross_amount` dengan jumlah di basis data. Pemetaan: `settlement`, `capture`+`accept` → lunas; `deny`/`cancel` → gagal; `expire` → kedaluwarsa; `refund` → refund.
+Gerbang aktif dipilih di panel → Setting → Pembayaran. Nama yang tersimpan dipetakan ke objeknya oleh `gerbangUntuk()`; nama yang tidak dikenal mengembalikan `null` dan **checkout menolak pesanan dengan 503**. Ini disengaja: versi lama memaksa nilai tak dikenal menjadi `uji`, yang diam-diam memindahkan pembeli ke halaman simulasi tempat mereka bisa menekan "Simulasikan lunas" dan mendapat produk gratis. `modeUji()` juga memakai whitelist positif (`=== 'uji'`), bukan "bukan gerbang X", dengan alasan yang sama.
+
+- **`GerbangUji`**: mengarahkan ke `toko/bayar-uji.php?o={kode_order}` berisi tombol *Simulasikan lunas / gagal / kedaluwarsa*, yang memanggil `ubahStatusTransaksi()` — jalur yang **sama persis** dengan webhook Duitku. Halaman ini 404 bila gerbang bukan `uji`, dan menampilkan pita "MODE UJI".
+- **`GerbangDuitku`**: Duitku POP — `POST {pop}/api/merchant/createInvoice` dengan header `x-duitku-signature` = `sha256(merchantCode + timestamp + apiKey)` → `paymentUrl`, halaman milik Duitku tempat pembeli memilih VA/QRIS/e-wallet. `paymentMethod` sengaja tidak dikirim; mengisinya melewati halaman POP. Batas bayar `expiryPeriod` 60 menit (Duitku hanya menerima 5, 10, atau 60).
+  Webhook `toko/duitku.php`: verifikasi `signature = md5(merchantCode + amount + merchantOrderId + apiKey)`, lalu **konfirmasi ulang** lewat `POST {pop}/api/merchant/transactionStatus`, cocokkan `amount` dengan jumlah di basis data. Pemetaan `statusCode`: `00` → lunas; `02` → gagal, atau kedaluwarsa kalau umur transaksinya sudah lewat batas bayar; `01` → belum berubah.
+- **Tanda tangan callback Duitku tidak menutup `resultCode`.** Callback sah yang disadap bisa diulang dengan `resultCode` diganti `00` dan tanda tangannya tetap lolos — dokumentasi Duitku sendiri melarang memakai `resultCode` untuk memutuskan status. Karena itu langkah konfirmasi ulang di atas **wajib**, dan field callback yang tidak ditandatangani hanya boleh jadi label tampilan.
 - Jumlah bayar **selalu diambil dari basis data**, tidak pernah dari peramban.
 
 ### Jenis produk
@@ -256,10 +260,10 @@ affiliate_klik   id · affiliate_id · produk_id NULL · ip_hash · referer · d
 langganan        id · produk_id · affiliate_id NULL · pembeli_nama · surel · whatsapp
                  status (aktif|berhenti) · mulai_pada · dibuat_pada
 
-transaksi        id · kode_order UNIQUE (INV-YYMMDD-XXXXXX, dipakai sbg order_id Midtrans)
+transaksi        id · kode_order UNIQUE (INV-YYMMDD-XXXXXX, dipakai sbg merchantOrderId Duitku)
                  produk_id · affiliate_id NULL · langganan_id NULL · periode_ke
                  order_jasa_id NULL · pembeli_nama · surel · whatsapp · jumlah
-                 status (menunggu|lunas|gagal|kedaluwarsa|refund) · gerbang (uji|midtrans|manual)
+                 status (menunggu|lunas|gagal|kedaluwarsa|refund) · gerbang (uji|duitku|manual)
                  gerbang_ref · metode · beli_sendiri · catatan · dibayar_pada · dibuat_pada
 
 transaksi_riwayat id · transaksi_id · status_lama · status_baru · sumber · payload · dibuat_pada
@@ -289,9 +293,9 @@ Kode affiliate: 6 karakter dari huruf/angka tanpa yang mirip (`ABCDEFGHJKMNPQRST
 - `panel/inc/inti.php` **baru** — dipindah dari `awal.php`: konfig, `db()`, `q()`, `ambil*()`, CSRF, `e()`, `masukan()`, `rupiah()`, `waktuIndo()`, `slugkan()`, `catatLog()`, plus `jawabJson()` dan `batasLaju()` yang sekarang tertanam di `api-pesan.php`.
 - `panel/inc/awal.php` — tinggal `require inti.php` + sesi panel + `wajibMasuk()`. Perilaku panel tidak berubah.
 - `panel/inc/affiliate.php` **baru** — `setelan()`, `kodeBaru()`, `tanamCookie()/bacaCookie()`, `atribusi()`, `buatKomisi()`, `batalkanKomisi()`, `saldoAffiliate()`, `ajukanPenarikan()`.
-- `panel/inc/gerbang.php` **baru** — antarmuka `Gerbang`, `GerbangUji`, `GerbangMidtrans`, `buatTransaksi()`, `ubahStatusTransaksi()` (satu-satunya tempat status transaksi berubah).
+- `panel/inc/gerbang.php` **baru** — antarmuka `Gerbang` & `GerbangDicek`, `GerbangUji`, `GerbangDuitku`, `buatTransaksi()`, `ubahStatusTransaksi()` (satu-satunya tempat status transaksi berubah).
 - `panel/migrasi.php` + `panel/migrasi/NNN_*.sql` **baru** — `pasang.php` menolak jalan setelah ada akun, jadi tabel baru butuh pelari migrasi (halaman admin, tombol "Jalankan", tercatat di tabel `migrasi`). `pasang.php` ikut menjalankannya untuk pemasangan baru. `.sql` sudah terlarang diunduh oleh `panel/.htaccess`.
-- `panel/inc/konfig.contoh.php` — tambah `rahasia_ref`, `gerbang => 'uji'`, `midtrans => [server_key, client_key, produksi => false]`.
+- `panel/inc/konfig.contoh.php` — tambah `rahasia_ref`, `gerbang => 'uji'`, `duitku => [merchant_code, api_key, produksi => false]`.
 
 ### Panel admin (menu baru di `panel/inc/kepala.php`)
 - **Produk affiliate** — `produk-affiliate.php`: komisi semua produk dalam satu halaman (simpan per baris) dan kelas yang belum punya produk → dijadikan produk "sekali bayar" (`buatProdukDariKelas()` di `inc/produk.php`). Aturan komisi dipakai bersama dengan `produk-edit.php` lewat `bacaSetelanAffiliate()`. Halaman sunting kelas punya kotak *Penjualan & affiliate*, daftar kelas punya kolom *Dijual & affiliate*.
@@ -317,8 +321,8 @@ Sesi terpisah (`session_name('mitrainvishar')`), tabel pengguna terpisah (`affil
 - `r.php` — catat klik, tanam cookie, alihkan. Kode tak dikenal/tidak aktif → tetap dialihkan tanpa cookie (link lama tidak pernah berujung error).
 - `checkout.php` — form pembeli (nama, surel, WA) → `buatTransaksi()` → gerbang. Batas per IP.
 - `bayar-uji.php` — halaman simulasi pembayaran (hanya saat gerbang `uji`).
-- `midtrans.php` — webhook (tahap 6).
-- `selesai.php?o=` — status pembayaran & terima kasih (juga tujuan *finish* Midtrans).
+- `duitku.php` — webhook callback Duitku.
+- `selesai.php?o=` — status pembayaran & terima kasih (juga tujuan balik dari Duitku).
 
 ### Situs statis — `site/`
 - `produk.html` + `js/produk.js` + `css/produk.css` — satu templat untuk semua produk; slug diambil dari `location.pathname`; isi dari `data/produk.json`. Tombol menyesuaikan jenis produk; produk `penawaran` memakai form yang dikirim ke `api-pesan.php`. **Jalur aset ditulis absolut** (`/css/...`) karena halaman ini dibuka di `/p/{slug}/`. Ikuti aturan penanda versi `?v=` dari `site/README.md`.
@@ -341,7 +345,7 @@ Sesi terpisah (`session_name('mitrainvishar')`), tabel pengguna terpisah (`affil
 | 3 | `/r/…` + cookie + atribusi di form penawaran | **Selesai** |
 | 4 | Transaksi + checkout + **gerbang uji** + komisi + halaman penghasilan | **Selesai** |
 | 5 | Penarikan (mitra + panel) | **Selesai** |
-| 6 | **Midtrans** Snap + webhook | **Kode selesai & teruji dengan Midtrans tiruan**; tinggal diisi kunci sandbox |
+| 6 | **Duitku** POP + webhook | **Kode selesai**; tinggal diisi kredensial sandbox |
 | 7 | Opsional: API konversi amanafinance, notifikasi surel, lupa sandi mitra mandiri | Belum |
 
 ---
@@ -350,7 +354,7 @@ Sesi terpisah (`session_name('mitrainvishar')`), tabel pengguna terpisah (`affil
 
 - **Isi kelas sekarang terbuka untuk siapa saja** — `materi.html` memutar video tanpa login. Checkout akan menerima uang untuk sesuatu yang sebenarnya gratis diakses. Mengunci materi berbayar adalah proyek tersendiri; sampai itu dibuat, pengiriman akses setelah lunas dilakukan manual (admin melihat transaksi lunas di panel).
 - **amanafinance** perlu diubah di aplikasinya sendiri untuk melaporkan pendaftar/Pro; tahap 7 hanya menyiapkan endpoint bertanda tangan HMAC di sisi Invishar.
-- Perpanjangan langganan lewat Midtrans otomatis (*recurring*) tidak termasuk; perpanjangan dicatat admin.
+- Perpanjangan langganan otomatis (*recurring*) tidak termasuk; perpanjangan dicatat admin.
 - Kalau panel pindah ke `panel.invishar.com`, `api-pesan.php` jadi lintas asal: form harus memakai `credentials: 'include'` dan server mengirim `Access-Control-Allow-Credentials` supaya cookie ikut. Cookie sudah ber-`Domain=invishar.com`, jadi tetap terbaca.
 - Pajak (PPh 21/23 atas komisi) tidak dihitung otomatis; kolom `catatan` penarikan bisa dipakai. Perlu dicek ke konsultan pajak bila volume membesar.
 
@@ -368,7 +372,7 @@ server), MariaDB, dan *router* yang meniru semua aturan `.htaccess`.
 | Sintaks seluruh PHP | 55 berkas, 0 galat |
 | Logika uang langsung (atribusi, komisi, saldo, penarikan, refund, langganan, beli-sendiri, dibekukan, pembukuan) | 71/71 |
 | Ujung-ke-ujung lewat HTTP (daftar → setujui → klik → beli → cair → tarik → bayar → jasa → langganan → refund → beku → tolak → atur ulang sandi) | 31/31 |
-| Midtrans tiruan (redirect, webhook, tanda tangan palsu, notifikasi ganda, jumlah dipalsukan, kedaluwarsa, sinkron di halaman selesai, Midtrans mati, batas checkout) | 22/22 |
+| Gerbang tiruan (redirect, webhook, tanda tangan palsu, notifikasi ganda, jumlah dipalsukan, kedaluwarsa, sinkron di halaman selesai, penyedia mati, batas checkout) | 22/22 · ditulis untuk Midtrans, perlu dijalankan ulang untuk Duitku |
 | Semua halaman panel, mitra, toko, situs — tanpa galat/peringatan/deprecated | lulus |
 | Tampilan di peramban (desktop & HP 390 px): tanpa gulir horizontal, tanpa galat JS | lulus |
 
@@ -392,9 +396,9 @@ ssh -i ~/.ssh/invishar_deploy -p 64000 invishar@girona.id.rapidplex.com \
 11. **Form penawaran** dari `/p/…` setelah klik link → `order_jasa.affiliate_id` terisi → *Catat pembayaran* → komisi.
 12. Kode tak dikenal `/r/ZZZZ/kelas-dashboard` → tetap sampai ke landing page, tanpa cookie, tanpa error.
 
-**Midtrans (tahap 6, sandbox):**
-- Isi server/client key sandbox, `gerbang => 'midtrans'`, set Notification URL `https://invishar.com/toko/midtrans.php` di dashboard Midtrans.
-- Bayar lewat simulator sandbox Midtrans → webhook masuk → transaksi lunas → komisi.
+**Duitku (tahap 6, sandbox):**
+- Isi Merchant Code & API Key sandbox, set Callback URL `https://invishar.com/toko/duitku.php` dan Return URL `https://invishar.com/toko/selesai.php` di dashboard Duitku.
+- Bayar lewat simulator sandbox Duitku → webhook masuk → transaksi lunas → komisi.
 - `curl` webhook palsu dengan `signature_key` salah → 403, status tidak berubah.
 - Kirim ulang notifikasi yang sama dari dashboard → tidak ada komisi ganda.
 - `gross_amount` diubah di payload palsu bertanda tangan benar → ditolak karena tidak cocok dengan hasil `GET /v2/{order_id}/status`.

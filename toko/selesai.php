@@ -3,10 +3,10 @@ declare(strict_types=1);
 
 /* =============================================================================
    Status pembayaran: /toko/selesai.php?o={kode_order}
-   Juga tujuan "finish" dari Midtrans (yang menambahkan ?order_id=…).
+   Juga tujuan balik dari Duitku (yang menambahkan ?merchantOrderId=… dan ?reference=…).
 
-   Untuk transaksi Midtrans yang masih menunggu, status diperiksa langsung ke
-   Midtrans di sini — jaring pengaman kalau notifikasi webhook terlambat
+   Untuk transaksi yang masih menunggu, status diperiksa langsung ke
+   penyedianya di sini — jaring pengaman kalau notifikasi webhook terlambat
    atau alamat notifikasi belum disetel.
    ============================================================================= */
 
@@ -61,9 +61,14 @@ $tampilan = [
 
 $lanjutkan = '';
 if ($trx['status'] === 'menunggu') {
-    $lanjutkan = $trx['gerbang'] === 'uji'
-        ? '/toko/bayar-uji.php?o=' . rawurlencode($trx['kode_order'])
-        : (string) $trx['gerbang_url'];
+    if ($trx['gerbang'] === 'uji') {
+        $lanjutkan = '/toko/bayar-uji.php?o=' . rawurlencode($trx['kode_order']);
+    } elseif (strtotime((string) $trx['dibuat_pada']) + DUITKU_EXPIRY_MENIT * 60 > time()) {
+        // Halaman bayar Duitku mati setelah batas waktunya. Jangan kirim pembeli
+        // ke halaman kosong hanya karena statusnya belum tersusul jadi
+        // kedaluwarsa — Duitku tidak selalu mengabari transaksi yang hangus.
+        $lanjutkan = (string) $trx['gerbang_url'];
+    }
 }
 
 $judulHalaman = $tampilan['judul'];
