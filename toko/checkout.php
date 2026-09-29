@@ -65,7 +65,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$galat) {
         $atribusi = atribusi($produk, $isian['surel'], $isian['whatsapp'], (string) ($_POST['ref'] ?? $ref));
+
+        /* Gagal-tertutup, dan sebelum transaksi dibuat supaya tidak ada baris
+           menggantung. Menolak pesanan jauh lebih baik daripada menjatuhkannya
+           ke gerbang uji: di sana pembeli bisa menekan "Simulasikan lunas" dan
+           mendapat produknya gratis lewat jalur yang sah. */
         $gerbang = gerbangAktif();
+        if ($gerbang === null || !$gerbang->siap()) {
+            error_log('[invishar checkout] gerbang tidak siap: ' . konfigPembayaran()['gerbang']);
+            halamanBuntu(503, 'Pembayaran belum bisa dimulai', 'Layanan pembayaran sedang disiapkan. Hubungi kami lewat WhatsApp untuk memesan.', '/#kontak', 'Hubungi kami');
+        }
 
         $trx = buatTransaksi([
             'produk_id'    => $produk['id'],

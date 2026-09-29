@@ -26,12 +26,15 @@ if (!$trx) {
     halamanBuntu(404, 'Transaksi tidak ditemukan', 'Periksa lagi alamatnya, atau hubungi kami dengan menyebutkan kode pesanan Anda.', '/#kontak', 'Hubungi kami');
 }
 
-if ($trx['gerbang'] === 'midtrans' && $trx['status'] === 'menunggu') {
+/* Jaring pengaman: kalau webhook belum sampai, tarik statusnya saat pembeli
+   kembali. Gerbangnya diambil dari baris transaksi, bukan dari setelan yang
+   berlaku sekarang — transaksi lama bisa saja dibuat waktu gerbang lain aktif. */
+$gerbangTrx = gerbangUntuk((string) $trx['gerbang']);
+if ($trx['status'] === 'menunggu' && $gerbangTrx instanceof GerbangDicek && $gerbangTrx->siap()) {
     try {
-        $midtrans = new GerbangMidtrans();
-        $s = $midtrans->siap() ? $midtrans->status($trx['kode_order']) : null;
+        $s = $gerbangTrx->status($trx['kode_order']);
         if ($s) {
-            terapkanStatusMidtrans($trx, $s, 'midtrans', json_encode($s, JSON_UNESCAPED_UNICODE));
+            $gerbangTrx->terapkan($trx, $s, (string) $trx['gerbang'], json_encode($s, JSON_UNESCAPED_UNICODE));
             $trx = ambilSatu('SELECT * FROM transaksi WHERE id = ?', [$trx['id']]);
         }
     } catch (Throwable $e) {

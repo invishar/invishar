@@ -180,9 +180,36 @@ interface Gerbang
 {
     public function nama(): string;
 
+    /** Siap dipakai sekarang — mis. kuncinya sudah diisi. */
+    public function siap(): bool;
+
     /** Menyiapkan pembayaran; mengembalikan alamat tujuan pembeli. */
     public function mulai(array $trx, array $produk): string;
 }
+
+/**
+ * Gerbang yang statusnya bisa ditanyakan balik ke penyedia.
+ *
+ * Sengaja terpisah dari Gerbang: gerbang uji tidak punya layanan untuk ditanyai,
+ * dan memaksanya punya status() yang selalu null adalah method bohong. Dengan
+ * antarmuka sendiri, pemanggil cukup menulis `instanceof GerbangDicek` dan tidak
+ * perlu tahu nama penyedianya.
+ */
+interface GerbangDicek
+{
+    /** Status terkini dari penyedia, atau null kalau ordernya tidak dikenal. */
+    public function status(string $kodeOrder): ?array;
+
+    /**
+     * Menerapkan jawaban penyedia ke transaksi, setelah mencocokkan jumlahnya.
+     * @return array{kode: int, pesan: string}
+     */
+    public function terapkan(array $trx, array $jawaban, string $sumber, ?string $payload): array;
+}
+
+/* Gerbang yang boleh dipilih untuk checkout. 'manual' tidak di sini — itu hanya
+   nilai tersimpan pada transaksi yang dicatat admin, bukan pilihan pembayaran. */
+const GERBANG_TERSEDIA = ['uji', 'midtrans'];
 
 /**
  * Setelan pembayaran yang berlaku.
@@ -219,20 +246,40 @@ function konfigPembayaran(): array
         }
     }
     return [
-        'gerbang'  => $gerbang === 'midtrans' ? 'midtrans' : 'uji',
+        // Apa adanya, TIDAK dinormalkan. Dulu nilai tak dikenal dipaksa jadi
+        // 'uji', yang berarti setelan basi diam-diam memindahkan checkout ke
+        // mode simulasi — pembeli menekan "Simulasikan lunas" dan mendapat
+        // produk gratis lewat jalur sah, lengkap dengan komisi. Sekarang
+        // keputusannya diserahkan ke pemanggil supaya bisa gagal-tertutup.
+        'gerbang'  => $gerbang,
+        'dikenal'  => in_array($gerbang, GERBANG_TERSEDIA, true),
         'midtrans' => $midtrans,
         'sumber'   => $dariPanel ? 'panel' : 'konfig',
     ];
 }
 
-function gerbangAktif(): Gerbang
+/** Nama gerbang tersimpan → objeknya. null = tidak dikenal atau bukan gerbang otomatis. */
+function gerbangUntuk(string $nama): ?Gerbang
 {
-    return konfigPembayaran()['gerbang'] === 'midtrans' ? new GerbangMidtrans() : new GerbangUji();
+    return match ($nama) {
+        'uji'      => new GerbangUji(),
+        'midtrans' => new GerbangMidtrans(),
+        default    => null,      // 'manual', salah tulis, atau gerbang yang sudah dibuang
+    };
 }
 
+function gerbangAktif(): ?Gerbang
+{
+    return gerbangUntuk(konfigPembayaran()['gerbang']);
+}
+
+/* Whitelist positif, bukan "bukan gerbang X". Definisi negatif yang lama membuat
+   setiap gerbang baru otomatis dianggap mode uji — artinya toko/bayar-uji.php
+   tetap hidup di atas transaksi uang sungguhan. Di berkas ini, mode uji selalu
+   ditentukan oleh apa dirinya, bukan oleh apa yang bukan dirinya. */
 function modeUji(): bool
 {
-    return konfigPembayaran()['gerbang'] !== 'midtrans';
+    return konfigPembayaran()['gerbang'] === 'uji';
 }
 
 /**
@@ -245,6 +292,12 @@ final class GerbangUji implements Gerbang
     public function nama(): string
     {
         return 'uji';
+    }
+
+    /** Tidak menghubungi layanan apa pun, jadi selalu siap. */
+    public function siap(): bool
+    {
+        return true;
     }
 
     public function mulai(array $trx, array $produk): string
@@ -265,7 +318,7 @@ final class GerbangUji implements Gerbang
  *   status()  → GET  {api}/v2/{order_id}/status   (dipakai webhook & halaman selesai)
  * Kunci server hanya dipakai di sisi server, tidak pernah dikirim ke peramban.
  */
-final class GerbangMidtrans implements Gerbang
+final class GerbangMidtrans implements Gerbang, GerbangDicek
 {
     public function nama(): string
     {
@@ -448,44 +501,43 @@ final class GerbangMidtrans implements Gerbang
                 return null;   // pending, authorize, partial_refund, dll.
         }
     }
-}
 
-/**
- * Menerapkan status Midtrans (yang sudah dikonfirmasi lewat API status) ke
- * transaksi. Dipakai bersama oleh webhook dan halaman selesai.
- *
- * @return array{kode: int, pesan: string}
- */
-function terapkanStatusMidtrans(array $trx, array $s, string $sumber, ?string $payload): array
-{
-    $jumlahMidtrans = (int) round((float) ($s['gross_amount'] ?? 0));
-    if ($jumlahMidtrans !== (int) $trx['jumlah']) {
-        q(
-            'INSERT INTO transaksi_riwayat (transaksi_id, status_lama, status_baru, sumber, catatan, payload, dibuat_pada)
-             VALUES (?, ?, ?, ?, ?, ?, NOW())',
-            [$trx['id'], $trx['status'], $trx['status'], $sumber,
-             'DITOLAK: jumlah dari Midtrans ' . $jumlahMidtrans . ' tidak sama dengan ' . $trx['jumlah'], $payload]
-        );
-        return ['kode' => 409, 'pesan' => 'Jumlah tidak cocok'];
-    }
-
-    $baru = GerbangMidtrans::petaStatus($s);
-    $tambahan = [
-        'gerbang_ref' => isset($s['transaction_id']) ? mb_substr((string) $s['transaction_id'], 0, 80) : null,
-        'metode'      => isset($s['payment_type']) ? mb_substr((string) $s['payment_type'], 0, 40) : null,
-    ];
-    if ($baru === null) {
-        // Tidak ada perubahan status, tapi catat keterangan pembayarannya.
-        if ($tambahan['gerbang_ref'] || $tambahan['metode']) {
+    /**
+     * Menerapkan status Midtrans yang sudah dikonfirmasi lewat API status.
+     * Dipakai bersama oleh webhook dan halaman selesai.
+     */
+    public function terapkan(array $trx, array $jawaban, string $sumber, ?string $payload): array
+    {
+        $jumlahPenyedia = (int) round((float) ($jawaban['gross_amount'] ?? 0));
+        if ($jumlahPenyedia !== (int) $trx['jumlah']) {
             q(
-                'UPDATE transaksi SET gerbang_ref = COALESCE(?, gerbang_ref), metode = COALESCE(?, metode) WHERE id = ?',
-                [$tambahan['gerbang_ref'], $tambahan['metode'], $trx['id']]
+                'INSERT INTO transaksi_riwayat (transaksi_id, status_lama, status_baru, sumber, catatan, payload, dibuat_pada)
+                 VALUES (?, ?, ?, ?, ?, ?, NOW())',
+                [$trx['id'], $trx['status'], $trx['status'], $sumber,
+                 'DITOLAK: jumlah dari Midtrans ' . $jumlahPenyedia . ' tidak sama dengan ' . $trx['jumlah'], $payload]
             );
+            return ['kode' => 409, 'pesan' => 'Jumlah tidak cocok'];
         }
-        return ['kode' => 200, 'pesan' => 'Dicatat, belum ada perubahan status'];
-    }
 
-    $catatan = 'Midtrans: ' . ($s['transaction_status'] ?? '?') . (isset($s['payment_type']) ? ' · ' . $s['payment_type'] : '');
-    ubahStatusTransaksi((int) $trx['id'], $baru, $sumber, $catatan, $payload, $tambahan);
-    return ['kode' => 200, 'pesan' => 'Diterapkan'];
+        $baru = self::petaStatus($jawaban);
+        $tambahan = [
+            'gerbang_ref' => isset($jawaban['transaction_id']) ? mb_substr((string) $jawaban['transaction_id'], 0, 80) : null,
+            'metode'      => isset($jawaban['payment_type']) ? mb_substr((string) $jawaban['payment_type'], 0, 40) : null,
+        ];
+        if ($baru === null) {
+            // Tidak ada perubahan status, tapi catat keterangan pembayarannya.
+            if ($tambahan['gerbang_ref'] || $tambahan['metode']) {
+                q(
+                    'UPDATE transaksi SET gerbang_ref = COALESCE(?, gerbang_ref), metode = COALESCE(?, metode) WHERE id = ?',
+                    [$tambahan['gerbang_ref'], $tambahan['metode'], $trx['id']]
+                );
+            }
+            return ['kode' => 200, 'pesan' => 'Dicatat, belum ada perubahan status'];
+        }
+
+        $catatan = 'Midtrans: ' . ($jawaban['transaction_status'] ?? '?')
+            . (isset($jawaban['payment_type']) ? ' · ' . $jawaban['payment_type'] : '');
+        ubahStatusTransaksi((int) $trx['id'], $baru, $sumber, $catatan, $payload, $tambahan);
+        return ['kode' => 200, 'pesan' => 'Diterapkan'];
+    }
 }

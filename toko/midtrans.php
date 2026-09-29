@@ -52,5 +52,5 @@ if (!$s) {
     jawabJson(502, ['galat' => 'Status tidak bisa dikonfirmasi ke Midtrans.']);
 }
 
-$hasil = terapkanStatusMidtrans($trx, $s, 'midtrans', $mentah);
+$hasil = $midtrans->terapkan($trx, $s, 'midtrans', $mentah);
 jawabJson($hasil['kode'], ['pesan' => $hasil['pesan']]);
