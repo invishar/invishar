@@ -321,16 +321,22 @@
       </div>
     </div>
 
-    <!-- Mode demo: belum mengirim ke mana pun. Begitu panel admin hidup, ganti
-         data-demo menjadi data-kirim="https://panel.invishar.com/api-pesan.php" -->
-    <form class="form" id="form-kontak" data-demo action="#" method="post" data-reveal="100">
+    <!-- Pesan masuk ke panel admin dan langsung muncul di menu Transaksi sebagai
+         order jasa. Jalurnya relatif, jadi satu origin dengan situs dan tidak ada
+         urusan CORS. action= diisi alamat yang sama dengan data-kirim: kalau
+         JavaScript gagal dimuat, pesannya tetap tercatat dan tidak hilang. -->
+    <form class="form" id="form-kontak" data-kirim="/panel/api-pesan.php" action="/panel/api-pesan.php" method="post" data-reveal="100">
       <div class="field">
         <label for="nama">Nama</label>
         <input id="nama" name="nama" type="text" autocomplete="name" placeholder="Nama atau lembaga" required>
       </div>
       <div class="field">
-        <label for="surel">Surel</label>
-        <input id="surel" name="surel" type="email" autocomplete="email" placeholder="nama@domain.id" required>
+        <label for="whatsapp">WhatsApp</label>
+        <input id="whatsapp" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" placeholder="08xx xxxx xxxx" required>
+      </div>
+      <div class="field">
+        <label for="surel">Surel <span class="muted">(opsional)</span></label>
+        <input id="surel" name="surel" type="email" autocomplete="email" placeholder="nama@domain.id">
       </div>
       <div class="field">
         <label for="pesan">Yang ingin dibereskan</label>
@@ -357,6 +363,6 @@
   </div>
 </footer>
 
-<script src="js/main.js?v=20260918b" defer></script>
+<script src="js/main.js?v=20261001" defer></script>
 </body>
 </html>

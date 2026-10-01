@@ -132,6 +132,9 @@ require __DIR__ . '/inc/kepala.php';
       <div class="kotak-kepala">
         <h2><?= e(rupiah((int) $t['jumlah'])) ?></h2>
         <span class="tanda tanda-<?= e($t['status']) ?>"><?= e(STATUS_TRANSAKSI[$t['status']]) ?></span>
+        <?php if ($t['status'] === 'lunas'): ?>
+          <a class="tbl tbl-kecil" style="margin-left:auto" href="<?= tautan('cetak') ?>?bayar=<?= (int) $t['id'] ?>" target="_blank" rel="noopener">Cetak kuitansi</a>
+        <?php endif; ?>
       </div>
       <dl class="keadaan">
         <dt>Produk</dt>

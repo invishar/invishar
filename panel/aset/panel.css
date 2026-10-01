@@ -1761,6 +1761,7 @@ input:focus, select:focus, textarea:focus {
 .tbl-lanjut:hover { background: var(--green-900); border-color: var(--green-900); color: var(--on-dark); }
 
 .tanda-belum { background: rgba(26, 25, 23, 0.07); color: var(--ink-62); }
+.tanda-sebagian { background: var(--kuning-muda); color: var(--kuning); }
 .tanda-proses-baru     { background: var(--kuning-muda); color: var(--kuning); }
 .tanda-proses-diproses { background: #e3ecf7; color: #2c4f7c; }
 .tanda-proses-selesai  { background: var(--green-100); color: var(--green-900); }

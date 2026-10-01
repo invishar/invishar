@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/inc/awal.php';
-require_once __DIR__ . '/inc/gerbang.php';
+require_once __DIR__ . '/inc/order.php';   // uangOrderJasa(); ikut memuat gerbang.php
 wajibMasuk();
 wajibPenjualanSiap();
 
@@ -37,13 +37,20 @@ $isian = [
     'affiliate_id' => $langganan['affiliate_id'] ?? ($order['affiliate_id'] ?? ''),
     'catatan'      => '',
 ];
-if ($isian['produk_id'] !== '' && $isian['produk_id'] !== null) {
+/* Nominal yang disarankan. Sisa tagihan order jasa didahulukan: begitu DP
+   masuk, pencatatan berikutnya langsung menawarkan angka pelunasan tanpa
+   hitung manual. Urutan ini juga menutup satu kekeliruan lama — kalau order
+   menunjuk produk yang tidak berharga tetap (harga NULL), cabang harga produk
+   yang diperiksa lebih dulu membuat nilai proyek terabaikan dan kolom Jumlah
+   ditinggal kosong. */
+$uangOrder = $order ? uangOrderJasa((int) $order['id'], $order['nilai'] === null ? null : (int) $order['nilai']) : null;
+if ($uangOrder !== null && $uangOrder['sisa'] !== null && $uangOrder['sisa'] > 0) {
+    $isian['jumlah'] = number_format($uangOrder['sisa'], 0, ',', '.');
+} elseif ($isian['produk_id'] !== '' && $isian['produk_id'] !== null) {
     $hargaAwal = ambilNilai('SELECT harga FROM produk WHERE id = ?', [$isian['produk_id']]);
     if ($hargaAwal !== null) {
         $isian['jumlah'] = number_format((int) $hargaAwal, 0, ',', '.');
     }
-} elseif ($order && $order['nilai'] !== null) {
-    $isian['jumlah'] = number_format((int) $order['nilai'], 0, ',', '.');
 }
 $galat = [];
 
@@ -211,8 +218,9 @@ require __DIR__ . '/inc/kepala.php';
       <?php endif; ?>
 
       <div class="bidang">
-        <label for="catatan">Catatan <span class="teks-kecil">(opsional)</span></label>
-        <input id="catatan" name="catatan" type="text" value="<?= e((string) $isian['catatan']) ?>" placeholder="Mis. transfer BCA a.n. Yayasan Al-Hikmah">
+        <label for="catatan">Label pembayaran <span class="teks-kecil">(opsional)</span></label>
+        <input id="catatan" name="catatan" type="text" value="<?= e((string) $isian['catatan']) ?>" placeholder="Mis. DP 50%, Termin 2, Pelunasan">
+        <p class="petunjuk">Tercetak di kuitansi dan di rincian tagihan, jadi tulis sesingkat mungkin.</p>
       </div>
 
       <div class="form-aksi">
@@ -236,6 +244,16 @@ require __DIR__ . '/inc/kepala.php';
         <div class="kotak-kepala"><h2>Dari order jasa</h2></div>
         <p class="teks-kecil" style="margin:0 0 8px"><a href="<?= tautan('order/' . (int) $order['id']) ?>"><?= e($order['nama']) ?></a></p>
         <p class="kutipan"><?= e(mb_strimwidth($order['kebutuhan'], 0, 240, '…')) ?></p>
+        <?php if ($uangOrder['nilai'] !== null): ?>
+          <dl class="keadaan" style="margin-top:14px">
+            <dt>Nilai proyek</dt><dd><?= e(rupiah($uangOrder['nilai'])) ?></dd>
+            <dt>Sudah dibayar</dt><dd><?= e(rupiah($uangOrder['dibayar'])) ?></dd>
+            <dt><?= $uangOrder['sisa'] < 0 ? 'Lebih bayar' : 'Sisa' ?></dt>
+            <dd><b><?= e(rupiah(abs((int) $uangOrder['sisa']))) ?></b></dd>
+          </dl>
+        <?php else: ?>
+          <p class="petunjuk" style="margin-top:14px">Order ini belum punya Nilai proyek, jadi sisanya belum bisa dihitung.</p>
+        <?php endif; ?>
       </section>
     <?php endif; ?>
   </aside>

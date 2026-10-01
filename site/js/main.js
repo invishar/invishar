@@ -103,13 +103,13 @@
   /*
      Dua mode, ditentukan oleh atribut pada <form> di index.html:
 
-     a) data-kirim="https://panel.invishar.com/api-pesan.php"
-        Pesan dikirim ke panel admin dan muncul sebagai order jasa.
+     a) data-kirim="/panel/api-pesan.php"
+        Mode sekarang: pesan dikirim ke panel admin dan muncul sebagai order
+        jasa di menu Transaksi.
 
      b) data-demo
-        Mode sekarang: tidak mengirim ke mana pun, hanya mengubah teks tombol.
-        Dipakai selama panel belum hidup — begitu panel siap, ganti data-demo
-        menjadi data-kirim dengan alamat di atas.
+        Tidak mengirim ke mana pun, hanya mengubah teks tombol. Disimpan sebagai
+        jalan mundur kalau panel sedang dimatikan.
   */
   var form = document.getElementById("form-kontak");
   var tombol = document.getElementById("tombol-kirim");

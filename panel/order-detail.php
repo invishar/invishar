@@ -48,12 +48,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $riwayat = ambilSemua('SELECT * FROM order_riwayat WHERE order_id = ? ORDER BY dibuat_pada DESC', [$id]);
 
 // Produk, affiliate, dan pembayaran yang terkait — ada setelah pembaruan basis data.
-$orderProduk = $orderAffiliate = null;
+$orderProduk = $orderAffiliate = $uangOrder = null;
 $orderBayar = [];
 if (penjualanSiap()) {
     $orderProduk    = !empty($order['produk_id']) ? ambilSatu('SELECT id, nama FROM produk WHERE id = ?', [$order['produk_id']]) : null;
     $orderAffiliate = !empty($order['affiliate_id']) ? ambilSatu('SELECT id, nama, kode FROM affiliate WHERE id = ?', [$order['affiliate_id']]) : null;
     $orderBayar     = ambilSemua('SELECT id, kode_order, jumlah, status FROM transaksi WHERE order_jasa_id = ? ORDER BY id DESC', [$id]);
+    $uangOrder      = uangOrderJasa($id, $order['nilai'] === null ? null : (int) $order['nilai']);
 }
 
 $judul = $order['nama'];
@@ -95,6 +96,15 @@ require __DIR__ . '/inc/kepala.php';
 
     <?php if (penjualanSiap()): ?>
       <h3 class="sub-judul">Pembayaran</h3>
+      <?php if ($uangOrder['nilai'] === null): ?>
+        <p class="petunjuk">Isi <b>Nilai proyek</b> di sebelah dulu — setelah itu sisa tagihan terhitung sendiri dan tagihannya bisa dicetak.</p>
+      <?php else: ?>
+        <p class="petunjuk" style="margin:0">
+          Nilai proyek <b><?= e(rupiah($uangOrder['nilai'])) ?></b> ·
+          dibayar <b><?= e(rupiah($uangOrder['dibayar'])) ?></b> ·
+          <?= $uangOrder['sisa'] < 0 ? 'lebih bayar' : 'sisa' ?> <b><?= e(rupiah(abs((int) $uangOrder['sisa']))) ?></b>
+        </p>
+      <?php endif; ?>
       <?php if ($orderBayar): ?>
         <ul class="daftar-ringkas">
           <?php foreach ($orderBayar as $b): ?>
@@ -104,12 +114,18 @@ require __DIR__ . '/inc/kepala.php';
                 <span class="dr-sub"><?= e($b['kode_order']) ?></span>
               </a>
               <span class="tanda tanda-<?= e($b['status']) ?>"><?= e(STATUS_TRANSAKSI[$b['status']] ?? $b['status']) ?></span>
+              <?php if ($b['status'] === 'lunas'): ?>
+                <a class="tbl tbl-kecil" href="<?= tautan('cetak') ?>?bayar=<?= (int) $b['id'] ?>" target="_blank" rel="noopener">Kuitansi</a>
+              <?php endif; ?>
             </li>
           <?php endforeach; ?>
         </ul>
       <?php endif; ?>
-      <p style="margin:10px 0 0">
+      <p class="bilah-aksi" style="margin:10px 0 0; justify-content:flex-start">
         <a class="tbl tbl-kecil<?= $orderBayar ? '' : ' tbl-utama' ?>" href="<?= tautan('transaksi-catat') ?>?order=<?= (int) $order['id'] ?>">Catat pembayaran</a>
+        <?php if ($uangOrder['nilai'] !== null): ?>
+          <a class="tbl tbl-kecil" href="<?= tautan('cetak') ?>?order=<?= (int) $order['id'] ?>" target="_blank" rel="noopener">Cetak tagihan</a>
+        <?php endif; ?>
       </p>
       <p class="petunjuk">Saat pembeli sudah membayar (DP atau lunas).<?= $orderAffiliate ? ' Komisi untuk ' . e($orderAffiliate['nama']) . ' ikut dihitung.' : '' ?></p>
     <?php endif; ?>

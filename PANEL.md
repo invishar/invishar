@@ -104,10 +104,9 @@ keuangan lintas aplikasi menyusul di tahap integrasi.
 
 ### 4.1 Order jasa
 
-Ini yang paling cepat terasa gunanya, karena sekarang **form kontak di
-invishar.com tidak mengirim ke mana pun** — masih mode demo (lihat
-`site/js/main.js` bagian 4). Setiap orang yang mengisi form itu hilang begitu
-saja.
+Form kontak invishar.com sudah mengirim ke `panel/api-pesan.php` (jalur relatif,
+satu origin, tanpa CORS) dan langsung muncul di menu Transaksi sebagai order
+jasa. Bidang wajibnya nama, WhatsApp, dan pesan; surel opsional.
 
 Alurnya: form kontak → tersimpan di basis data → muncul di panel dengan status.
 
@@ -116,6 +115,33 @@ plus `batal`. Tiap order punya catatan bebas dan riwayat perubahan status.
 
 Order juga bisa ditambahkan manual, karena kenyataannya banyak yang masuk lewat
 WhatsApp, bukan lewat form.
+
+**Uang dan dokumen.** `order_jasa.nilai` adalah nilai proyek; pembayarannya bisa
+beberapa kali (DP, termin, pelunasan) sebagai baris `transaksi` dengan
+`order_jasa_id`. `uangOrderJasa()` di `panel/inc/order.php` satu-satunya tempat
+sisa dihitung, jadi angka di daftar, halaman order, formulir pencatatan, dan
+dokumen cetak selalu sama. Order yang baru dibayar sebagian ditandai
+**Bayar sebagian** — keadaan turunan di SQL, tidak pernah ditulis ke
+`transaksi.status`. Isian "Label pembayaran" (`transaksi.catatan`) yang tercetak
+sebagai keterangan termin di kuitansi.
+
+Dua dokumen dicetak dari `panel/cetak.php`, dibuka di tab baru dan disimpan jadi
+PDF lewat dialog cetak peramban — tanpa pustaka PDF:
+
+| Dokumen | Alamat | Nomor | Syarat |
+| --- | --- | --- | --- |
+| Tagihan | `/panel/cetak?order=12` | `JASA-0012` | Nilai proyek sudah diisi |
+| Kuitansi | `/panel/cetak?bayar=34` | `transaksi.kode_order` | Pembayaran sudah lunas |
+
+Kop suratnya dari setelan `usaha.*` di `/panel/pengaturan#usaha` (nama, alamat,
+telepon, surel, logo, rekening, jatuh tempo, penanda tangan, catatan). Disimpan
+sebagai setelan, bukan kolom basis data, supaya menambahnya tidak menuntut
+migrasi — satu berkas migrasi baru akan mengunci seluruh menu Penjualan sampai
+admin menekan tombol di `/panel/pembaruan`.
+
+Dokumennya dirakit ulang dari data hidup setiap kali dibuka, tidak ada salinan
+yang dibekukan. Mengubah identitas usaha atau label pembayaran akan mengubah
+dokumen yang **sudah dikirim**, jadi simpan tiap PDF yang diserahkan ke klien.
 
 ### 4.2 Kelas
 
@@ -251,7 +277,8 @@ panel/
 ├── terbitkan.php     menulis JSON ke folder data/ di public_html
 ├── inventaris.php    aset kantor
 ├── aplikasi.php      tautan ke admin tiap produk
-├── pengaturan.php    akun, kata sandi, jejak perubahan
+├── pengaturan.php    identitas usaha, akun, kata sandi, jejak perubahan
+├── cetak.php         tagihan & kuitansi A4, siap disimpan jadi PDF
 ├── api-pesan.php     penerima form kontak invishar.com
 ├── skema.sql         seluruh tabel
 ├── isi-awal.json     kelas yang sekarang tayang, untuk mengisi panel

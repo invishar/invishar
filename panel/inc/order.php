@@ -25,9 +25,11 @@ const STATUS_PROSES = [
     'batal'    => 'Dibatalkan',
 ];
 
-/* Status bayar di daftar gabungan: status transaksi + "belum ditagih" untuk
-   order jasa yang belum punya pembayaran. */
-const STATUS_BAYAR = STATUS_TRANSAKSI + ['belum' => 'Belum ditagih'];
+/* Status bayar di daftar gabungan: status transaksi, ditambah dua keadaan yang
+   hanya dimiliki order jasa — belum ditagih sama sekali, dan sudah dibayar
+   sebagian (DP atau termin). Keduanya diturunkan di SQL dan tidak pernah
+   ditulis ke kolom transaksi.status. */
+const STATUS_BAYAR = STATUS_TRANSAKSI + ['belum' => 'Belum ditagih', 'sebagian' => 'Bayar sebagian'];
 
 /* Order jasa punya tahapan lebih rinci; di daftar gabungan dikelompokkan. */
 const PROSES_ORDER_JASA = [
@@ -67,8 +69,11 @@ function sqlOrderGabungan(): string
         SELECT 'jasa', o.id, CONCAT('JASA-', LPAD(o.id, 4, '0')), o.dibuat_pada, o.nama, o.whatsapp, o.surel,
                o.produk_id, COALESCE(p.nama, 'Permintaan jasa'), COALESCE(p.kategori, 'jasa'), COALESCE(p.jenis, 'penawaran'), 1,
                o.affiliate_id, a.kode, a.nama, 0,
-               COALESCE((SELECT SUM(x.jumlah) FROM transaksi x WHERE x.order_jasa_id = o.id AND x.status = 'lunas'), o.nilai),
+               COALESCE(o.nilai, (SELECT SUM(x.jumlah) FROM transaksi x WHERE x.order_jasa_id = o.id AND x.status = 'lunas')),
                CASE
+                 WHEN o.nilai IS NOT NULL
+                  AND (SELECT COALESCE(SUM(x.jumlah), 0) FROM transaksi x WHERE x.order_jasa_id = o.id AND x.status = 'lunas') > 0
+                  AND (SELECT COALESCE(SUM(x.jumlah), 0) FROM transaksi x WHERE x.order_jasa_id = o.id AND x.status = 'lunas') < o.nilai THEN 'sebagian'
                  WHEN EXISTS (SELECT 1 FROM transaksi x WHERE x.order_jasa_id = o.id AND x.status = 'lunas') THEN 'lunas'
                  WHEN EXISTS (SELECT 1 FROM transaksi x WHERE x.order_jasa_id = o.id AND x.status = 'menunggu') THEN 'menunggu'
                  ELSE 'belum'
@@ -90,6 +95,30 @@ const SQL_PERLU_DIPROSES = "(o.status_proses IN ('baru', 'diproses') AND (o.tipe
 function jumlahPerluDiproses(): int
 {
     return (int) ambilNilai('SELECT COUNT(*) FROM ' . sqlOrderGabungan() . ' WHERE ' . SQL_PERLU_DIPROSES);
+}
+
+/**
+ * Uang satu order jasa: nilai proyek, yang sudah masuk, dan sisanya.
+ *
+ * Satu-satunya tempat sisa dihitung, supaya angka di daftar, halaman detail,
+ * formulir pencatatan, dan dokumen cetak tidak pernah saling berbeda. Hanya
+ * pembayaran berstatus lunas yang dihitung — tagihan yang masih menunggu
+ * belum mengurangi sisa.
+ *
+ * @param  ?int $nilai nilai proyek, apa adanya dari order_jasa.nilai
+ * @return array{nilai: ?int, dibayar: int, sisa: ?int} sisa null kalau nilai belum diisi
+ */
+function uangOrderJasa(int $orderId, ?int $nilai): array
+{
+    $dibayar = (int) ambilNilai(
+        "SELECT COALESCE(SUM(jumlah), 0) FROM transaksi WHERE order_jasa_id = ? AND status = 'lunas'",
+        [$orderId]
+    );
+    return [
+        'nilai'   => $nilai,
+        'dibayar' => $dibayar,
+        'sisa'    => $nilai === null ? null : $nilai - $dibayar,
+    ];
 }
 
 /** Alamat detail satu pesanan. */

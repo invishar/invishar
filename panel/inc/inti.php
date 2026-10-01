@@ -195,6 +195,19 @@ const SETELAN_BAWAAN = [
     'affiliate.min_tarik'       => '100000',
     'affiliate.bulan_berulang'  => '12',
     'affiliate.syarat'          => "1. Komisi hanya dihitung dari penjualan yang lunas melalui link Anda.\n2. Membeli lewat link sendiri tidak menghasilkan komisi.\n3. Dilarang memasang iklan berbayar memakai nama Invishar atau nama produknya.\n4. Dilarang menjanjikan hal yang tidak tertulis di halaman produk.\n5. Komisi dari transaksi yang dibatalkan atau dikembalikan dananya ikut dibatalkan.\n6. Invishar berhak membekukan akun yang melanggar ketentuan ini.",
+
+    /* Identitas usaha — dipakai sebagai kop surat pada tagihan dan kuitansi.
+       Disimpan sebagai setelan, bukan kolom basis data, supaya menambahnya tidak
+       menuntut migrasi yang akan mengunci seluruh menu Penjualan. */
+    'usaha.nama'             => 'Invishar',
+    'usaha.alamat'           => '',
+    'usaha.telepon'          => '',
+    'usaha.surel'            => '',
+    'usaha.logo_url'         => 'https://invishar.com/assets/invishar-logo.png',
+    'usaha.bank'             => '',
+    'usaha.tempo_hari'       => '7',
+    'usaha.penanda_tangan'   => '',
+    'usaha.catatan_invoice'  => 'Pembayaran dianggap sah setelah dana diterima.',
 ];
 
 /** Tembolok setelan untuk satu permintaan; dibaca sekali dari basis data. */
