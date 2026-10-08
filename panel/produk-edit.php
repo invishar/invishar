@@ -32,7 +32,8 @@ $kelasTaut = $lama && $lama['kelas_id'] ? ambilSatu('SELECT id, judul, slug, gam
 $kosong = [
     'id' => 0, 'slug' => '', 'nama' => '', 'jenis' => JENIS_PER_KATEGORI[$kategori][0], 'kategori' => $kategori, 'kelas_id' => null,
     'tagline' => '', 'ringkas' => '', 'isi' => '', 'manfaat' => '', 'tanya' => '[]', 'gambar' => null, 'harga' => null,
-    'url_eksternal' => '', 'url_admin' => '', 'label_tombol' => '', 'lp_mode' => 'bawaan', 'lp_berkas' => null,
+    'url_eksternal' => '', 'url_admin' => '', 'label_tombol' => '', 'akses_tautan' => '', 'akses_catatan' => '',
+    'lp_mode' => 'bawaan', 'lp_berkas' => null,
     'lp_diunggah_pada' => null, 'status' => 'draf', 'urutan' => 0, 'affiliate_aktif' => 0,
 ];
 $p = $lama ?? $kosong;
@@ -118,6 +119,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $d['label_tombol']  = $ambil('label_tombol', 40);
     $d['url_eksternal'] = $ambil('url_eksternal', 255);
     $d['url_admin']     = $d['kategori'] === 'produk' ? $ambil('url_admin', 255) : '';
+    $d['akses_tautan']   = $ambil('akses_tautan', 255);
+    $d['akses_catatan']  = $ambil('akses_catatan');
     $d['lp_mode']       = masukan('lp_mode') === 'custom' ? 'custom' : (array_key_exists('lp_mode', $_POST) ? 'bawaan' : (string) $p['lp_mode']);
 
     if (array_key_exists('tanya_q', $_POST)) {
@@ -167,6 +170,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($d['url_admin'] !== '' && !preg_match('#^https?://[^\s]+\.[^\s]+#i', $d['url_admin'])) {
         $galat[] = 'Link panel admin harus lengkap dengan https:// (mis. https://app.ponpesmanager.id/admin).';
     }
+    if ($d['akses_tautan'] !== '' && !preg_match('#^https?://[^\s]+\.[^\s]+#i', $d['akses_tautan'])) {
+        $galat[] = 'Tautan akses harus lengkap dengan https:// (mis. https://drive.google.com/…).';
+    }
 
     /* ---- unggahan ---- */
     $lpBaru = null;
@@ -203,12 +209,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $d['slug'], $d['nama'], $d['jenis'], $d['kategori'], $d['tagline'] ?: null, $d['ringkas'] ?: null,
             $d['isi'] ?: null, $d['manfaat'] ?: null, $d['tanya'], $d['gambar'], $d['harga'],
             $d['url_eksternal'] ?: null, $d['url_admin'] ?: null, $d['label_tombol'] ?: null,
+            $d['akses_tautan'] ?: null, $d['akses_catatan'] ?: null,
             $d['lp_mode'], $d['lp_berkas'], $d['lp_diunggah_pada'], $d['status'], $d['urutan'],
         ];
         if ($lama) {
             q(
                 'UPDATE produk SET slug = ?, nama = ?, jenis = ?, kategori = ?, tagline = ?, ringkas = ?, isi = ?, manfaat = ?,
                         tanya = ?, gambar = ?, harga = ?, url_eksternal = ?, url_admin = ?, label_tombol = ?,
+                        akses_tautan = ?, akses_catatan = ?,
                         lp_mode = ?, lp_berkas = ?, lp_diunggah_pada = ?, status = ?, urutan = ?, diperbarui_pada = NOW()
                   WHERE id = ?',
                 array_merge($isi, [$id])
@@ -220,9 +228,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             q(
                 'INSERT INTO produk (slug, nama, jenis, kategori, tagline, ringkas, isi, manfaat, tanya, gambar, harga,
-                                     url_eksternal, url_admin, label_tombol, lp_mode, lp_berkas, lp_diunggah_pada, status, urutan,
+                                     url_eksternal, url_admin, label_tombol, akses_tautan, akses_catatan,
+                                     lp_mode, lp_berkas, lp_diunggah_pada, status, urutan,
                                      affiliate_aktif, fee_jenis, fee_nilai, dibuat_pada, diperbarui_pada)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, \'persen\', 0, NOW(), NOW())',
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, \'persen\', 0, NOW(), NOW())',
                 $isi
             );
             $id = (int) db()->lastInsertId();
@@ -413,9 +422,30 @@ require __DIR__ . '/inc/kepala.php';
       </div>
     </div>
 
-    <!-- ============ 3. Landing page ============ -->
+    <!-- ============ 3. Akses otomatis ============ -->
+    <?php if ($kategori !== 'kelas'): ?>
+    <div class="bagian" data-tampil-jika="jenis=sekali,langganan">
+      <h2 class="bagian-judul">3. Akses otomatis</h2>
+      <p class="bagian-sub">Dikirim otomatis ke pembeli begitu pembayaran lunas — tanpa kirim manual lewat WhatsApp. Untuk produk kelas, aksesnya materi kelas (otomatis, tidak perlu diisi).</p>
+
+      <div class="form-panel">
+        <div class="bidang">
+          <label for="f-akses-tautan">Tautan unduhan / akses <span class="teks-kecil">(opsional)</span></label>
+          <input id="f-akses-tautan" name="akses_tautan" type="url" value="<?= e((string) $p['akses_tautan']) ?>" placeholder="https://drive.google.com/…">
+          <p class="petunjuk">Tombol &ldquo;Unduh / buka produk&rdquo; di halaman akses pembeli mengarah ke sini.</p>
+        </div>
+        <div class="bidang">
+          <label for="f-akses-catatan">Instruksi untuk pembeli <span class="teks-kecil">(opsional)</span></label>
+          <textarea id="f-akses-catatan" name="akses_catatan" rows="4" placeholder="Contoh: Unduh berkas di atas, lalu buka dengan… Kode lisensi Anda: …"><?= e((string) $p['akses_catatan']) ?></textarea>
+          <p class="petunjuk">Tampil di halaman akses setelah pembayaran lunas. Baris baru ikut tampil.</p>
+        </div>
+      </div>
+    </div>
+    <?php endif; ?>
+
+    <!-- ============ 4. Landing page ============ -->
     <div class="bagian" id="landing">
-      <h2 class="bagian-judul">3. Landing page</h2>
+      <h2 class="bagian-judul"><?= $kategori !== 'kelas' ? '4' : '3' ?>. Landing page</h2>
       <p class="bagian-sub">Halaman penjualan di <code>/p/<?= e($p['slug'] ?: 'nama-produk') ?></code>. Link affiliate mitra mengarah ke halaman ini.</p>
 
       <div class="form-panel">

@@ -156,6 +156,18 @@ require __DIR__ . '/inc/kepala.php';
         </dd>
         <dt>Dibuat</dt><dd><?= e(waktuIndo($t['dibuat_pada'])) ?></dd>
         <?php if ($t['dibayar_pada']): ?><dt>Dibayar</dt><dd><?= e(waktuIndo($t['dibayar_pada'])) ?></dd><?php endif; ?>
+        <?php if ($t['status'] === 'lunas' && !empty($t['akses_token'])): ?>
+          <?php $urlAkses = 'https://invishar.com/toko/akses.php?t=' . $t['akses_token']; ?>
+          <dt>Akses pembeli</dt>
+          <dd>
+            <div class="salin-baris">
+              <code><?= e($urlAkses) ?></code>
+              <button class="tbl-salin" type="button" data-salin="<?= e($urlAkses) ?>">Salin</button>
+            </div>
+            <p class="petunjuk"><a href="<?= e($urlAkses) ?>" target="_blank" rel="noopener">Buka halaman akses ↗</a>
+              · kirim ke WhatsApp pembeli bila ia belum membukanya sendiri.</p>
+          </dd>
+        <?php endif; ?>
       </dl>
     </section>
 
@@ -190,7 +202,7 @@ require __DIR__ . '/inc/kepala.php';
           <?php endif; ?>
         </form>
         <p class="petunjuk"><?= $produk && ($produk['kategori'] ?? '') === 'kelas'
-            ? 'Untuk kelas: kirim akses ke WhatsApp pembeli, lalu tandai selesai.'
+            ? 'Peserta otomatis terdaftar begitu lunas dan materinya terkunci token — cukup pastikan ia membuka halaman aksesnya.'
             : 'Selesai = pesanan sudah diserahkan ke pembeli.' ?></p>
         <?php if ($proses !== 'selesai'): ?>
           <button class="tbl tbl-kecil tbl-bahaya" type="button" data-buka="#form-batal" style="margin-top:12px">Batalkan pesanan…</button>
