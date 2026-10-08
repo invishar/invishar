@@ -15,6 +15,8 @@ declare(strict_types=1);
    ============================================================================= */
 
 require_once __DIR__ . '/affiliate.php';
+require_once __DIR__ . '/akses.php';
+require_once __DIR__ . '/email.php';
 
 const STATUS_TRANSAKSI = [
     'menunggu'    => 'Menunggu bayar',
@@ -164,10 +166,38 @@ function ubahStatusTransaksi(int $id, string $baru, string $sumber, string $cata
                 $trx = ambilSatu('SELECT * FROM transaksi WHERE id = ?', [$id]);
             }
             buatKomisi($trx);
+            /* Akses produk digital & pendaftaran kelas. Dibungkus supaya
+               kegagalan di sini (mis. migrasi 006 belum dijalankan) tidak
+               pernah menggagalkan status lunas yang sudah sah. */
+            try {
+                $trx = bukaAksesTransaksi($trx);
+            } catch (Throwable $e) {
+                error_log('[invishar akses] gagal membuka akses utk trx ' . $trx['id'] . ': ' . $e->getMessage());
+            }
+            /* Email akses ke pembeli. Kegagalan kirim hanya dicatat — status
+               lunas tidak boleh ikut gagal karena email. */
+            try {
+                if (kirimEmailAkses($trx)) {
+                    q(
+                        'INSERT INTO transaksi_riwayat (transaksi_id, status_lama, status_baru, sumber, catatan, dibuat_pada)
+                         VALUES (?, \'lunas\', \'lunas\', \'email\', ?, NOW())',
+                        [$trx['id'], 'Email akses dikirim ke ' . $trx['surel']]
+                    );
+                } else {
+                    error_log('[invishar email] gagal/lewat kirim email akses utk trx ' . $trx['id']);
+                }
+            } catch (Throwable $e) {
+                error_log('[invishar email] ' . $e->getMessage());
+            }
         }
 
         if ($baru === 'refund') {
             batalkanKomisi($trx, 'Dana transaksi ' . $trx['kode_order'] . ' dikembalikan');
+            try {
+                cabutAksesTransaksi($trx);
+            } catch (Throwable $e) {
+                error_log('[invishar akses] gagal mencabut akses utk trx ' . $trx['id'] . ': ' . $e->getMessage());
+            }
         }
 
         return ['berubah' => true, 'trx' => $trx];

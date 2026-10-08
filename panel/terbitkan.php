@@ -66,6 +66,16 @@ $kategori = ['Semua'];
 $jumlahBerkas = 0;
 
 foreach ($daftarKelas as $k) {
+    /* Kelas yang dijual (punya produk aktif) hanya diterbitkan sebagai
+       pratinjau: judul & durasi materi boleh publik, tapi isi (video,
+       ringkasan, poin) hanya untuk pembeli — mereka menonton lewat halaman
+       akses bertoken (/toko/materi.php), bukan dari JSON ini. */
+    $produkKelas = ambilSatu(
+        "SELECT slug FROM produk WHERE kelas_id = ? AND status = 'aktif' AND jenis IN ('sekali', 'langganan') ORDER BY id LIMIT 1",
+        [$k['id']]
+    );
+    $terkunci = $produkKelas !== null;
+
     $detail = json_decode((string) $k['detail'], true) ?: [];
 
     $modulKeluar = [];
@@ -77,14 +87,17 @@ foreach ($daftarKelas as $k) {
 
         foreach (ambilSemua('SELECT * FROM materi WHERE modul_id = ? ORDER BY urutan, id', [$m['id']]) as $x) {
             $poin = array_values(array_filter(array_map('trim', preg_split('/\R/', (string) $x['poin']) ?: [])));
-            $materiKeluar[] = [
-                'id'      => $x['kode'],
-                'judul'   => $x['judul'],
-                'durasi'  => $x['durasi'],
-                'youtube' => $x['youtube_id'],
-                'ringkas' => $x['ringkas'] ?? '',
-                'poin'    => $poin,
+            $entri = [
+                'id'     => $x['kode'],
+                'judul'  => $x['judul'],
+                'durasi' => $x['durasi'],
             ];
+            if (!$terkunci) {
+                $entri['youtube'] = $x['youtube_id'];
+                $entri['ringkas'] = $x['ringkas'] ?? '';
+                $entri['poin']    = $poin;
+            }
+            $materiKeluar[] = $entri;
             $jumlahMateri++;
             $totalMenit += (int) preg_replace('/\D/', '', $x['durasi']);
         }
@@ -102,6 +115,7 @@ foreach ($daftarKelas as $k) {
         'bahasa'   => $detail['bahasa'] ?? 'Bahasa Indonesia',
         'akses'    => $detail['akses'] ?? 'Akses selamanya',
         'harga'    => $k['harga'],
+        'terkunci' => $terkunci,
         'gambar'   => $k['gambar'] ? 'data/kelas/' . $k['gambar'] : '',
         'pengajar' => $detail['pengajar'] ?? ['nama' => '', 'peran' => ''],
         'ikhtisar' => $detail['ikhtisar'] ?? ['hasil' => [], 'untukSiapa' => [], 'syarat' => []],
@@ -109,6 +123,9 @@ foreach ($daftarKelas as $k) {
         'sumber'   => $detail['sumber'] ?? [],
         'tanya'    => $detail['tanya'] ?? [],
     ];
+    if ($terkunci) {
+        $isiKelas['produk_slug'] = $produkKelas['slug'];
+    }
 
     if (!tulisJson($tujuan . '/course-' . $k['slug'] . '.json', $isiKelas)) {
         pesan('Gagal menulis berkas kelas "' . $k['judul'] . '".', 'buruk');

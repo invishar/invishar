@@ -7,6 +7,11 @@
 
    Cara mengisi video: `youtube` diisi ID video saja, bukan URL penuh.
    https://www.youtube.com/watch?v=aircAruvnKk  ->  youtube: "aircAruvnKk"
+
+   PENTING: berkas ini hanya cadangan saat panel belum menerbitkan apa pun, dan
+   isinya TERBUKA untuk publik. Jangan menaruh materi kelas berbayar di sini —
+   kelas berbayar diterbitkan panel sebagai pratinjau (tanpa video/isi), dan
+   isinya hanya keluar lewat halaman akses bertoken (/toko/materi.php).
    ============================================================================= */
 window.INVISHAR_COURSE = {
   slug: "dashboard-sosial-media",
