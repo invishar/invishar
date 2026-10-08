@@ -109,6 +109,10 @@
   /* ========================================================================= */
   function jalankan(kelas) {
 
+    /* Kelas berbayar: JSON terbitan hanya berisi pratinjau (tanpa video/isi).
+       Isi penuh hanya untuk pembeli, lewat halaman akses bertoken. */
+    var terkunci = !!kelas.terkunci;
+
     // Semua materi dari semua modul, berurutan — untuk tombol maju/mundur.
     var urut = [];
     kelas.modul.forEach(function (mod, i) {
@@ -224,19 +228,19 @@
 
         mod.materi.forEach(function (mat) {
           var baris = document.createElement("a");
-          baris.className = "baris";
+          baris.className = "baris" + (terkunci ? " is-kunci" : "");
           baris.href = tautanMateri(mat.id);
           baris.dataset.id = mat.id;
 
-          baris.appendChild(buat("span", "tanda", "✓"));
+          baris.appendChild(buat("span", "tanda", terkunci ? "🔒" : "✓"));
 
           var tengah = buat("span", "baris-teks");
           tengah.appendChild(buat("span", "baris-judul", mat.judul));
-          tengah.appendChild(buat("span", "baris-ringkas", mat.ringkas));
+          if (mat.ringkas) tengah.appendChild(buat("span", "baris-ringkas", mat.ringkas));
           baris.appendChild(tengah);
 
           baris.appendChild(buat("span", "baris-durasi", mat.durasi));
-          baris.appendChild(buat("span", "baris-tonton", "Tonton →"));
+          baris.appendChild(buat("span", "baris-tonton", terkunci ? "Terkunci" : "Tonton →"));
 
           blok.appendChild(baris);
         });
@@ -397,6 +401,49 @@
     /* ===================================================================
        Halaman materi — materi.html
        =================================================================== */
+    function kunciMateri(kini) {
+      var mat = kini.data;
+      document.title = mat.judul + " — " + kelas.judul;
+
+      $("#m-crumb-kelas").textContent = kelas.judul;
+      $("#m-crumb-kelas").href = tautanKelas();
+      $("#m-crumb-modul").textContent = kini.modul.judul;
+      $("#m-kicker").textContent =
+        "Modul " + ("0" + kini.modulKe).slice(-2) + " · " + kini.modul.judul + " · " + mat.durasi;
+      $("#m-judul").textContent = mat.judul;
+      $("#m-kelas-judul").textContent = kelas.judul;
+
+      var panel = document.createElement("div");
+      panel.className = "kunci-panel";
+      panel.appendChild(buat("div", "kunci-ikon", "🔒"));
+      panel.appendChild(buat("h2", null, "Materi terkunci"));
+      var teks = buat("p", null, "Video dan isi materi ini hanya untuk peserta kelas ");
+      teks.appendChild(buat("strong", null, kelas.judul));
+      teks.appendChild(document.createTextNode("."));
+      panel.appendChild(teks);
+
+      var aksi = buat("div", "kunci-aksi");
+      if (kelas.produk_slug) {
+        var beli = document.createElement("a");
+        beli.className = "btn btn-solid";
+        beli.href = "/order/" + encodeURIComponent(kelas.produk_slug);
+        beli.textContent = "Beli kelas" + (kelas.harga && kelas.harga !== "Gratis" ? " · " + kelas.harga : "");
+        aksi.appendChild(beli);
+      }
+      var sudah = document.createElement("a");
+      sudah.className = "btn btn-outline";
+      sudah.href = "/toko/akses.php";
+      sudah.textContent = "Sudah beli? Buka dengan kode pesanan";
+      aksi.appendChild(sudah);
+      panel.appendChild(aksi);
+      $("#m-player").replaceWith(panel);
+
+      var aksiBar = document.querySelector(".materi-utama .aksi");
+      if (aksiBar) aksiBar.hidden = true;
+      var isi = document.querySelector(".materi-utama .materi-isi");
+      if (isi) isi.hidden = true;
+    }
+
     function halamanMateri() {
       var wadahPlayer = $("#m-player");
       if (!wadahPlayer) return false;
@@ -408,6 +455,13 @@
       var mat = kini.data;
       var sebelum = ke > 0 ? urut[ke - 1] : null;
       var sesudah = ke < total - 1 ? urut[ke + 1] : null;
+
+      /* Kelas berbayar: data publik tidak memuat video/isi → tampilkan
+         panel kunci, bukan pemutar. */
+      if (!mat.youtube) {
+        kunciMateri(kini);
+        return true;
+      }
 
       document.title = mat.judul + " — " + kelas.judul;
 

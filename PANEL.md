@@ -321,3 +321,30 @@ bila ingin memakai alamat subdomain.
 2. Document Root subdomain `panel.invishar.com`, untuk mengisi `.cpanel.yml`.
 3. Apakah folder `public_html/data` bisa ditulis oleh proses PHP panel.
 4. Pencadangan basis data — siapa dan seberapa sering.
+
+## 11. Akses otomatis produk digital & kelas (migrasi 006)
+
+Begitu transaksi lunas — lewat webhook Duitku, jaring pengaman `selesai.php`,
+tombol simulasi, maupun catat manual — `ubahStatusTransaksi()` membuatkan token
+akses unik (`panel/inc/akses.php`). Pembeli membukanya di
+`/toko/akses.php?t={token}`: tombol unduhan + instruksi dari kolom
+`produk.akses_tautan` / `produk.akses_catatan` (diisi di Produk → Akses
+otomatis), atau daftar materi untuk produk kelas.
+
+Produk kelas mendaftarkan pembeli ke `peserta_kelas` otomatis, dan materinya
+hanya bisa dibuka lewat `/toko/materi.php?t={token}` yang memvalidasi token +
+kepesertaan di setiap permintaan. Kelas yang dijual (`produk` aktif
+kategori kelas) diterbitkan `terbitkan.php` sebagai pratinjau saja — JSON
+publik tidak memuat ID video/isi materi; halaman `materi.html` menampilkan
+panel terkunci dengan tombol beli. Refund mencabut akses (peserta dihapus,
+token dibuang).
+
+Yang belum otomatis: notifikasi WhatsApp ke pembeli — tautan akses tampil
+di halaman selesai, dan admin bisa menyalinnya dari detail transaksi.
+
+Email akses dikirim otomatis via `mail()` bawaan PHP ke surel pembeli begitu
+lunas (`panel/inc/email.php`): logo usaha, rincian pembelian, tombol menuju
+halaman akses, dan instruksi produk. Pengirim memakai setelan `usaha.nama` /
+`usaha.surel` (bawaan: Invishar <hello@invishar.id>). Karena mail() shared
+hosting kadang mendarat di spam, halaman selesai menyarankan pembeli
+memeriksa folder spam.
