@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__, 2) . '/panel/inc/inti.php';
 require_once dirname(__DIR__, 2) . '/panel/inc/gerbang.php';
+require_once dirname(__DIR__, 2) . '/panel/inc/akses.php';
 require_once dirname(__DIR__, 2) . '/panel/inc/produk.php';
 
 header('X-Robots-Tag: noindex, nofollow');

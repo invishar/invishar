@@ -43,6 +43,16 @@ if ($trx['status'] === 'menunggu' && $gerbangTrx instanceof GerbangDicek && $ger
 }
 
 $produk = ambilSatu('SELECT * FROM produk WHERE id = ?', [$trx['produk_id']]);
+
+/* Transaksi lunas lama (sebelum fitur akses ada) mendapat tokennya di sini,
+   supaya tombol akses di bawah selalu bisa tampil. */
+if ($trx['status'] === 'lunas' && empty($trx['akses_token'])) {
+    try {
+        $trx = pastikanTokenAkses($trx);
+    } catch (Throwable $e) {
+        error_log('[invishar selesai] ' . $e->getMessage());
+    }
+}
 $namaDepan = explode(' ', trim($trx['pembeli_nama']))[0] ?? '';
 $waSamaran = $trx['whatsapp'] ? substr(normalWa($trx['whatsapp']), 0, 5) . '•••' . substr(normalWa($trx['whatsapp']), -3) : '';
 
@@ -93,9 +103,20 @@ require __DIR__ . '/inc/kepala.php';
     <?php if ($trx['status'] === 'lunas'): ?>
       <div class="langkah-lanjut">
         <p class="ringkasan-label">Langkah berikutnya</p>
-        <p>Kami segera menghubungi Anda<?= $waSamaran ? ' lewat WhatsApp <strong>' . e($waSamaran) . '</strong>' : '' ?> untuk mengirim akses.
-           Simpan kode pesanan di atas untuk berjaga-jaga.</p>
+        <?php if (!empty($trx['akses_token'])): ?>
+          <p>Akses Anda sudah siap.
+            <?php if ($trx['surel']): ?>
+              Data akses juga sudah kami kirim ke email <strong><?= e($trx['surel']) ?></strong> — jika tidak terlihat di kotak masuk, coba cari di folder spam.
+            <?php endif; ?>
+            Simpan kode pesanan di atas untuk berjaga-jaga.</p>
+        <?php else: ?>
+          <p>Kami segera menghubungi Anda<?= $waSamaran ? ' lewat WhatsApp <strong>' . e($waSamaran) . '</strong>' : '' ?> untuk mengirim akses.
+             Simpan kode pesanan di atas untuk berjaga-jaga.</p>
+        <?php endif; ?>
       </div>
+      <?php if (!empty($trx['akses_token'])): ?>
+        <a class="btn btn-solid btn-block" href="<?= e(urlAksesTransaksi($trx)) ?>">Buka akses saya</a>
+      <?php endif; ?>
       <a class="btn btn-outline btn-block" href="/">Kembali ke beranda</a>
     <?php elseif ($lanjutkan !== ''): ?>
       <a class="btn btn-solid btn-block" href="<?= e($lanjutkan) ?>">Lanjutkan pembayaran</a>

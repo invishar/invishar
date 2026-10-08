@@ -40,6 +40,7 @@ function keteranganMigrasi(string $nama): string
         '002_produk.sql'    => 'Daftar produk beserta landing page dan setelan komisinya',
         '003_affiliate.sql' => 'Akun affiliator dan catatan klik link',
         '004_transaksi.sql' => 'Transaksi, langganan, komisi, dan penarikan',
+        '006_akses.sql'     => 'Akses otomatis produk digital & pendaftaran kelas (token akses, peserta kelas)',
     ];
     return $peta[$nama] ?? $nama;
 }
